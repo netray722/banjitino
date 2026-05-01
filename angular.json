@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "hello-world-app": {
+    "banjitino.com": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -53,10 +53,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "hello-world-app:build:production"
+              "buildTarget": "banjitino.com:build:production"
             },
             "development": {
-              "buildTarget": "hello-world-app:build:development"
+              "buildTarget": "banjitino.com:build:development"
             }
           },
           "defaultConfiguration": "development"

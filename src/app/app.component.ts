@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  protected readonly subtitle = 'Your first Codex-built Angular app is up and running.';
+  protected readonly subtitle = 'Personal website management starts here.';
 }

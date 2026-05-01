@@ -1,6 +1,6 @@
-# Hello World Angular App
+# banjitino.com
 
-This is a minimal standalone Angular app.
+Personal website management app for banjitino.com.
 
 ## Run locally
 
