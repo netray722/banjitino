@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "banjitino",
-  "pages_build_output_dir": "dist/banjitino.com/browser",
+  "pages_build_output_dir": "dist/cloudflare",
   "compatibility_date": "2026-05-01",
   "observability": {
     "enabled": true
