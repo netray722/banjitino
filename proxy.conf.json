@@ -1,0 +1,38 @@
+{
+  "/api/nba/scoreboard": {
+    "target": "https://cdn.nba.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/nba/scoreboard": "/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+    },
+    "headers": {
+      "Referer": "https://www.nba.com/",
+      "User-Agent": "Mozilla/5.0"
+    }
+  },
+  "/api/nba/boxscore": {
+    "target": "https://cdn.nba.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/nba/boxscore/(.*)": "/static/json/liveData/boxscore/boxscore_$1.json"
+    },
+    "headers": {
+      "Referer": "https://www.nba.com/",
+      "User-Agent": "Mozilla/5.0"
+    }
+  },
+  "/api/nba/logo": {
+    "target": "https://cdn.nba.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/nba/logo/(.*)": "/logos/nba/$1/primary/L/logo.svg"
+    },
+    "headers": {
+      "Referer": "https://www.nba.com/",
+      "User-Agent": "Mozilla/5.0"
+    }
+  }
+}

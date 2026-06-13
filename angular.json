@@ -55,6 +55,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "banjitino.com:build:production"
@@ -64,6 +67,27 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "banjitino.com:build:development",
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest",
+            "coverageExclude": [
+              "src/main.ts"
+            ],
+            "coverageReporters": [
+              "text",
+              "html"
+            ],
+            "coverageThresholds": {
+              "statements": 75,
+              "branches": 65,
+              "functions": 75,
+              "lines": 75
+            }
+          }
         }
       }
     }

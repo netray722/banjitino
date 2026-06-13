@@ -1,7 +1,75 @@
-<main class="shell">
-  <section class="hero" aria-labelledby="site-title">
-    <div class="badge">Personal website management</div>
-    <h1 id="site-title">banjitino.com</h1>
-    <p>{{ subtitle }}</p>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="banjitino.com NBA scores home">
+      <span class="brand-mark">B</span>
+      <span>
+        <strong>banjitino.com</strong>
+        <small>NBA Scoreboard</small>
+      </span>
+    </a>
+
+    <button
+      class="refresh-button"
+      type="button"
+      [class.is-spinning]="refreshing()"
+      [disabled]="refreshing()"
+      (click)="refresh()"
+      aria-label="Refresh scores"
+      title="Refresh scores"
+    >
+      <svg lucideRefreshCw aria-hidden="true"></svg>
+    </button>
+  </div>
+</header>
+
+<main class="page-shell">
+  <section class="scoreboard-heading" aria-labelledby="scoreboard-title">
+    <div>
+      <p class="eyebrow">NBA games</p>
+      <h1 id="scoreboard-title">{{ pageDate() }}</h1>
+      <p class="updated">{{ updatedLabel() }}</p>
+    </div>
+
+    @if (scoreboard()?.games?.length) {
+      <div class="game-count">
+        {{ scoreboard()!.games.length }} {{ scoreboard()!.games.length === 1 ? 'game' : 'games' }}
+      </div>
+    }
   </section>
+
+  @if (loading()) {
+    <section class="game-list" aria-label="Loading games">
+      @for (placeholder of [1, 2, 3]; track placeholder) {
+        <div class="game-skeleton"></div>
+      }
+    </section>
+  } @else if (error() && !scoreboard()) {
+    <section class="state-panel error-panel">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="refresh()">Try again</button>
+    </section>
+  } @else if (scoreboard()?.games?.length) {
+    <section class="game-list" aria-label="Today's NBA games">
+      @for (game of scoreboard()!.games; track game.id) {
+        <app-game-card
+          [game]="game"
+          [expanded]="expandedGameId() === game.id"
+          [boxScoreState]="boxScoreFor(game.id)"
+          (toggle)="toggleGame(game)"
+          (retry)="retryBoxScore(game)"
+        />
+      }
+    </section>
+  } @else {
+    <section class="state-panel">
+      <p class="state-kicker">No games today</p>
+      <h2>The NBA schedule is clear.</h2>
+      <p>Check back on the next game day. This page refreshes automatically.</p>
+    </section>
+  }
 </main>
+
+<footer>
+  <span>Live scores refresh every 30 seconds.</span>
+  <span>Data provided by NBA live feeds.</span>
+</footer>

@@ -10,10 +10,14 @@ out-tsc/
 
 # Angular cache
 .angular/cache/
+coverage/
 
 # Logs
 ng-serve.log
 ng-serve.err.log
+*-scoreboard.png
+mobile-emulated.png
+mobile-expanded.png
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
