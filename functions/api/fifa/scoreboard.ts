@@ -1,7 +1,9 @@
-import { currentFifaDateWindow, fetchFifaJson, withMatchDate } from '../../_shared/fifa';
+import { defaultDateKey, fetchFifaJson, fifaDateWindow, validDateKey, withMatchDate } from '../../_shared/fifa';
 
-export const onRequestGet: PagesFunction = async () => {
-  const { matchDate, from, to } = currentFifaDateWindow();
+export const onRequestGet: PagesFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const requestedDate = url.searchParams.get('date');
+  const { matchDate, from, to } = fifaDateWindow(validDateKey(requestedDate) ? requestedDate : defaultDateKey());
   const query = new URLSearchParams({
     language: 'en',
     count: '50',

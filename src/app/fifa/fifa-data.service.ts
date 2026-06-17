@@ -9,8 +9,10 @@ import { normalizeFifaMatchDetails, normalizeFifaScoreboard } from './fifa.utils
 export class FifaDataService {
   private readonly http = inject(HttpClient);
 
-  getScoreboard(): Observable<FifaScoreboard> {
-    return this.http.get<unknown>('/api/fifa/scoreboard').pipe(map((payload) => normalizeFifaScoreboard(payload)));
+  getScoreboard(matchDate: string): Observable<FifaScoreboard> {
+    return this.http
+      .get<unknown>('/api/fifa/scoreboard', { params: { date: matchDate } })
+      .pipe(map((payload) => normalizeFifaScoreboard({ ...(payload as Record<string, unknown>), matchDate })));
   }
 
   getMatchDetails(matchId: string): Observable<FifaMatchDetails> {

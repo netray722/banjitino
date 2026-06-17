@@ -14,11 +14,11 @@ describe('FifaDataService', () => {
     const http = TestBed.inject(HttpTestingController);
     let matchId = '';
 
-    service.getScoreboard().subscribe((scoreboard) => {
+    service.getScoreboard('2026-06-17').subscribe((scoreboard) => {
       matchId = scoreboard.matches[0].id;
     });
 
-    http.expectOne('/api/fifa/scoreboard').flush({
+    http.expectOne('/api/fifa/scoreboard?date=2026-06-17').flush({
       matchDate: '2026-06-17',
       Results: [{
         IdMatch: '400021401',

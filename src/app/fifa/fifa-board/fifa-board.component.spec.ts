@@ -22,6 +22,7 @@ describe('FifaBoardComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
+    expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-17');
     const cards = fixture.nativeElement.querySelectorAll('.match-summary') as NodeListOf<HTMLButtonElement>;
     expect(cards.length).toBe(2);
     expect(fixture.nativeElement.textContent).toContain('FIFA World Cup 2026');
@@ -40,6 +41,12 @@ describe('FifaBoardComponent', () => {
     refreshButton.click();
     fixture.detectChanges();
     expect(dataService.getScoreboard).toHaveBeenCalledTimes(2);
+
+    const dateInput = fixture.nativeElement.querySelector('#fifa-date') as HTMLInputElement;
+    dateInput.value = '2026-06-18';
+    dateInput.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2026-06-18');
     fixture.destroy();
   });
 });

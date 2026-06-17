@@ -64,13 +64,15 @@ interface RawFifaMatch {
 
 export function normalizeFifaScoreboard(payload: unknown, now = new Date()): FifaScoreboard {
   const root = payload as { Results?: RawFifaMatch[]; matchDate?: string };
+  const matchDate = root.matchDate ?? localDateKey(now);
   const matches = (root.Results ?? [])
     .map((match) => normalizeFifaMatch(match, now))
     .filter((match) => Boolean(match.id))
+    .filter((match) => localDateKey(new Date(match.startTimeUtc)) === matchDate)
     .sort((left, right) => left.startTimeUtc.localeCompare(right.startTimeUtc));
 
   return {
-    matchDate: root.matchDate ?? localDateKey(now),
+    matchDate,
     matches
   };
 }
@@ -116,16 +118,30 @@ export function normalizeFifaMatchDetails(payload: unknown, now = new Date()): F
   };
 }
 
-export function formatFifaDate(value?: string): string {
+export function formatFifaDate(value?: string, today = new Date()): string {
   if (!value) {
     return 'Today';
   }
 
+  const selected = parseDateKey(value);
+  const current = parseDateKey(localDateKey(today));
+  const dayDelta = Math.round((selected.getTime() - current.getTime()) / 86_400_000);
+
+  if (dayDelta === -1) {
+    return 'Yesterday';
+  }
+  if (dayDelta === 0) {
+    return 'Today';
+  }
+  if (dayDelta === 1) {
+    return 'Tomorrow';
+  }
+
   return new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric'
-  }).format(new Date(`${value}T12:00:00`));
+  }).format(selected);
 }
 
 export function formatFifaKickoff(value: string): string {
@@ -230,14 +246,26 @@ function text(values?: LocalizedText[]): string {
 }
 
 function localDateKey(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
   const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
   }).formatToParts(date);
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
   return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export function browserDateKey(date = new Date()): string {
+  return localDateKey(date);
+}
+
+function parseDateKey(value: string): Date {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day, 12);
 }
 
 function positionName(position?: number): string {

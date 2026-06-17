@@ -2,7 +2,16 @@
   <section class="scoreboard-heading" aria-labelledby="fifa-title">
     <div>
       <p class="eyebrow">FIFA World Cup 2026</p>
-      <h1 id="fifa-title">{{ pageDate() }}</h1>
+      <label class="date-picker" for="fifa-date">
+        <span id="fifa-title">{{ pageDate() }}</span>
+        <input
+          id="fifa-date"
+          type="date"
+          [value]="selectedDate()"
+          (change)="changeDate($event)"
+          aria-label="Select FIFA match date"
+        >
+      </label>
       <p class="updated">{{ updatedLabel() }}</p>
     </div>
 
@@ -52,7 +61,7 @@
     </section>
   } @else {
     <section class="state-panel">
-      <p class="state-kicker">No World Cup matches today</p>
+      <p class="state-kicker">No World Cup matches {{ pageDate().toLowerCase() }}</p>
       <h2>The FIFA schedule is clear.</h2>
       <p>Check back on the next match day. This page refreshes automatically.</p>
     </section>

@@ -8,6 +8,13 @@ describe('FIFA normalizers', () => {
       matchDate: '2026-06-17',
       Results: [
         {
+          IdMatch: '0',
+          Date: '2026-06-17T01:00:00Z',
+          MatchStatus: 0,
+          HomeTeam: { Score: 3, TeamName: [{ Description: 'Argentina' }], Abbreviation: 'ARG' },
+          AwayTeam: { Score: 0, TeamName: [{ Description: 'Algeria' }], Abbreviation: 'ALG' }
+        },
+        {
           IdMatch: '2',
           Date: '2026-06-17T20:00:00Z',
           MatchStatus: 0,
@@ -21,15 +28,23 @@ describe('FIFA normalizers', () => {
           Date: '2026-06-17T16:00:00Z',
           HomeTeam: { TeamName: [{ Description: 'Canada' }], Abbreviation: 'CAN' },
           AwayTeam: { TeamName: [{ Description: 'Japan' }], Abbreviation: 'JPN' }
+        },
+        {
+          IdMatch: '3',
+          Date: '2026-06-18T02:00:00Z',
+          HomeTeam: { TeamName: [{ Description: 'Uzbekistan' }], Abbreviation: 'UZB' },
+          AwayTeam: { TeamName: [{ Description: 'Colombia' }], Abbreviation: 'COL' }
         }
       ]
     }, new Date('2026-06-17T15:00:00Z'));
 
     expect(scoreboard.matchDate).toBe('2026-06-17');
-    expect(scoreboard.matches.map((match) => match.id)).toEqual(['1', '2']);
+    expect(scoreboard.matches.map((match) => match.id)).toEqual(['1', '2', '3']);
     expect(scoreboard.matches[0].status).toBe('scheduled');
     expect(scoreboard.matches[1].status).toBe('final');
     expect(scoreboard.matches[1].homeTeam.score).toBe(2);
+    expect(scoreboard.matches.some((match) => match.homeTeam.code === 'ARG')).toBe(false);
+    expect(scoreboard.matches[2].homeTeam.name).toBe('Uzbekistan');
   });
 
   it('normalizes goals, bookings, substitutions, and lineups', () => {
@@ -77,6 +92,10 @@ describe('FIFA normalizers', () => {
   });
 
   it('formats a FIFA match date label', () => {
-    expect(formatFifaDate('2026-06-17')).toContain('June');
+    const today = new Date('2026-06-17T15:00:00Z');
+    expect(formatFifaDate('2026-06-16', today)).toBe('Yesterday');
+    expect(formatFifaDate('2026-06-17', today)).toBe('Today');
+    expect(formatFifaDate('2026-06-18', today)).toBe('Tomorrow');
+    expect(formatFifaDate('2026-06-19', today)).toContain('Jun');
   });
 });

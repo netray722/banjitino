@@ -1,34 +1,18 @@
-const FIFA_TIME_ZONE = 'America/New_York';
-
-function fifaDateWindow(now = new Date()) {
-  const from = localDateKey(now);
-  const next = localDateKey(addDaysAtNoon(from, 1));
-
+function dateWindow(dateKey = new Date().toISOString().slice(0, 10)) {
   return {
-    from,
-    to: next
+    from: addDays(dateKey, -1),
+    to: addDays(dateKey, 2)
   };
 }
 
 function fifaCalendarTarget() {
-  const { from, to } = fifaDateWindow();
+  const { from, to } = dateWindow();
   return `https://api.fifa.com/api/v3/calendar/matches?language=en&count=50&idCompetition=17&from=${from}&to=${to}`;
 }
 
-function localDateKey(date) {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: FIFA_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(date);
-  const get = (type) => parts.find((part) => part.type === type)?.value ?? '';
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
-function addDaysAtNoon(dateKey, days) {
+function addDays(dateKey, days) {
   const [year, month, day] = dateKey.split('-').map(Number);
-  return new Date(Date.UTC(year, month - 1, day + days, 16));
+  return new Date(Date.UTC(year, month - 1, day + days, 12)).toISOString().slice(0, 10);
 }
 
 module.exports = {

@@ -5,7 +5,7 @@ import { Subject, catchError, interval, merge, of, startWith, switchMap, tap } f
 
 import { FifaDataService } from '../fifa-data.service';
 import { FifaDetailsState, FifaMatch, FifaMatchDetails, FifaScoreboard } from '../fifa.models';
-import { formatFifaDate } from '../fifa.utils';
+import { browserDateKey, formatFifaDate } from '../fifa.utils';
 import { FifaMatchCardComponent } from '../fifa-match-card/fifa-match-card.component';
 
 @Component({
@@ -26,6 +26,7 @@ export class FifaBoardComponent implements OnInit {
   protected readonly expandedMatchId = signal<string | null>(null);
   protected readonly details = signal<Record<string, FifaDetailsState>>({});
   protected readonly lastUpdated = signal<Date | null>(null);
+  protected readonly selectedDate = signal(browserDateKey());
 
   ngOnInit(): void {
     merge(interval(30_000), this.refreshRequest)
@@ -38,7 +39,7 @@ export class FifaBoardComponent implements OnInit {
           }
         }),
         switchMap(() =>
-          this.dataService.getScoreboard().pipe(
+          this.dataService.getScoreboard(this.selectedDate()).pipe(
             catchError(() => {
               this.error.set('FIFA World Cup scores are temporarily unavailable.');
               return of(null);
@@ -71,6 +72,19 @@ export class FifaBoardComponent implements OnInit {
     this.refreshRequest.next();
   }
 
+  protected changeDate(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    if (!value || value === this.selectedDate()) {
+      return;
+    }
+
+    this.selectedDate.set(value);
+    this.expandedMatchId.set(null);
+    this.details.set({});
+    this.scoreboard.set(null);
+    this.refresh();
+  }
+
   protected toggleMatch(match: FifaMatch): void {
     if (this.expandedMatchId() === match.id) {
       this.expandedMatchId.set(null);
@@ -88,7 +102,7 @@ export class FifaBoardComponent implements OnInit {
   }
 
   protected pageDate(): string {
-    return formatFifaDate(this.scoreboard()?.matchDate);
+    return formatFifaDate(this.selectedDate());
   }
 
   protected updatedLabel(): string {

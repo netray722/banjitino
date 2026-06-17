@@ -1,6 +1,4 @@
 const FIFA_API = 'https://api.fifa.com/api/v3';
-const FIFA_TIME_ZONE = 'America/New_York';
-
 export async function fetchFifaJson(path: string, cacheSeconds: number): Promise<Response> {
   const upstream = await fetch(`${FIFA_API}/${path}`, {
     headers: fifaHeaders('application/json')
@@ -41,15 +39,23 @@ export async function fetchFifaImage(path: string, cacheSeconds: number): Promis
   });
 }
 
-export function currentFifaDateWindow(now = new Date()): { matchDate: string; from: string; to: string } {
-  const matchDate = localDateKey(now);
-  const nextDate = localDateKey(addDaysAtNoon(matchDate, 1));
+export function fifaDateWindow(matchDate: string): { matchDate: string; from: string; to: string } {
+  const previousDate = addDays(matchDate, -1);
+  const nextDate = addDays(matchDate, 2);
 
   return {
     matchDate,
-    from: matchDate,
+    from: previousDate,
     to: nextDate
   };
+}
+
+export function defaultDateKey(now = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+export function validDateKey(value: string | null): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
 }
 
 export function withMatchDate(payload: unknown, matchDate: string): unknown {
@@ -64,18 +70,7 @@ function fifaHeaders(accept: string): HeadersInit {
   };
 }
 
-function localDateKey(date: Date): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: FIFA_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(date);
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
-  return `${get('year')}-${get('month')}-${get('day')}`;
-}
-
-function addDaysAtNoon(dateKey: string, days: number): Date {
+function addDays(dateKey: string, days: number): string {
   const [year, month, day] = dateKey.split('-').map(Number);
-  return new Date(Date.UTC(year, month - 1, day + days, 16));
+  return new Date(Date.UTC(year, month - 1, day + days, 12)).toISOString().slice(0, 10);
 }
