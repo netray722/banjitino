@@ -1,0 +1,65 @@
+<main class="page-shell">
+  <section class="scoreboard-heading" aria-labelledby="fifa-title">
+    <div>
+      <p class="eyebrow">FIFA World Cup 2026</p>
+      <h1 id="fifa-title">{{ pageDate() }}</h1>
+      <p class="updated">{{ updatedLabel() }}</p>
+    </div>
+
+    <div class="board-actions">
+      @if (scoreboard()?.matches?.length) {
+        <div class="game-count">
+          {{ scoreboard()!.matches.length }} {{ scoreboard()!.matches.length === 1 ? 'match' : 'matches' }}
+        </div>
+      }
+
+      <button
+        class="refresh-button"
+        type="button"
+        [class.is-spinning]="refreshing()"
+        [disabled]="refreshing()"
+        (click)="refresh()"
+        aria-label="Refresh FIFA scores"
+        title="Refresh FIFA scores"
+      >
+        <svg lucideRefreshCw aria-hidden="true"></svg>
+      </button>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <section class="match-list" aria-label="Loading FIFA matches">
+      @for (placeholder of [1, 2, 3]; track placeholder) {
+        <div class="match-skeleton"></div>
+      }
+    </section>
+  } @else if (error() && !scoreboard()) {
+    <section class="state-panel error-panel">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="refresh()">Try again</button>
+    </section>
+  } @else if (scoreboard()?.matches?.length) {
+    <section class="match-list" aria-label="Today's FIFA World Cup matches">
+      @for (match of scoreboard()!.matches; track match.id) {
+        <app-fifa-match-card
+          [match]="match"
+          [expanded]="expandedMatchId() === match.id"
+          [detailsState]="detailsFor(match.id)"
+          (toggle)="toggleMatch(match)"
+          (retry)="retryDetails(match)"
+        />
+      }
+    </section>
+  } @else {
+    <section class="state-panel">
+      <p class="state-kicker">No World Cup matches today</p>
+      <h2>The FIFA schedule is clear.</h2>
+      <p>Check back on the next match day. This page refreshes automatically.</p>
+    </section>
+  }
+</main>
+
+<footer>
+  <span>FIFA match data refreshes every 30 seconds.</span>
+  <span>Data provided by FIFA public feeds.</span>
+</footer>

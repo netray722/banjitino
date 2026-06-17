@@ -1,0 +1,77 @@
+<div class="match-box">
+  <section class="summary-grid">
+    <div>
+      <span>Venue</span>
+      <strong>{{ details.venue || 'TBD' }}</strong>
+      <small>{{ details.city }}</small>
+    </div>
+    <div>
+      <span>Attendance</span>
+      <strong>{{ details.attendance || 'TBD' }}</strong>
+    </div>
+    <div>
+      <span>Tactics</span>
+      <strong>{{ details.homeTeam.code }} {{ details.homeTeam.tactics || '-' }}</strong>
+      <small>{{ details.awayTeam.code }} {{ details.awayTeam.tactics || '-' }}</small>
+    </div>
+  </section>
+
+  <section class="event-grid">
+    <div class="event-panel">
+      <h3>Goals</h3>
+      @if (hasEvents(details.goals)) {
+        @for (event of details.goals; track event.minute + event.player + event.teamCode) {
+          <p><strong>{{ event.minute }}</strong> {{ event.teamCode }} - {{ event.player }} <span>{{ event.detail }}</span></p>
+        }
+      } @else {
+        <p class="empty">No goals recorded.</p>
+      }
+    </div>
+
+    <div class="event-panel">
+      <h3>Cards</h3>
+      @if (hasEvents(details.bookings)) {
+        @for (event of details.bookings; track event.minute + event.player + event.teamCode) {
+          <p><strong>{{ event.minute }}</strong> {{ event.teamCode }} - {{ event.player }} <span>{{ event.detail }}</span></p>
+        }
+      } @else {
+        <p class="empty">No cards recorded.</p>
+      }
+    </div>
+
+    <div class="event-panel wide">
+      <h3>Substitutions</h3>
+      @if (hasEvents(details.substitutions)) {
+        @for (event of details.substitutions; track event.minute + event.player + event.teamCode) {
+          <p><strong>{{ event.minute || '-' }}</strong> {{ event.teamCode }} - {{ event.player }} <span>{{ event.detail }}</span></p>
+        }
+      } @else {
+        <p class="empty">No substitutions recorded.</p>
+      }
+    </div>
+  </section>
+
+  <section class="lineups">
+    <div>
+      <h3>{{ details.homeTeam.name }}</h3>
+      @for (player of details.homeTeam.players; track player.id) {
+        <p>
+          <strong>#{{ player.shirtNumber }}</strong>
+          {{ player.shortName }}
+          <span>{{ player.position }}{{ player.captain ? ' - C' : '' }}{{ player.starter ? '' : ' - Sub' }}</span>
+        </p>
+      }
+    </div>
+
+    <div>
+      <h3>{{ details.awayTeam.name }}</h3>
+      @for (player of details.awayTeam.players; track player.id) {
+        <p>
+          <strong>#{{ player.shirtNumber }}</strong>
+          {{ player.shortName }}
+          <span>{{ player.position }}{{ player.captain ? ' - C' : '' }}{{ player.starter ? '' : ' - Sub' }}</span>
+        </p>
+      }
+    </div>
+  </section>
+</div>

@@ -1,0 +1,253 @@
+.match-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.match-card:hover,
+.match-card.is-expanded {
+  border-color: #b8bec8;
+  box-shadow: 0 8px 24px rgba(28, 32, 40, 0.06);
+}
+
+.match-summary {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(135px, 0.8fr) minmax(340px, 1.5fr) minmax(100px, 0.6fr) 24px;
+  align-items: center;
+  gap: 22px;
+  padding: 18px 20px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.match-meta {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.status.live {
+  color: var(--live);
+}
+
+.status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 4px rgba(11, 143, 114, 0.12);
+}
+
+.context,
+.venue {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matchup {
+  display: grid;
+  gap: 10px;
+}
+
+.team-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 40px minmax(130px, 1fr) 44px;
+  align-items: center;
+  gap: 12px;
+}
+
+.team-flag {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border-radius: 50%;
+  background: #f4f5f7;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.team-flag img {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  inset: 0;
+  object-fit: contain;
+}
+
+.team-name {
+  min-width: 0;
+}
+
+.team-name strong,
+.team-name span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-name strong {
+  font-size: 0.98rem;
+}
+
+.team-name span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.score {
+  text-align: right;
+  font-size: 1.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  width: 19px;
+  height: 19px;
+  transition: transform 150ms ease;
+}
+
+.is-expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.match-details {
+  border-top: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.scheduled-message,
+.details-error {
+  min-height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: left;
+}
+
+.scheduled-message svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.scheduled-message p,
+.details-error p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.details-loading {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.details-loading span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 900ms infinite alternate;
+}
+
+.details-loading p {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.details-error {
+  flex-direction: column;
+  text-align: center;
+}
+
+.details-error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: white;
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.details-error svg {
+  width: 15px;
+  height: 15px;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.25;
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 760px) {
+  .match-summary {
+    grid-template-columns: 1fr 22px;
+    gap: 14px;
+    padding: 15px 16px;
+  }
+
+  .match-meta,
+  .matchup,
+  .venue {
+    grid-column: 1;
+  }
+
+  .match-meta {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .context {
+    text-align: right;
+  }
+
+  .team-row {
+    grid-template-columns: 40px minmax(100px, 1fr) 46px;
+    gap: 9px;
+  }
+
+  .chevron {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+}

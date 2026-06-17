@@ -1,0 +1,16 @@
+import { Component, Input } from '@angular/core';
+
+import { FifaEvent, FifaMatchDetails } from '../fifa.models';
+
+@Component({
+  selector: 'app-fifa-match-details',
+  templateUrl: './fifa-match-details.component.html',
+  styleUrl: './fifa-match-details.component.css'
+})
+export class FifaMatchDetailsComponent {
+  @Input({ required: true }) details!: FifaMatchDetails;
+
+  protected hasEvents(events: FifaEvent[]): boolean {
+    return events.length > 0;
+  }
+}
