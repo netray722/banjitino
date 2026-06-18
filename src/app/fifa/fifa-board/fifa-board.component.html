@@ -1,17 +1,26 @@
-<main class="page-shell">
+<main class="page-shell fifa-page">
   <section class="scoreboard-heading" aria-labelledby="fifa-title">
     <div>
       <p class="eyebrow">FIFA World Cup 2026</p>
-      <label class="date-picker" for="fifa-date">
-        <span id="fifa-title">{{ pageDate() }}</span>
+      <div class="date-picker-wrap">
+        <button
+          class="date-picker"
+          type="button"
+          (click)="openDatePicker(dateInput)"
+          aria-label="Select FIFA match date"
+        >
+          <h1 id="fifa-title">{{ pageDate() }}</h1>
+        </button>
         <input
+          #dateInput
+          class="date-input"
           id="fifa-date"
           type="date"
           [value]="selectedDate()"
           (change)="changeDate($event)"
           aria-label="Select FIFA match date"
         >
-      </label>
+      </div>
       <p class="updated">{{ updatedLabel() }}</p>
     </div>
 

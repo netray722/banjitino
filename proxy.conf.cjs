@@ -5,9 +5,16 @@ function dateWindow(dateKey = new Date().toISOString().slice(0, 10)) {
   };
 }
 
-function fifaCalendarTarget() {
-  const { from, to } = dateWindow();
-  return `https://api.fifa.com/api/v3/calendar/matches?language=en&count=50&idCompetition=17&from=${from}&to=${to}`;
+function fifaCalendarPath(request) {
+  const dateKey = selectedDateKey(request);
+  const { from, to } = dateWindow(dateKey);
+  return `/api/v3/calendar/matches?language=en&count=50&idCompetition=17&from=${from}&to=${to}`;
+}
+
+function selectedDateKey(request) {
+  const url = new URL(request.url, 'http://localhost');
+  const date = url.searchParams.get('date');
+  return /^\d{4}-\d{2}-\d{2}$/.test(date ?? '') ? date : undefined;
 }
 
 function addDays(dateKey, days) {
@@ -53,10 +60,10 @@ module.exports = {
     }
   },
   '/api/fifa/scoreboard': {
-    target: fifaCalendarTarget(),
+    target: 'https://api.fifa.com',
     secure: true,
     changeOrigin: true,
-    ignorePath: true,
+    pathRewrite: (_path, request) => fifaCalendarPath(request),
     headers: {
       Referer: 'https://www.fifa.com/',
       'User-Agent': 'Mozilla/5.0'

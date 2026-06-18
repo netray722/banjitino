@@ -1,8 +1,26 @@
-<main class="page-shell">
+<main class="page-shell nba-page">
   <section class="scoreboard-heading" aria-labelledby="scoreboard-title">
     <div>
       <p class="eyebrow">NBA games</p>
-      <h1 id="scoreboard-title">{{ pageDate() }}</h1>
+      <div class="date-picker-wrap">
+        <button
+          class="date-picker"
+          type="button"
+          (click)="openDatePicker(dateInput)"
+          aria-label="Select NBA game date"
+        >
+          <h1 id="scoreboard-title">{{ pageDate() }}</h1>
+        </button>
+        <input
+          #dateInput
+          class="date-input"
+          id="nba-date"
+          type="date"
+          [value]="selectedDate()"
+          (change)="changeDate($event)"
+          aria-label="Select NBA game date"
+        >
+      </div>
       <p class="updated">{{ updatedLabel() }}</p>
     </div>
 

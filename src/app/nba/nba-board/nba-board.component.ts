@@ -6,7 +6,7 @@ import { Subject, catchError, interval, merge, of, startWith, switchMap, tap } f
 import { GameCardComponent } from '../../game-card/game-card.component';
 import { BoxScore, BoxScoreState, NbaGame, Scoreboard } from '../../nba.models';
 import { NbaDataService } from '../../nba-data.service';
-import { formatGameDate } from '../../nba.utils';
+import { browserDateKey, formatGameDate } from '../../nba.utils';
 
 @Component({
   selector: 'app-nba-board',
@@ -26,6 +26,7 @@ export class NbaBoardComponent implements OnInit {
   protected readonly expandedGameId = signal<string | null>(null);
   protected readonly boxScores = signal<Record<string, BoxScoreState>>({});
   protected readonly lastUpdated = signal<Date | null>(null);
+  protected readonly selectedDate = signal(browserDateKey());
 
   ngOnInit(): void {
     merge(interval(30_000), this.refreshRequest)
@@ -38,7 +39,7 @@ export class NbaBoardComponent implements OnInit {
           }
         }),
         switchMap(() =>
-          this.dataService.getScoreboard().pipe(
+          this.dataService.getScoreboard(this.scoreboardDateParam()).pipe(
             catchError(() => {
               this.error.set('Live scores are temporarily unavailable. Try again shortly.');
               return of(null);
@@ -71,6 +72,30 @@ export class NbaBoardComponent implements OnInit {
     this.refreshRequest.next();
   }
 
+  protected openDatePicker(input: HTMLInputElement): void {
+    input.focus();
+
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+      return;
+    }
+
+    input.click();
+  }
+
+  protected changeDate(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    if (!value || value === this.selectedDate()) {
+      return;
+    }
+
+    this.selectedDate.set(value);
+    this.expandedGameId.set(null);
+    this.boxScores.set({});
+    this.scoreboard.set(null);
+    this.refresh();
+  }
+
   protected toggleGame(game: NbaGame): void {
     if (this.expandedGameId() === game.id) {
       this.expandedGameId.set(null);
@@ -88,7 +113,7 @@ export class NbaBoardComponent implements OnInit {
   }
 
   protected pageDate(): string {
-    return formatGameDate(this.scoreboard()?.gameDate);
+    return formatGameDate(this.selectedDate());
   }
 
   protected updatedLabel(): string {
@@ -113,13 +138,18 @@ export class NbaBoardComponent implements OnInit {
     return this.scoreboard()?.games.find((game) => game.id === id);
   }
 
+  private scoreboardDateParam(): string | undefined {
+    const selectedDate = this.selectedDate();
+    return selectedDate === browserDateKey() ? undefined : selectedDate;
+  }
+
   private loadBoxScore(game: NbaGame, background = false): void {
     if (!background) {
       this.setBoxScoreState(game.id, { data: null, loading: true, error: null });
     }
 
     this.dataService
-      .getBoxScore(game.id)
+      .getBoxScore(game)
       .pipe(
         catchError(() => {
           this.setBoxScoreState(game.id, {

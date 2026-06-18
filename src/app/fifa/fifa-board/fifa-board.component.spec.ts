@@ -49,4 +49,33 @@ describe('FifaBoardComponent', () => {
     expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2026-06-18');
     fixture.destroy();
   });
+
+  it('opens the native date picker from the desktop date button', async () => {
+    const dataService = {
+      getScoreboard: vi.fn(() => of(fifaScoreboardFixture)),
+      getMatchDetails: vi.fn(() => of(fifaDetailsFixture))
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [FifaBoardComponent],
+      providers: [{ provide: FifaDataService, useValue: dataService }]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FifaBoardComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dateInput = fixture.nativeElement.querySelector('#fifa-date') as HTMLInputElement & {
+      showPicker: () => void;
+    };
+    const showPicker = vi.fn();
+    dateInput.showPicker = showPicker;
+
+    const dateButton = fixture.nativeElement.querySelector('.date-picker') as HTMLButtonElement;
+    dateButton.click();
+
+    expect(showPicker).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(dateInput);
+    fixture.destroy();
+  });
 });

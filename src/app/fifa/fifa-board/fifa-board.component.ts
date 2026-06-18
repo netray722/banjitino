@@ -72,6 +72,17 @@ export class FifaBoardComponent implements OnInit {
     this.refreshRequest.next();
   }
 
+  protected openDatePicker(input: HTMLInputElement): void {
+    input.focus();
+
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+      return;
+    }
+
+    input.click();
+  }
+
   protected changeDate(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     if (!value || value === this.selectedDate()) {

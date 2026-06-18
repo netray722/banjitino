@@ -12,9 +12,23 @@
     <div>
       <span>Tactics</span>
       <strong>{{ details.homeTeam.code }} {{ details.homeTeam.tactics || '-' }}</strong>
-      <small>{{ details.awayTeam.code }} {{ details.awayTeam.tactics || '-' }}</small>
+      <strong>{{ details.awayTeam.code }} {{ details.awayTeam.tactics || '-' }}</strong>
     </div>
   </section>
+
+  @if (details.facts.length) {
+    <section class="facts-panel">
+      <h3>Match facts</h3>
+      <div class="facts-grid">
+        @for (fact of details.facts; track fact.label) {
+          <div>
+            <span>{{ fact.label }}</span>
+            <strong>{{ fact.value }}</strong>
+          </div>
+        }
+      </div>
+    </section>
+  }
 
   <section class="event-grid">
     <div class="event-panel">
@@ -51,27 +65,21 @@
     </div>
   </section>
 
-  <section class="lineups">
-    <div>
-      <h3>{{ details.homeTeam.name }}</h3>
-      @for (player of details.homeTeam.players; track player.id) {
-        <p>
-          <strong>#{{ player.shirtNumber }}</strong>
-          {{ player.shortName }}
-          <span>{{ player.position }}{{ player.captain ? ' - C' : '' }}{{ player.starter ? '' : ' - Sub' }}</span>
-        </p>
-      }
-    </div>
+  @if (details.stats.length) {
+    <section class="team-stats">
+      <header>
+        <strong>{{ details.homeTeam.code }}</strong>
+        <span>Team stats</span>
+        <strong>{{ details.awayTeam.code }}</strong>
+      </header>
 
-    <div>
-      <h3>{{ details.awayTeam.name }}</h3>
-      @for (player of details.awayTeam.players; track player.id) {
-        <p>
-          <strong>#{{ player.shirtNumber }}</strong>
-          {{ player.shortName }}
-          <span>{{ player.position }}{{ player.captain ? ' - C' : '' }}{{ player.starter ? '' : ' - Sub' }}</span>
-        </p>
+      @for (stat of details.stats; track stat.label) {
+        <div class="stat-row">
+          <strong [class.stat-winner]="stat.winner === 'home'">{{ stat.homeValue }}</strong>
+          <span>{{ stat.label }}</span>
+          <strong [class.stat-winner]="stat.winner === 'away'">{{ stat.awayValue }}</strong>
+        </div>
       }
-    </div>
-  </section>
+    </section>
+  }
 </div>

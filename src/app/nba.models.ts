@@ -10,10 +10,12 @@ export interface TeamSummary {
   score: number;
   color: string;
   periods: number[];
+  logoUrl?: string;
 }
 
 export interface NbaGame {
   id: string;
+  source: 'nba' | 'espn';
   status: GameStatus;
   statusText: string;
   period: number;

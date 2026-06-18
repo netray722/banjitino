@@ -44,6 +44,18 @@ export interface FifaEvent {
   detail: string;
 }
 
+export interface FifaTeamStat {
+  label: string;
+  homeValue: string;
+  awayValue: string;
+  winner: 'home' | 'away' | null;
+}
+
+export interface FifaMatchFact {
+  label: string;
+  value: string;
+}
+
 export interface FifaMatchDetails {
   id: string;
   statusText: string;
@@ -52,6 +64,8 @@ export interface FifaMatchDetails {
   attendance: string;
   homeTeam: FifaTeam & { tactics: string; players: FifaPlayer[] };
   awayTeam: FifaTeam & { tactics: string; players: FifaPlayer[] };
+  facts: FifaMatchFact[];
+  stats: FifaTeamStat[];
   goals: FifaEvent[];
   bookings: FifaEvent[];
   substitutions: FifaEvent[];

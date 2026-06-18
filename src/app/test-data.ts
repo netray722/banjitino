@@ -2,6 +2,7 @@ import { BoxScore, NbaGame, Scoreboard } from './nba.models';
 
 export const scheduledGame: NbaGame = {
   id: '0022500001',
+  source: 'nba',
   status: 'scheduled',
   statusText: '7:30 pm ET',
   period: 0,

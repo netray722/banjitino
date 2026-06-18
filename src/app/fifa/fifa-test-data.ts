@@ -76,6 +76,32 @@ export const fifaDetailsFixture: FifaMatchDetails = {
     tactics: '4-4-2',
     players: []
   },
+  facts: [{
+    label: 'Match',
+    value: 'No. 19'
+  }, {
+    label: 'Stage',
+    value: 'Group stage'
+  }, {
+    label: 'Referee',
+    value: 'Example Referee'
+  }],
+  stats: [{
+    label: 'Shots',
+    homeValue: '12',
+    awayValue: '8',
+    winner: 'home'
+  }, {
+    label: 'Shots on target',
+    homeValue: '6',
+    awayValue: '2',
+    winner: 'home'
+  }, {
+    label: 'Possession',
+    homeValue: '58%',
+    awayValue: '42%',
+    winner: 'home'
+  }],
   goals: [{
     minute: "11'",
     teamCode: 'ARG',

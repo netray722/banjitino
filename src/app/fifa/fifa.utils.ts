@@ -1,4 +1,4 @@
-import { FifaEvent, FifaMatch, FifaMatchDetails, FifaMatchStatus, FifaPlayer, FifaScoreboard, FifaTeam } from './fifa.models';
+import { FifaEvent, FifaMatch, FifaMatchDetails, FifaMatchFact, FifaMatchStatus, FifaPlayer, FifaScoreboard, FifaTeam, FifaTeamStat } from './fifa.models';
 
 interface LocalizedText {
   Description?: string;
@@ -16,6 +16,8 @@ interface RawFifaTeam {
   Goals?: RawFifaEvent[];
   Bookings?: RawFifaEvent[];
   Substitutions?: RawFifaSubstitution[];
+  Statistics?: unknown;
+  MatchStatistics?: unknown;
 }
 
 interface RawFifaPlayer {
@@ -45,8 +47,13 @@ interface RawFifaSubstitution {
 interface RawFifaMatch {
   IdMatch?: string;
   Date?: string;
+  LocalDate?: string;
   MatchTime?: string;
   MatchStatus?: number;
+  MatchNumber?: number | string;
+  Period?: number | string;
+  ResultType?: number;
+  Winner?: string;
   Home?: RawFifaTeam;
   Away?: RawFifaTeam;
   HomeTeam?: RawFifaTeam;
@@ -60,7 +67,33 @@ interface RawFifaMatch {
     CityName?: LocalizedText[];
   };
   Attendance?: string;
+  Officials?: RawFifaOfficial | RawFifaOfficial[];
+  Weather?: RawFifaWeather;
+  Statistics?: unknown;
+  MatchStatistics?: unknown;
+  HomeTeamStatistics?: unknown;
+  AwayTeamStatistics?: unknown;
 }
+
+interface RawFifaOfficial {
+  Name?: LocalizedText[];
+  NameShort?: LocalizedText[];
+  OfficialType?: number;
+  TypeLocalized?: LocalizedText[];
+}
+
+interface RawFifaWeather {
+  Humidity?: number | string | null;
+  Temperature?: number | string | null;
+  WindSpeed?: number | string | null;
+  TypeLocalized?: LocalizedText[];
+}
+
+const STAT_DEFINITIONS = [
+  { label: 'Shots', aliases: ['shots', 'total shots', 'total attempts', 'attempts on goal'] },
+  { label: 'Shots on target', aliases: ['shots on target', 'attempts on target', 'on target'] },
+  { label: 'Possession', aliases: ['possession', 'ball possession'], suffix: '%' }
+];
 
 export function normalizeFifaScoreboard(payload: unknown, now = new Date()): FifaScoreboard {
   const root = payload as { Results?: RawFifaMatch[]; matchDate?: string };
@@ -103,6 +136,8 @@ export function normalizeFifaMatchDetails(payload: unknown, now = new Date()): F
       tactics: match.AwayTeam?.Tactics ?? match.Away?.Tactics ?? '',
       players: normalizePlayers(match.AwayTeam ?? match.Away)
     },
+    facts: normalizeFacts(match, home, away),
+    stats: normalizeStats(match),
     goals: [
       ...normalizeEvents(match.HomeTeam?.Goals, home.code, playerLookup, goalType),
       ...normalizeEvents(match.AwayTeam?.Goals, away.code, playerLookup, goalType)
@@ -215,6 +250,236 @@ function normalizeSubstitutions(events: RawFifaSubstitution[] | undefined, teamC
     player: text(event.PlayerOnName),
     detail: `On for ${text(event.PlayerOffName) || 'teammate'}`
   }));
+}
+
+function normalizeStats(match: RawFifaMatch): FifaTeamStat[] {
+  return STAT_DEFINITIONS.flatMap((definition) => {
+    const values = findStatValues(match, definition.aliases);
+    if (!hasStatValue(values.home) && !hasStatValue(values.away)) {
+      return [];
+    }
+
+    return [{
+      label: definition.label,
+      homeValue: formatStatValue(values.home, definition.suffix),
+      awayValue: formatStatValue(values.away, definition.suffix),
+      winner: statWinner(values.home, values.away)
+    }];
+  });
+}
+
+function normalizeFacts(match: RawFifaMatch, home: FifaTeam, away: FifaTeam): FifaMatchFact[] {
+  return [
+    fact('Match', match.MatchNumber ? `No. ${match.MatchNumber}` : ''),
+    fact('Stage', text(match.StageName)),
+    fact('Group', text(match.GroupName)),
+    fact('Winner', winnerName(match.Winner, home, away)),
+    fact('Referee', refereeName(match.Officials)),
+    fact('Weather', weatherSummary(match.Weather)),
+    fact('Local kickoff', match.LocalDate ? formatFifaKickoff(match.LocalDate) : '')
+  ].filter((item): item is FifaMatchFact => Boolean(item));
+}
+
+function fact(label: string, value: string): FifaMatchFact | null {
+  return value ? { label, value } : null;
+}
+
+function winnerName(winnerId: string | undefined, home: FifaTeam, away: FifaTeam): string {
+  if (!winnerId) {
+    return '';
+  }
+  if (winnerId === home.id) {
+    return home.name || home.code;
+  }
+  if (winnerId === away.id) {
+    return away.name || away.code;
+  }
+  return '';
+}
+
+function refereeName(officials: RawFifaOfficial | RawFifaOfficial[] | undefined): string {
+  const officialList = Array.isArray(officials) ? officials : officials ? [officials] : [];
+  const referee = officialList.find((official) =>
+    official.OfficialType === 1 || text(official.TypeLocalized).toLowerCase() === 'referee'
+  ) ?? officialList[0];
+
+  return text(referee?.NameShort) || text(referee?.Name);
+}
+
+function weatherSummary(weather: RawFifaWeather | undefined): string {
+  if (!weather) {
+    return '';
+  }
+
+  const parts = [
+    text(weather.TypeLocalized),
+    weather.Temperature !== null && weather.Temperature !== undefined && weather.Temperature !== ''
+      ? `${weather.Temperature} deg`
+      : '',
+    weather.Humidity !== null && weather.Humidity !== undefined && weather.Humidity !== ''
+      ? `${weather.Humidity}% humidity`
+      : '',
+    weather.WindSpeed !== null && weather.WindSpeed !== undefined && weather.WindSpeed !== ''
+      ? `${weather.WindSpeed} wind`
+      : ''
+  ].filter(Boolean);
+
+  return parts.join(' - ');
+}
+
+function findStatValues(match: RawFifaMatch, aliases: string[]): { home: unknown; away: unknown } {
+  const sharedSources = [
+    match.Statistics,
+    match.MatchStatistics,
+    match.HomeTeam?.Statistics,
+    match.HomeTeam?.MatchStatistics,
+    match.AwayTeam?.Statistics,
+    match.AwayTeam?.MatchStatistics,
+    match
+  ];
+  for (const source of sharedSources) {
+    const values = findSharedStat(source, aliases);
+    if (values.home !== undefined || values.away !== undefined) {
+      return values;
+    }
+  }
+
+  return {
+    home: findTeamStat(match.HomeTeamStatistics ?? match.HomeTeam, aliases),
+    away: findTeamStat(match.AwayTeamStatistics ?? match.AwayTeam, aliases)
+  };
+}
+
+function findSharedStat(source: unknown, aliases: string[]): { home: unknown; away: unknown } {
+  if (!source || typeof source !== 'object') {
+    return { home: undefined, away: undefined };
+  }
+
+  if (Array.isArray(source)) {
+    for (const item of source) {
+      const values = findSharedStat(item, aliases);
+      if (values.home !== undefined || values.away !== undefined) {
+        return values;
+      }
+    }
+    return { home: undefined, away: undefined };
+  }
+
+  const record = source as Record<string, unknown>;
+  const statName = statLabel(record);
+  if (statName && aliases.some((alias) => sameStat(statName, alias))) {
+    return {
+      home: firstValue(record, ['Home', 'HomeValue', 'HomeTeamValue', 'ValueHome', 'HomeTeam']),
+      away: firstValue(record, ['Away', 'AwayValue', 'AwayTeamValue', 'ValueAway', 'AwayTeam'])
+    };
+  }
+
+  const directHome = firstMatchingProperty(record, aliases, ['Home', 'HomeValue', 'HomeTeam']);
+  const directAway = firstMatchingProperty(record, aliases, ['Away', 'AwayValue', 'AwayTeam']);
+  if (directHome !== undefined || directAway !== undefined) {
+    return { home: directHome, away: directAway };
+  }
+
+  return { home: undefined, away: undefined };
+}
+
+function findTeamStat(source: unknown, aliases: string[]): unknown {
+  if (!source || typeof source !== 'object') {
+    return undefined;
+  }
+
+  if (Array.isArray(source)) {
+    for (const item of source) {
+      const value = findTeamStat(item, aliases);
+      if (value !== undefined) {
+        return value;
+      }
+    }
+    return undefined;
+  }
+
+  const record = source as Record<string, unknown>;
+  const statName = statLabel(record);
+  if (statName && aliases.some((alias) => sameStat(statName, alias))) {
+    return firstValue(record, ['Value', 'StatValue', 'Total', 'Amount']);
+  }
+
+  return firstMatchingProperty(record, aliases);
+}
+
+function statLabel(record: Record<string, unknown>): string {
+  const value = firstValue(record, ['Name', 'Label', 'Type', 'Statistic', 'StatName', 'Description']);
+  return typeof value === 'string' ? value : '';
+}
+
+function firstValue(record: Record<string, unknown>, keys: string[]): unknown {
+  for (const key of keys) {
+    if (record[key] !== undefined) {
+      return record[key];
+    }
+  }
+  return undefined;
+}
+
+function firstMatchingProperty(record: Record<string, unknown>, aliases: string[], wrappers: string[] = []): unknown {
+  for (const [key, value] of Object.entries(record)) {
+    if (aliases.some((alias) => sameStat(key, alias))) {
+      if (!wrappers.length) {
+        return value;
+      }
+      return unwrapTeamValue(value, wrappers);
+    }
+  }
+  return undefined;
+}
+
+function unwrapTeamValue(value: unknown, keys: string[]): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+  return firstValue(value as Record<string, unknown>, keys) ?? value;
+}
+
+function sameStat(left: string, right: string): boolean {
+  return normalizeStatKey(left) === normalizeStatKey(right);
+}
+
+function normalizeStatKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function formatStatValue(value: unknown, suffix = ''): string {
+  if (!hasStatValue(value)) {
+    return '-';
+  }
+
+  const textValue = String(value);
+  if (suffix && !textValue.includes(suffix)) {
+    return `${textValue}${suffix}`;
+  }
+  return textValue;
+}
+
+function hasStatValue(value: unknown): boolean {
+  return value !== undefined && value !== null && value !== '';
+}
+
+function statWinner(home: unknown, away: unknown): 'home' | 'away' | null {
+  const homeNumber = statNumber(home);
+  const awayNumber = statNumber(away);
+  if (homeNumber === null || awayNumber === null || homeNumber === awayNumber) {
+    return null;
+  }
+  return homeNumber > awayNumber ? 'home' : 'away';
+}
+
+function statNumber(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(String(value).replace(/[^\d.-]/g, ''));
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 function matchStatus(match: RawFifaMatch, now: Date): FifaMatchStatus {

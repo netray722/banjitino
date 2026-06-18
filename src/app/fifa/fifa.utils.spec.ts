@@ -51,7 +51,11 @@ describe('FIFA normalizers', () => {
     const details = normalizeFifaMatchDetails({
       IdMatch: '400021496',
       MatchStatus: 0,
+      MatchNumber: 19,
+      Winner: '43976',
+      LocalDate: '2026-06-17T16:00:00Z',
       HomeTeam: {
+        IdTeam: '43976',
         Score: 3,
         TeamName: [{ Description: 'Argentina' }],
         Abbreviation: 'ARG',
@@ -65,6 +69,19 @@ describe('FIFA normalizers', () => {
           Position: 3,
           Status: 1
         }],
+        Statistics: [{
+          Name: 'Total attempts',
+          HomeValue: 12,
+          AwayValue: 8
+        }, {
+          Name: 'Shots on target',
+          HomeValue: 6,
+          AwayValue: 2
+        }, {
+          Name: 'Ball possession',
+          HomeValue: 58,
+          AwayValue: 42
+        }],
         Goals: [{ Minute: "14'", IdPlayer: '10', Type: 3 }],
         Bookings: [{ Minute: "70'", IdPlayer: '10', Type: 1 }],
         Substitutions: [{
@@ -74,13 +91,26 @@ describe('FIFA normalizers', () => {
         }]
       },
       AwayTeam: {
+        IdTeam: '43938',
         Score: 0,
         TeamName: [{ Description: 'Tunisia' }],
         Abbreviation: 'TUN',
         Players: []
       },
+      GroupName: [{ Description: 'Group C' }],
+      StageName: [{ Description: 'Group stage' }],
       Stadium: { Name: [{ Description: 'Mercedes-Benz Stadium' }], CityName: [{ Description: 'Atlanta' }] },
-      Attendance: '74500'
+      Attendance: '74500',
+      Officials: {
+        OfficialType: 1,
+        NameShort: [{ Description: 'Example Referee' }],
+        TypeLocalized: [{ Description: 'Referee' }]
+      },
+      Weather: {
+        Temperature: 72,
+        Humidity: 55,
+        TypeLocalized: [{ Description: 'Clear' }]
+      }
     });
 
     expect(details.homeTeam.players[0].captain).toBe(true);
@@ -89,6 +119,20 @@ describe('FIFA normalizers', () => {
     expect(details.bookings[0].detail).toBe('Yellow card');
     expect(details.substitutions[0].detail).toBe('On for E. Forward');
     expect(details.venue).toBe('Mercedes-Benz Stadium');
+    expect(details.facts).toEqual([
+      { label: 'Match', value: 'No. 19' },
+      { label: 'Stage', value: 'Group stage' },
+      { label: 'Group', value: 'Group C' },
+      { label: 'Winner', value: 'Argentina' },
+      { label: 'Referee', value: 'Example Referee' },
+      { label: 'Weather', value: 'Clear - 72 deg - 55% humidity' },
+      { label: 'Local kickoff', value: '12:00 PM EDT' }
+    ]);
+    expect(details.stats).toEqual([
+      { label: 'Shots', homeValue: '12', awayValue: '8', winner: 'home' },
+      { label: 'Shots on target', homeValue: '6', awayValue: '2', winner: 'home' },
+      { label: 'Possession', homeValue: '58%', awayValue: '42%', winner: 'home' }
+    ]);
   });
 
   it('formats a FIFA match date label', () => {

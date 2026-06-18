@@ -35,7 +35,28 @@ describe('FifaMatchCardComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Mercedes-Benz Stadium');
-    expect(fixture.nativeElement.textContent).toContain('E. Forward');
+    expect(fixture.nativeElement.textContent).toContain('Team stats');
+    expect(fixture.nativeElement.textContent).toContain('Shots on target');
+  });
+
+  it('hides the team stats section when FIFA does not provide stats', async () => {
+    await TestBed.configureTestingModule({
+      imports: [FifaMatchCardComponent]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FifaMatchCardComponent);
+    fixture.componentRef.setInput('match', finalFifaMatch);
+    fixture.componentRef.setInput('expanded', true);
+    fixture.componentRef.setInput('detailsState', {
+      data: { ...fifaDetailsFixture, stats: [] },
+      loading: false,
+      error: null
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Match facts');
+    expect(fixture.nativeElement.textContent).not.toContain('Team stats');
+    expect(fixture.nativeElement.textContent).not.toContain('Team stats unavailable');
   });
 
   it('emits card actions and hides a broken flag image', async () => {

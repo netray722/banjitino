@@ -35,7 +35,7 @@ export class GameCardComponent {
   }
 
   protected logoUrl(team: TeamSummary): string {
-    return `/api/nba/logo/${team.id}`;
+    return team.logoUrl ?? `/api/nba/logo/${team.id}`;
   }
 
   protected hideBrokenImage(event: Event): void {

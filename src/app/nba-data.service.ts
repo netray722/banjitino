@@ -2,20 +2,36 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
-import { BoxScore, Scoreboard } from './nba.models';
+import { BoxScore, NbaGame, Scoreboard } from './nba.models';
 import { normalizeBoxScore, normalizeScoreboard } from './nba.utils';
 
 @Injectable({ providedIn: 'root' })
 export class NbaDataService {
   private readonly http = inject(HttpClient);
 
-  getScoreboard(): Observable<Scoreboard> {
+  getScoreboard(gameDate?: string): Observable<Scoreboard> {
+    if (gameDate) {
+      return this.http
+        .get<unknown>('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard', {
+          params: { dates: gameDate.replace(/-/g, '') }
+        })
+        .pipe(map(normalizeScoreboard));
+    }
+
     return this.http.get<unknown>('/api/nba/scoreboard').pipe(map(normalizeScoreboard));
   }
 
-  getBoxScore(gameId: string): Observable<BoxScore> {
+  getBoxScore(game: NbaGame): Observable<BoxScore> {
+    if (game.source === 'espn') {
+      return this.http
+        .get<unknown>('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary', {
+          params: { event: game.id }
+        })
+        .pipe(map(normalizeBoxScore));
+    }
+
     return this.http
-      .get<unknown>(`/api/nba/boxscore/${encodeURIComponent(gameId)}`)
+      .get<unknown>(`/api/nba/boxscore/${encodeURIComponent(game.id)}`)
       .pipe(map(normalizeBoxScore));
   }
 }
