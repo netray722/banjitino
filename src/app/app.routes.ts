@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
-import { FifaBoardComponent } from './fifa/fifa-board/fifa-board.component';
-import { NbaBoardComponent } from './nba/nba-board/nba-board.component';
+import { FifaBoardComponent } from './features/sports/fifa';
+import { NbaBoardComponent } from './features/sports/nba';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'nba' },
