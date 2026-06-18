@@ -1,6 +1,6 @@
 # sidequests.
 
-My personal corner for scores, projects, and curiosities. The site currently focuses on two sports timelines—NBA and the FIFA World Cup 2026—and is structured to grow with more interest-based sections over time.
+My personal corner for scores, projects, and curiosities. The site currently focuses on two sports timelines - NBA and the FIFA World Cup 2026 - and is structured to grow with more interest-based sections over time.
 
 ## Current features
 
@@ -28,6 +28,35 @@ Requests are cached per date in the client and additional dates are fetched only
 - TypeScript and RxJS
 - Vitest
 - Cloudflare Pages and Pages Functions
+
+## Project structure
+
+The Angular application uses feature-first organization so new interests can be added without turning the root application folder into a collection of unrelated files:
+
+```text
+src/app/
+|-- core/
+|   `-- layout/
+|       `-- site-header/
+|-- features/
+|   `-- sports/
+|       |-- nba/
+|       |   |-- components/
+|       |   |-- data-access/
+|       |   |-- models/
+|       |   |-- testing/
+|       |   `-- utils/
+|       `-- fifa/
+|           |-- components/
+|           |-- data-access/
+|           |-- models/
+|           |-- testing/
+|           `-- utils/
+|-- app.component.*
+`-- app.routes.ts
+```
+
+Future interests should be added as sibling feature areas under `src/app/features/`. Cloudflare function directories remain route-oriented because their folder names define public API paths.
 
 ## Local development
 
