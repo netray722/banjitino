@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { NbaDataService } from './nba-data.service';
+import { browserDateKey } from './nba.utils';
 import { finalGame } from './test-data';
 
 describe('NbaDataService', () => {
@@ -48,6 +49,32 @@ describe('NbaDataService', () => {
     http.expectOne('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20260613').flush({
       events: []
     });
+    http.verify();
+  });
+
+  it('falls back to the ESPN schedule when the live NBA feed is unavailable', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [NbaDataService, provideHttpClient(), provideHttpClientTesting()]
+    });
+    const service = TestBed.inject(NbaDataService);
+    const http = TestBed.inject(HttpTestingController);
+    let gameCount = -1;
+
+    service.getScoreboard().subscribe((scoreboard) => {
+      gameCount = scoreboard.games.length;
+    });
+
+    http.expectOne('/api/nba/scoreboard').flush('Unavailable', {
+      status: 502,
+      statusText: 'Bad Gateway'
+    });
+    const date = browserDateKey().replace(/-/g, '');
+    http.expectOne(
+      `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${date}`
+    ).flush({ events: [] });
+
+    expect(gameCount).toBe(0);
     http.verify();
   });
 
