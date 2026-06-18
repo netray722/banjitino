@@ -96,6 +96,11 @@ const STAT_DEFINITIONS = [
 ];
 
 export function normalizeFifaScoreboard(payload: unknown, now = new Date()): FifaScoreboard {
+  const espnScoreboard = normalizeEspnFifaScoreboard(payload, now);
+  if (espnScoreboard) {
+    return espnScoreboard;
+  }
+
   const root = payload as { Results?: RawFifaMatch[]; matchDate?: string };
   const matchDate = root.matchDate ?? localDateKey(now);
   const matches = (root.Results ?? [])
@@ -110,7 +115,82 @@ export function normalizeFifaScoreboard(payload: unknown, now = new Date()): Fif
   };
 }
 
+interface EspnFifaCompetitor {
+  homeAway?: 'home' | 'away';
+  score?: string;
+  team?: { id?: string; abbreviation?: string; displayName?: string; name?: string };
+}
+
+function normalizeEspnFifaScoreboard(payload: unknown, now: Date): FifaScoreboard | null {
+  const root = payload as {
+    matchDate?: string;
+    events?: Array<{
+      id?: string;
+      date?: string;
+      season?: { slug?: string };
+      competitions?: Array<{
+        altGameNote?: string;
+        competitors?: EspnFifaCompetitor[];
+        status?: { displayClock?: string; type?: { state?: string; shortDetail?: string } };
+        venue?: { fullName?: string; address?: { city?: string } };
+      }>;
+    }>;
+  };
+  if (!Array.isArray(root.events)) return null;
+
+  const matchDate = root.matchDate ?? localDateKey(now);
+  const matches = root.events.map((event): FifaMatch => {
+    const competition = event.competitions?.[0];
+    const home = competition?.competitors?.find((team) => team.homeAway === 'home');
+    const away = competition?.competitors?.find((team) => team.homeAway === 'away');
+    const state = competition?.status?.type?.state;
+    const status: FifaMatchStatus = state === 'in' ? 'live' : state === 'post' ? 'final' : 'scheduled';
+    const group = competition?.altGameNote?.match(/Group\s+[A-Z]/i)?.[0] ?? '';
+    const startTimeUtc = event.date ?? '';
+    return {
+      id: event.id ?? '',
+      status,
+      statusText: status === 'scheduled'
+        ? formatFifaKickoff(startTimeUtc)
+        : status === 'live'
+          ? competition?.status?.displayClock || 'Live'
+          : 'Final',
+      startTimeUtc,
+      matchTime: status === 'live' ? competition?.status?.displayClock ?? '' : '',
+      group,
+      stage: titleCase(event.season?.slug ?? ''),
+      venue: competition?.venue?.fullName ?? '',
+      city: competition?.venue?.address?.city ?? '',
+      attendance: '',
+      homeTeam: normalizeEspnFifaTeam(home, status),
+      awayTeam: normalizeEspnFifaTeam(away, status)
+    };
+  }).filter((match) => Boolean(match.id))
+    .filter((match) => localDateKey(new Date(match.startTimeUtc)) === matchDate)
+    .sort((left, right) => left.startTimeUtc.localeCompare(right.startTimeUtc));
+
+  return { matchDate, matches };
+}
+
+function normalizeEspnFifaTeam(competitor: EspnFifaCompetitor | undefined, status: FifaMatchStatus): FifaTeam {
+  return {
+    id: competitor?.team?.id ?? '',
+    name: competitor?.team?.displayName ?? competitor?.team?.name ?? '',
+    code: competitor?.team?.abbreviation ?? '',
+    score: status === 'scheduled' ? null : Number.parseInt(competitor?.score ?? '0', 10) || 0
+  };
+}
+
+function titleCase(value: string): string {
+  return value.split('-').map((word) => word ? word[0].toUpperCase() + word.slice(1) : '').join(' ');
+}
+
 export function normalizeFifaMatchDetails(payload: unknown, now = new Date()): FifaMatchDetails {
+  const espnDetails = normalizeEspnFifaMatchDetails(payload);
+  if (espnDetails) {
+    return espnDetails;
+  }
+
   const match = payload as RawFifaMatch;
   const home = normalizeTeam(match.HomeTeam ?? match.Home);
   const away = normalizeTeam(match.AwayTeam ?? match.Away);
@@ -151,6 +231,109 @@ export function normalizeFifaMatchDetails(payload: unknown, now = new Date()): F
       ...normalizeSubstitutions(match.AwayTeam?.Substitutions, away.code)
     ].sort(sortEvents)
   };
+}
+
+interface EspnSummaryTeam {
+  homeAway?: 'home' | 'away';
+  score?: string;
+  team?: { id?: string; abbreviation?: string; displayName?: string; name?: string };
+  statistics?: Array<{ name?: string; displayValue?: string }>;
+}
+
+interface EspnSummaryEvent {
+  scoringPlay?: boolean;
+  clock?: { displayValue?: string };
+  type?: { text?: string; type?: string };
+  team?: { id?: string; abbreviation?: string };
+  participants?: Array<{ athlete?: { displayName?: string } }>;
+}
+
+function normalizeEspnFifaMatchDetails(payload: unknown): FifaMatchDetails | null {
+  const root = payload as {
+    header?: { id?: string; season?: { type?: { name?: string } }; competitions?: Array<{ date?: string; status?: { type?: { shortDetail?: string } }; competitors?: EspnSummaryTeam[]; details?: EspnSummaryEvent[] }> };
+    boxscore?: { teams?: EspnSummaryTeam[] };
+    rosters?: Array<{ homeAway?: 'home' | 'away'; formation?: string; team?: { id?: string; abbreviation?: string; displayName?: string; name?: string } }>;
+    gameInfo?: { venue?: { fullName?: string; address?: { city?: string } }; attendance?: number; officials?: Array<{ displayName?: string; position?: { name?: string } }> };
+  };
+  if (!root.header?.competitions?.length || !root.boxscore?.teams?.length) return null;
+
+  const competition = root.header.competitions[0];
+  const headerHome = competition.competitors?.find((team) => team.homeAway === 'home');
+  const headerAway = competition.competitors?.find((team) => team.homeAway === 'away');
+  const statsHome = root.boxscore.teams.find((team) => team.homeAway === 'home') ?? root.boxscore.teams[0];
+  const statsAway = root.boxscore.teams.find((team) => team.homeAway === 'away') ?? root.boxscore.teams[1];
+  const home = espnDetailTeam(headerHome ?? statsHome, root.rosters?.find((team) => team.homeAway === 'home') ?? root.rosters?.[0]);
+  const away = espnDetailTeam(headerAway ?? statsAway, root.rosters?.find((team) => team.homeAway === 'away') ?? root.rosters?.[1]);
+  const teamCodes = new Map([[home.id, home.code], [away.id, away.code]]);
+  const events = competition.details ?? [];
+  const referee = root.gameInfo?.officials?.find((official) => official.position?.name === 'Referee')?.displayName ?? root.gameInfo?.officials?.[0]?.displayName ?? '';
+
+  return {
+    id: root.header.id ?? '',
+    statusText: competition.status?.type?.shortDetail ?? '',
+    venue: root.gameInfo?.venue?.fullName ?? '',
+    city: root.gameInfo?.venue?.address?.city ?? '',
+    attendance: root.gameInfo?.attendance ? new Intl.NumberFormat().format(root.gameInfo.attendance) : '',
+    homeTeam: home,
+    awayTeam: away,
+    facts: [
+      fact('Stage', root.header.season?.type?.name ?? ''),
+      fact('Referee', referee),
+      fact('Kickoff', competition.date ? formatFifaKickoff(competition.date) : '')
+    ].filter((item): item is FifaMatchFact => Boolean(item)),
+    stats: espnDetailStats(statsHome, statsAway),
+    goals: events.filter((event) => event.scoringPlay).map((event) => espnDetailEvent(event, teamCodes)),
+    bookings: events.filter((event) => event.type?.type?.includes('card')).map((event) => espnDetailEvent(event, teamCodes)),
+    substitutions: events.filter((event) => event.type?.type === 'substitution').map((event) => ({
+      minute: event.clock?.displayValue ?? '',
+      teamCode: teamCodes.get(event.team?.id ?? '') ?? event.team?.abbreviation ?? '',
+      player: event.participants?.[0]?.athlete?.displayName ?? 'Substitution',
+      detail: event.participants?.[1]?.athlete?.displayName ? `On for ${event.participants[1].athlete?.displayName}` : 'Substitution'
+    }))
+  };
+}
+
+function espnDetailTeam(team: EspnSummaryTeam | undefined, roster: { formation?: string; team?: { id?: string; abbreviation?: string; displayName?: string; name?: string } } | undefined): FifaMatchDetails['homeTeam'] {
+  const source = team?.team ?? roster?.team;
+  return {
+    id: source?.id ?? '',
+    name: source?.displayName ?? source?.name ?? '',
+    code: source?.abbreviation ?? '',
+    score: team?.score === undefined ? null : Number.parseInt(team.score, 10) || 0,
+    tactics: roster?.formation ?? '',
+    players: []
+  };
+}
+
+function espnDetailEvent(event: EspnSummaryEvent, teamCodes: Map<string, string>): FifaEvent {
+  return {
+    minute: event.clock?.displayValue ?? '',
+    teamCode: teamCodes.get(event.team?.id ?? '') ?? event.team?.abbreviation ?? '',
+    player: event.participants?.[0]?.athlete?.displayName ?? 'Unknown player',
+    detail: event.type?.text ?? ''
+  };
+}
+
+function espnDetailStats(home: EspnSummaryTeam | undefined, away: EspnSummaryTeam | undefined): FifaTeamStat[] {
+  const definitions = [
+    { name: 'totalShots', label: 'Shots' },
+    { name: 'shotsOnTarget', label: 'Shots on target' },
+    { name: 'possessionPct', label: 'Possession', suffix: '%' },
+    { name: 'wonCorners', label: 'Corners' },
+    { name: 'foulsCommitted', label: 'Fouls' }
+  ];
+  const value = (team: EspnSummaryTeam | undefined, name: string) => team?.statistics?.find((stat) => stat.name === name)?.displayValue ?? '';
+  return definitions.flatMap((definition) => {
+    const homeValue = value(home, definition.name);
+    const awayValue = value(away, definition.name);
+    if (!homeValue && !awayValue) return [];
+    return [{
+      label: definition.label,
+      homeValue: homeValue + (definition.suffix && !homeValue.includes(definition.suffix) ? definition.suffix : ''),
+      awayValue: awayValue + (definition.suffix && !awayValue.includes(definition.suffix) ? definition.suffix : ''),
+      winner: statWinner(homeValue, awayValue)
+    }];
+  });
 }
 
 export function formatFifaDate(value?: string, today = new Date()): string {

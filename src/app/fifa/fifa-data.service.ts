@@ -11,13 +11,17 @@ export class FifaDataService {
 
   getScoreboard(matchDate: string): Observable<FifaScoreboard> {
     return this.http
-      .get<unknown>('/api/fifa/scoreboard', { params: { date: matchDate } })
+      .get<unknown>('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard', {
+        params: { dates: matchDate.replace(/-/g, '') }
+      })
       .pipe(map((payload) => normalizeFifaScoreboard({ ...(payload as Record<string, unknown>), matchDate })));
   }
 
   getMatchDetails(matchId: string): Observable<FifaMatchDetails> {
     return this.http
-      .get<unknown>(`/api/fifa/match/${encodeURIComponent(matchId)}`)
+      .get<unknown>('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary', {
+        params: { event: matchId }
+      })
       .pipe(map((payload) => normalizeFifaMatchDetails(payload)));
   }
 }

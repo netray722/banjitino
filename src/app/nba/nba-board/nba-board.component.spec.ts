@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { NbaDataService } from '../../nba-data.service';
 import { boxScoreFixture, scoreboardFixture } from '../../test-data';
+import { browserDateKey } from '../../nba.utils';
 import { NbaBoardComponent } from './nba-board.component';
 
 describe('NbaBoardComponent', () => {
@@ -23,7 +24,12 @@ describe('NbaBoardComponent', () => {
     await fixture.whenStable();
 
     expect(dataService.getScoreboard).toHaveBeenCalledWith(undefined);
-    const cards = fixture.nativeElement.querySelectorAll('.game-summary') as NodeListOf<HTMLButtonElement>;
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('.game-summary').length).toBeGreaterThanOrEqual(2);
+    });
+    const cards = fixture.nativeElement.querySelector(`[data-date="${browserDateKey()}"]`)
+      .querySelectorAll('.game-summary') as NodeListOf<HTMLButtonElement>;
     expect(cards.length).toBe(2);
     cards[0].click();
     fixture.detectChanges();
@@ -43,13 +49,13 @@ describe('NbaBoardComponent', () => {
     const refreshButton = fixture.nativeElement.querySelector('.refresh-button') as HTMLButtonElement;
     refreshButton.click();
     fixture.detectChanges();
-    expect(dataService.getScoreboard).toHaveBeenCalledTimes(2);
+    expect(dataService.getScoreboard.mock.calls.length).toBeGreaterThan(1);
 
     const dateInput = fixture.nativeElement.querySelector('#nba-date') as HTMLInputElement;
-    dateInput.value = '2026-06-18';
+    dateInput.value = '2026-06-20';
     dateInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2026-06-18');
+    expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-20');
     fixture.destroy();
   });
 

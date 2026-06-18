@@ -1,83 +1,59 @@
-<main class="page-shell nba-page">
-  <section class="scoreboard-heading" aria-labelledby="scoreboard-title">
+<header class="timeline-toolbar">
+  <div class="toolbar-inner">
     <div>
-      <p class="eyebrow">NBA games</p>
-      <div class="date-picker-wrap">
-        <button
-          class="date-picker"
-          type="button"
-          (click)="openDatePicker(dateInput)"
-          aria-label="Select NBA game date"
-        >
-          <h1 id="scoreboard-title">{{ pageDate() }}</h1>
-        </button>
-        <input
-          #dateInput
-          class="date-input"
-          id="nba-date"
-          type="date"
-          [value]="selectedDate()"
-          (change)="changeDate($event)"
-          aria-label="Select NBA game date"
-        >
-      </div>
-      <p class="updated">{{ updatedLabel() }}</p>
+      <p class="eyebrow">NBA timeline</p>
+      <button class="date-picker" type="button" (click)="openDatePicker(dateInput)" aria-label="Jump to an NBA date">
+        <svg lucideCalendarDays aria-hidden="true"></svg>
+        <span>{{ dateLabel(activeDate()) }}</span>
+      </button>
+      <input #dateInput class="date-input" id="nba-date" type="date" [value]="activeDate()" (change)="changeDate($event)" aria-label="Jump to an NBA date">
     </div>
-
-    <div class="board-actions">
-      @if (scoreboard()?.games?.length) {
-        <div class="game-count">
-          {{ scoreboard()!.games.length }} {{ scoreboard()!.games.length === 1 ? 'game' : 'games' }}
-        </div>
-      }
-
-      <button
-        class="refresh-button"
-        type="button"
-        [class.is-spinning]="refreshing()"
-        [disabled]="refreshing()"
-        (click)="refresh()"
-        aria-label="Refresh NBA scores"
-        title="Refresh NBA scores"
-      >
+    <div class="toolbar-actions">
+      <span class="updated">{{ updatedLabel() }}</span>
+      <button class="refresh-button" type="button" [class.is-spinning]="refreshing()" [disabled]="refreshing()" (click)="refresh()" aria-label="Refresh visible NBA scores">
         <svg lucideRefreshCw aria-hidden="true"></svg>
       </button>
     </div>
-  </section>
+  </div>
+</header>
 
+<main class="page-shell nba-page">
+  @if (error()) {
+    <div class="inline-error" role="status">{{ error() }}</div>
+  }
   @if (loading()) {
-    <section class="game-list" aria-label="Loading NBA games">
-      @for (placeholder of [1, 2, 3]; track placeholder) {
-        <div class="game-skeleton"></div>
+    <section class="initial-loader" aria-label="Loading NBA timeline">
+      <span class="loader-dot"></span><p>Finding the nearest game day…</p>
+    </section>
+  } @else if (days().length) {
+    <div #previousSentinel class="edge-sentinel" aria-hidden="true">
+      @if (loadingPrevious()) { <span class="edge-loader">Loading earlier games…</span> }
+    </div>
+    <section class="timeline" aria-label="NBA games by date">
+      @for (day of days(); track day.date) {
+        <article class="timeline-day" [attr.data-date]="day.date" [attr.aria-labelledby]="'nba-day-' + day.date">
+          <header class="day-heading">
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div>
+              <p class="relative-date">{{ dateLabel(day.date) }}</p>
+              <h1 [id]="'nba-day-' + day.date">{{ fullDateLabel(day.date) }}</h1>
+            </div>
+            <span class="day-count">{{ day.scoreboard.games.length }} {{ day.scoreboard.games.length === 1 ? 'game' : 'games' }}</span>
+          </header>
+          <div class="game-list">
+            @for (game of day.scoreboard.games; track game.id) {
+              <app-game-card [game]="game" [expanded]="expandedGameId() === game.id" [boxScoreState]="boxScoreFor(game.id)" (toggle)="toggleGame(game)" (retry)="retryBoxScore(game)" />
+            }
+          </div>
+        </article>
       }
     </section>
-  } @else if (error() && !scoreboard()) {
-    <section class="state-panel error-panel">
-      <p>{{ error() }}</p>
-      <button type="button" (click)="refresh()">Try again</button>
-    </section>
-  } @else if (scoreboard()?.games?.length) {
-    <section class="game-list" aria-label="Today's NBA games">
-      @for (game of scoreboard()!.games; track game.id) {
-        <app-game-card
-          [game]="game"
-          [expanded]="expandedGameId() === game.id"
-          [boxScoreState]="boxScoreFor(game.id)"
-          (toggle)="toggleGame(game)"
-          (retry)="retryBoxScore(game)"
-        />
-      }
-    </section>
+    <div #nextSentinel class="edge-sentinel" aria-hidden="true">
+      @if (loadingNext()) { <span class="edge-loader">Loading upcoming games…</span> }
+    </div>
   } @else {
-    <section class="state-panel">
-      <p class="state-kicker">No games today</p>
-      <h2>The NBA schedule is clear.</h2>
-      <p>Check back on the next game day. This page refreshes automatically.</p>
-    </section>
+    <section class="state-panel"><h1>No games found</h1><p>Try another date from the picker above.</p></section>
   }
 </main>
 
-<footer>
-  <span>NBA scores refresh every 30 seconds.</span>
-  <span>Data provided by NBA live feeds.</span>
-</footer>
+<footer><span>Visible NBA scores refresh every 30 seconds.</span><span>Earlier and upcoming dates load as you scroll.</span></footer>

@@ -1,169 +1,166 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LucideRefreshCw } from '@lucide/angular';
-import { Subject, catchError, interval, merge, of, startWith, switchMap, tap } from 'rxjs';
+import { LucideCalendarDays, LucideRefreshCw } from '@lucide/angular';
+import { Subject, catchError, firstValueFrom, interval, of, takeUntil } from 'rxjs';
 
 import { FifaDataService } from '../fifa-data.service';
 import { FifaDetailsState, FifaMatch, FifaMatchDetails, FifaScoreboard } from '../fifa.models';
 import { browserDateKey, formatFifaDate } from '../fifa.utils';
 import { FifaMatchCardComponent } from '../fifa-match-card/fifa-match-card.component';
 
-@Component({
-  selector: 'app-fifa-board',
-  imports: [FifaMatchCardComponent, LucideRefreshCw],
-  templateUrl: './fifa-board.component.html',
-  styleUrl: './fifa-board.component.css'
-})
-export class FifaBoardComponent implements OnInit {
+const TOURNAMENT_START = '2026-06-11';
+const TOURNAMENT_END = '2026-07-19';
+interface FifaTimelineDay { date: string; scoreboard: FifaScoreboard; }
+
+@Component({ selector: 'app-fifa-board', imports: [FifaMatchCardComponent, LucideCalendarDays, LucideRefreshCw], templateUrl: './fifa-board.component.html', styleUrl: './fifa-board.component.css' })
+export class FifaBoardComponent implements OnInit, AfterViewInit {
   private readonly dataService = inject(FifaDataService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly refreshRequest = new Subject<void>();
+  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+  private readonly destroyed = new Subject<void>();
+  private readonly cache = new Map<string, FifaScoreboard>();
+  private readonly pending = new Map<string, Promise<FifaScoreboard | null>>();
+  private observer?: IntersectionObserver;
+  private generation = 0;
+  private scrollFrame = 0;
 
-  protected readonly scoreboard = signal<FifaScoreboard | null>(null);
+  @ViewChild('previousSentinel') private previousSentinel?: ElementRef<HTMLElement>;
+  @ViewChild('nextSentinel') private nextSentinel?: ElementRef<HTMLElement>;
+
+  protected readonly days = signal<FifaTimelineDay[]>([]);
   protected readonly loading = signal(true);
+  protected readonly loadingPrevious = signal(false);
+  protected readonly loadingNext = signal(false);
   protected readonly refreshing = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly expandedMatchId = signal<string | null>(null);
   protected readonly details = signal<Record<string, FifaDetailsState>>({});
   protected readonly lastUpdated = signal<Date | null>(null);
-  protected readonly selectedDate = signal(browserDateKey());
+  protected readonly activeDate = signal(clampDate(browserDateKey()));
 
   ngOnInit(): void {
-    merge(interval(30_000), this.refreshRequest)
-      .pipe(
-        startWith(0),
-        tap(() => {
-          this.refreshing.set(true);
-          if (!this.scoreboard()) {
-            this.loading.set(true);
-          }
-        }),
-        switchMap(() =>
-          this.dataService.getScoreboard(this.selectedDate()).pipe(
-            catchError(() => {
-              this.error.set('FIFA World Cup scores are temporarily unavailable.');
-              return of(null);
-            })
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((scoreboard) => {
-        if (scoreboard) {
-          this.scoreboard.set(scoreboard);
-          this.lastUpdated.set(new Date());
-          this.error.set(null);
-        }
-        this.loading.set(false);
-        this.refreshing.set(false);
-      });
-
-    interval(20_000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        const match = this.currentExpandedMatch();
-        if (match?.status === 'live') {
-          this.loadDetails(match, true);
-        }
-      });
+    void this.jumpToDate(clampDate(browserDateKey()), false);
+    interval(30_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => void this.refreshActiveDate(true));
+    interval(20_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      const match = this.currentExpandedMatch();
+      if (match?.status === 'live') this.loadDetails(match, true);
+    });
+    this.destroyRef.onDestroy(() => {
+      this.observer?.disconnect();
+      this.destroyed.next();
+      this.destroyed.complete();
+      cancelAnimationFrame(this.scrollFrame);
+    });
   }
 
-  protected refresh(): void {
-    this.refreshRequest.next();
+  ngAfterViewInit(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
+    this.observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting || !this.days().length) continue;
+        if (entry.target === this.previousSentinel?.nativeElement) void this.loadPrevious();
+        else if (entry.target === this.nextSentinel?.nativeElement) void this.loadNext();
+      }
+    }, { rootMargin: '120px 0px' });
+    if (this.previousSentinel) this.observer.observe(this.previousSentinel.nativeElement);
+    if (this.nextSentinel) this.observer.observe(this.nextSentinel.nativeElement);
   }
 
-  protected openDatePicker(input: HTMLInputElement): void {
-    input.focus();
-
-    if (typeof input.showPicker === 'function') {
-      input.showPicker();
-      return;
-    }
-
-    input.click();
+  @HostListener('window:scroll')
+  protected onWindowScroll(): void {
+    cancelAnimationFrame(this.scrollFrame);
+    this.scrollFrame = requestAnimationFrame(() => {
+      const section = [...this.host.nativeElement.querySelectorAll<HTMLElement>('.timeline-day')]
+        .find((item) => item.getBoundingClientRect().bottom > 180);
+      const date = section?.dataset['date'];
+      if (date) this.activeDate.set(date);
+    });
   }
 
-  protected changeDate(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (!value || value === this.selectedDate()) {
-      return;
-    }
-
-    this.selectedDate.set(value);
-    this.expandedMatchId.set(null);
-    this.details.set({});
-    this.scoreboard.set(null);
-    this.refresh();
-  }
-
+  protected refresh(): void { void this.refreshActiveDate(false); }
+  protected openDatePicker(input: HTMLInputElement): void { input.focus(); if (typeof input.showPicker === 'function') input.showPicker(); else input.click(); }
+  protected changeDate(event: Event): void { const value = (event.target as HTMLInputElement).value; if (value) void this.jumpToDate(clampDate(value), true); }
   protected toggleMatch(match: FifaMatch): void {
-    if (this.expandedMatchId() === match.id) {
-      this.expandedMatchId.set(null);
-      return;
-    }
-
+    if (this.expandedMatchId() === match.id) { this.expandedMatchId.set(null); return; }
     this.expandedMatchId.set(match.id);
-    if (match.status !== 'scheduled' && !this.details()[match.id]?.data) {
-      this.loadDetails(match);
+    if (match.status !== 'scheduled' && !this.details()[match.id]?.data) this.loadDetails(match);
+  }
+  protected retryDetails(match: FifaMatch): void { this.loadDetails(match); }
+  protected dateLabel(date: string): string { return formatFifaDate(date); }
+  protected fullDateLabel(date: string): string { return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(parseDate(date)); }
+  protected updatedLabel(): string { const date = this.lastUpdated(); return date ? `Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date)}` : 'Loading the tournament'; }
+  protected detailsFor(matchId: string): FifaDetailsState | null { return this.details()[matchId] ?? null; }
+
+  private async jumpToDate(date: string, smooth: boolean): Promise<void> {
+    const generation = ++this.generation;
+    this.loading.set(true); this.error.set(null); this.expandedMatchId.set(null);
+    const landing = await this.findGameDay(date, 1) ?? await this.findGameDay(addDays(date, -1), -1);
+    if (generation !== this.generation) return;
+    if (!landing) { this.days.set([]); this.loading.set(false); this.error.set('No World Cup matches were found in the tournament window.'); return; }
+    this.days.set([{ date: landing.matchDate, scoreboard: landing }]); this.activeDate.set(landing.matchDate); this.lastUpdated.set(new Date()); this.loading.set(false);
+    const [previous, next] = await Promise.all([this.findGameDay(addDays(landing.matchDate, -1), -1), this.findGameDay(addDays(landing.matchDate, 1), 1)]);
+    if (generation !== this.generation) return;
+    this.days.set(this.sortedUnique([previous, landing, next].filter((day): day is FifaScoreboard => Boolean(day))));
+    setTimeout(() => { this.observeSentinels(); this.scrollToDay(landing.matchDate, smooth); });
+  }
+
+  private async loadPrevious(): Promise<void> {
+    if (this.loadingPrevious() || this.loading()) return;
+    const first = this.days()[0]; if (!first || first.date <= TOURNAMENT_START) return;
+    this.loadingPrevious.set(true);
+    const scoreboard = await this.findGameDay(addDays(first.date, -1), -1);
+    if (scoreboard) this.days.update((days) => this.sortedUnique([scoreboard, ...days.map((day) => day.scoreboard)]));
+    this.loadingPrevious.set(false);
+  }
+  private async loadNext(): Promise<void> {
+    if (this.loadingNext() || this.loading()) return;
+    const last = this.days().at(-1); if (!last || last.date >= TOURNAMENT_END) return;
+    this.loadingNext.set(true);
+    const scoreboard = await this.findGameDay(addDays(last.date, 1), 1);
+    if (scoreboard) this.days.update((days) => this.sortedUnique([...days.map((day) => day.scoreboard), scoreboard]));
+    this.loadingNext.set(false);
+  }
+
+  private async findGameDay(start: string, direction: 1 | -1): Promise<FifaScoreboard | null> {
+    let date = start;
+    while (date >= TOURNAMENT_START && date <= TOURNAMENT_END) {
+      const scoreboard = await this.fetchDate(date);
+      if (scoreboard?.matches.length) return { ...scoreboard, matchDate: date };
+      date = addDays(date, direction);
     }
+    return null;
   }
-
-  protected retryDetails(match: FifaMatch): void {
-    this.loadDetails(match);
+  private fetchDate(date: string, force = false): Promise<FifaScoreboard | null> {
+    if (!force && this.cache.has(date)) return Promise.resolve(this.cache.get(date)!);
+    if (!force && this.pending.has(date)) return this.pending.get(date)!;
+    const request = firstValueFrom(this.dataService.getScoreboard(date).pipe(catchError(() => of(null)), takeUntil(this.destroyed)))
+      .then((scoreboard) => { if (scoreboard) this.cache.set(date, { ...scoreboard, matchDate: date }); this.pending.delete(date); return scoreboard ? { ...scoreboard, matchDate: date } : null; });
+    this.pending.set(date, request); return request;
   }
-
-  protected pageDate(): string {
-    return formatFifaDate(this.selectedDate());
+  private async refreshActiveDate(background: boolean): Promise<void> {
+    const date = this.activeDate();
+    if (!this.days().some((day) => day.date === date) || this.refreshing()) return;
+    this.refreshing.set(true);
+    const scoreboard = await this.fetchDate(date, true);
+    if (scoreboard) { this.days.update((days) => days.map((day) => day.date === date ? { date, scoreboard } : day)); this.lastUpdated.set(new Date()); this.error.set(null); }
+    else if (!background) this.error.set('FIFA World Cup scores are temporarily unavailable.');
+    this.refreshing.set(false);
   }
-
-  protected updatedLabel(): string {
-    const date = this.lastUpdated();
-    if (!date) {
-      return 'Waiting for World Cup data';
-    }
-
-    return `Updated ${new Intl.DateTimeFormat(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(date)}`;
+  private sortedUnique(scoreboards: FifaScoreboard[]): FifaTimelineDay[] {
+    return [...new Map(scoreboards.map((scoreboard) => [scoreboard.matchDate, scoreboard])).values()]
+      .sort((left, right) => left.matchDate.localeCompare(right.matchDate)).map((scoreboard) => ({ date: scoreboard.matchDate, scoreboard }));
   }
-
-  protected detailsFor(matchId: string): FifaDetailsState | null {
-    return this.details()[matchId] ?? null;
-  }
-
-  private currentExpandedMatch(): FifaMatch | undefined {
-    const id = this.expandedMatchId();
-    return this.scoreboard()?.matches.find((match) => match.id === id);
-  }
-
+  private scrollToDay(date: string, smooth: boolean): void { const element = this.host.nativeElement.querySelector<HTMLElement>(`[data-date="${date}"]`); if (typeof element?.scrollIntoView === 'function') element.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' }); }
+  private observeSentinels(): void { if (!this.observer) return; if (this.previousSentinel) this.observer.observe(this.previousSentinel.nativeElement); if (this.nextSentinel) this.observer.observe(this.nextSentinel.nativeElement); }
+  private currentExpandedMatch(): FifaMatch | undefined { const id = this.expandedMatchId(); return this.days().flatMap((day) => day.scoreboard.matches).find((match) => match.id === id); }
   private loadDetails(match: FifaMatch, background = false): void {
-    if (!background) {
-      this.setDetailsState(match.id, { data: null, loading: true, error: null });
-    }
-
-    this.dataService
-      .getMatchDetails(match.id)
-      .pipe(
-        catchError(() => {
-          this.setDetailsState(match.id, {
-            data: this.details()[match.id]?.data ?? null,
-            loading: false,
-            error: 'Match details are not available yet.'
-          });
-          return of(null);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((details: FifaMatchDetails | null) => {
-        if (details) {
-          this.setDetailsState(match.id, { data: details, loading: false, error: null });
-        }
-      });
+    if (!background) this.setDetailsState(match.id, { data: null, loading: true, error: null });
+    this.dataService.getMatchDetails(match.id).pipe(catchError(() => { this.setDetailsState(match.id, { data: this.details()[match.id]?.data ?? null, loading: false, error: 'Match details are not available yet.' }); return of(null); }), takeUntilDestroyed(this.destroyRef))
+      .subscribe((details: FifaMatchDetails | null) => { if (details) this.setDetailsState(match.id, { data: details, loading: false, error: null }); });
   }
-
-  private setDetailsState(matchId: string, state: FifaDetailsState): void {
-    this.details.update((details) => ({ ...details, [matchId]: state }));
-  }
+  private setDetailsState(matchId: string, state: FifaDetailsState): void { this.details.update((details) => ({ ...details, [matchId]: state })); }
 }
+
+function clampDate(date: string): string { return date < TOURNAMENT_START ? TOURNAMENT_START : date > TOURNAMENT_END ? TOURNAMENT_END : date; }
+function addDays(date: string, amount: number): string { const value = parseDate(date); value.setDate(value.getDate() + amount); return browserDateKey(value); }
+function parseDate(value: string): Date { const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, 12); }

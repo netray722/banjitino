@@ -14,7 +14,18 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
   const response = await fetchFifaJson(`calendar/matches?${query}`, 15);
 
   if (!response.ok) {
-    return response;
+    const espnDate = matchDate.replace(/-/g, '');
+    const fallback = await fetch(
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${espnDate}`,
+      { headers: { Accept: 'application/json', 'User-Agent': 'banjitino.com FIFA scoreboard' } }
+    );
+    if (!fallback.ok) return response;
+    return new Response(fallback.body, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=15, s-maxage=15'
+      }
+    });
   }
 
   const payload = await response.json();

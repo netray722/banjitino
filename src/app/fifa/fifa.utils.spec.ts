@@ -3,6 +3,32 @@ import { describe, expect, it } from 'vitest';
 import { formatFifaDate, normalizeFifaMatchDetails, normalizeFifaScoreboard } from './fifa.utils';
 
 describe('FIFA normalizers', () => {
+  it('normalizes the ESPN World Cup fallback feed', () => {
+    const scoreboard = normalizeFifaScoreboard({
+      matchDate: '2026-06-18',
+      events: [{
+        id: '760438',
+        date: '2026-06-18T16:00:00Z',
+        season: { slug: 'group-stage' },
+        competitions: [{
+          altGameNote: 'FIFA World Cup, Group A',
+          status: { type: { state: 'post', shortDetail: 'FT' } },
+          venue: { fullName: 'Mercedes-Benz Stadium', address: { city: 'Atlanta, Georgia' } },
+          competitors: [
+            { homeAway: 'home', score: '1', team: { id: '450', abbreviation: 'CZE', displayName: 'Czechia' } },
+            { homeAway: 'away', score: '1', team: { id: '467', abbreviation: 'RSA', displayName: 'South Africa' } }
+          ]
+        }]
+      }]
+    }, new Date('2026-06-18T18:00:00Z'));
+
+    expect(scoreboard.matches).toHaveLength(1);
+    expect(scoreboard.matches[0]).toMatchObject({
+      id: '760438', status: 'final', group: 'Group A', venue: 'Mercedes-Benz Stadium'
+    });
+    expect(scoreboard.matches[0].homeTeam).toMatchObject({ name: 'Czechia', code: 'CZE', score: 1 });
+  });
+
   it('normalizes current-day matches and sorts by kickoff', () => {
     const scoreboard = normalizeFifaScoreboard({
       matchDate: '2026-06-17',
@@ -133,6 +159,35 @@ describe('FIFA normalizers', () => {
       { label: 'Shots on target', homeValue: '6', awayValue: '2', winner: 'home' },
       { label: 'Possession', homeValue: '58%', awayValue: '42%', winner: 'home' }
     ]);
+  });
+
+  it('normalizes ESPN match details for an expanded card', () => {
+    const details = normalizeFifaMatchDetails({
+      header: {
+        id: '760438',
+        season: { type: { name: 'Group Stage' } },
+        competitions: [{
+          date: '2026-06-18T16:00:00Z',
+          status: { type: { shortDetail: 'FT' } },
+          competitors: [
+            { homeAway: 'home', score: '1', team: { id: '450', abbreviation: 'CZE', displayName: 'Czechia' } },
+            { homeAway: 'away', score: '1', team: { id: '467', abbreviation: 'RSA', displayName: 'South Africa' } }
+          ],
+          details: [{ scoringPlay: true, clock: { displayValue: "6'" }, type: { text: 'Goal', type: 'goal' }, team: { id: '450' }, participants: [{ athlete: { displayName: 'M. Sadilek' } }] }]
+        }]
+      },
+      boxscore: { teams: [
+        { homeAway: 'home', team: { id: '450', abbreviation: 'CZE' }, statistics: [{ name: 'totalShots', displayValue: '14' }] },
+        { homeAway: 'away', team: { id: '467', abbreviation: 'RSA' }, statistics: [{ name: 'totalShots', displayValue: '17' }] }
+      ] },
+      rosters: [{ homeAway: 'home', formation: '3-5-2' }, { homeAway: 'away', formation: '4-3-3' }],
+      gameInfo: { venue: { fullName: 'Mercedes-Benz Stadium', address: { city: 'Atlanta, Georgia' } }, attendance: 67442 }
+    });
+
+    expect(details.venue).toBe('Mercedes-Benz Stadium');
+    expect(details.homeTeam.tactics).toBe('3-5-2');
+    expect(details.goals[0]).toMatchObject({ player: 'M. Sadilek', teamCode: 'CZE' });
+    expect(details.stats[0]).toEqual({ label: 'Shots', homeValue: '14', awayValue: '17', winner: 'away' });
   });
 
   it('formats a FIFA match date label', () => {

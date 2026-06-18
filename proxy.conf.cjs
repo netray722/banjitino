@@ -7,8 +7,7 @@ function dateWindow(dateKey = new Date().toISOString().slice(0, 10)) {
 
 function fifaCalendarPath(request) {
   const dateKey = selectedDateKey(request);
-  const { from, to } = dateWindow(dateKey);
-  return `/api/v3/calendar/matches?language=en&count=50&idCompetition=17&from=${from}&to=${to}`;
+  return `/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateKey.replace(/-/g, '')}`;
 }
 
 function selectedDateKey(request) {
@@ -60,12 +59,12 @@ module.exports = {
     }
   },
   '/api/fifa/scoreboard': {
-    target: 'https://api.fifa.com',
+    target: 'https://site.api.espn.com',
     secure: true,
     changeOrigin: true,
     pathRewrite: (_path, request) => fifaCalendarPath(request),
     headers: {
-      Referer: 'https://www.fifa.com/',
+      Referer: 'https://www.espn.com/',
       'User-Agent': 'Mozilla/5.0'
     }
   },

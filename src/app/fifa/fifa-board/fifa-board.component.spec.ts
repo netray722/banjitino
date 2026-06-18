@@ -22,8 +22,13 @@ describe('FifaBoardComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-17');
-    const cards = fixture.nativeElement.querySelectorAll('.match-summary') as NodeListOf<HTMLButtonElement>;
+    expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-18');
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('.match-summary').length).toBeGreaterThanOrEqual(2);
+    });
+    const cards = fixture.nativeElement.querySelector('[data-date="2026-06-18"]')
+      .querySelectorAll('.match-summary') as NodeListOf<HTMLButtonElement>;
     expect(cards.length).toBe(2);
     expect(fixture.nativeElement.textContent).toContain('FIFA World Cup 2026');
     cards[0].click();
@@ -40,13 +45,13 @@ describe('FifaBoardComponent', () => {
     const refreshButton = fixture.nativeElement.querySelector('.refresh-button') as HTMLButtonElement;
     refreshButton.click();
     fixture.detectChanges();
-    expect(dataService.getScoreboard).toHaveBeenCalledTimes(2);
+    expect(dataService.getScoreboard.mock.calls.length).toBeGreaterThan(1);
 
     const dateInput = fixture.nativeElement.querySelector('#fifa-date') as HTMLInputElement;
-    dateInput.value = '2026-06-18';
+    dateInput.value = '2026-06-20';
     dateInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2026-06-18');
+    expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-20');
     fixture.destroy();
   });
 

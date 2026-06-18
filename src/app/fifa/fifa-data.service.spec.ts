@@ -18,7 +18,7 @@ describe('FifaDataService', () => {
       matchId = scoreboard.matches[0].id;
     });
 
-    http.expectOne('/api/fifa/scoreboard?date=2026-06-17').flush({
+    http.expectOne('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260617').flush({
       matchDate: '2026-06-17',
       Results: [{
         IdMatch: '400021401',
@@ -32,7 +32,7 @@ describe('FifaDataService', () => {
     http.verify();
   });
 
-  it('encodes the match id in detail requests', () => {
+  it('loads ESPN match details by event id', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [FifaDataService, provideHttpClient(), provideHttpClientTesting()]
@@ -40,8 +40,8 @@ describe('FifaDataService', () => {
     const service = TestBed.inject(FifaDataService);
     const http = TestBed.inject(HttpTestingController);
 
-    service.getMatchDetails('400/21').subscribe();
-    http.expectOne('/api/fifa/match/400%2F21').flush({ IdMatch: '400/21' });
+    service.getMatchDetails('760438').subscribe();
+    http.expectOne('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=760438').flush({});
     http.verify();
   });
 });
