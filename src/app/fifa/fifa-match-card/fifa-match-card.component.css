@@ -1,17 +1,17 @@
 .match-card {
   overflow: hidden;
-  border: 1px solid rgba(16, 32, 25, 0.12);
-  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
   background:
-    linear-gradient(90deg, rgba(15, 138, 85, 0.07), transparent 30%),
-    white;
+    linear-gradient(90deg, rgba(13, 148, 136, 0.08), transparent 34%),
+    var(--surface-raised);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .match-card:hover,
 .match-card.is-expanded {
-  border-color: rgba(15, 138, 85, 0.38);
-  box-shadow: 0 14px 34px rgba(10, 49, 33, 0.12);
+  border-color: rgba(13, 148, 136, 0.42);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
 }
 
 .match-summary {
@@ -38,7 +38,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #102019;
+  color: var(--ink);
   font-size: 0.84rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -64,7 +64,7 @@
 .context,
 .venue {
   overflow: hidden;
-  color: #5b6d64;
+  color: var(--subtle-text);
   font-size: 0.74rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -101,8 +101,8 @@
   place-items: center;
   position: relative;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ffffff 0%, #e8f6ed 100%);
-  border: 1px solid rgba(16, 32, 25, 0.08);
+  background: var(--surface-soft);
+  border: 1px solid var(--soft-border);
   color: var(--muted);
   font-size: 0.62rem;
   font-weight: 900;
@@ -133,14 +133,14 @@
 }
 
 .team-name span {
-  color: #5b6d64;
+  color: var(--subtle-text);
   font-size: 0.72rem;
 }
 
 .score {
   text-align: right;
-  color: #102019;
-  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  color: var(--ink);
+  font-family: inherit;
   font-size: 1.8rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -157,10 +157,10 @@
 }
 
 .match-details {
-  border-top: 1px solid rgba(15, 138, 85, 0.14);
+  border-top: 1px solid rgba(13, 148, 136, 0.18);
   background:
-    linear-gradient(180deg, rgba(15, 138, 85, 0.06), transparent 120px),
-    #f8fbf9;
+    linear-gradient(180deg, rgba(13, 148, 136, 0.07), transparent 120px),
+    var(--surface-detail);
 }
 
 .scheduled-message,
@@ -177,7 +177,7 @@
 .scheduled-message svg {
   width: 24px;
   height: 24px;
-  color: #0f8a55;
+  color: #0d9488;
 }
 
 .scheduled-message p,
@@ -198,7 +198,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #0f8a55;
+  background: #0d9488;
   animation: pulse 900ms infinite alternate;
 }
 
@@ -218,9 +218,9 @@
   align-items: center;
   gap: 7px;
   padding: 8px 12px;
-  border: 1px solid rgba(15, 138, 85, 0.18);
-  border-radius: 5px;
-  background: white;
+  border: 1px solid rgba(13, 148, 136, 0.22);
+  border-radius: 8px;
+  background: var(--surface-raised);
   color: var(--ink);
   font-weight: 800;
   cursor: pointer;

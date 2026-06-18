@@ -6,11 +6,10 @@ footer {
 }
 
 .page-shell {
-  --ink: #102019;
-  --accent: #0f8a55;
-  --accent-2: #38bdf8;
-  --sport-gradient: linear-gradient(135deg, #102019 0%, #0f6b48 58%, #3bb273 140%);
-  --sport-faint: rgba(15, 138, 85, 0.12);
+  --accent: #0f766e;
+  --accent-2: #22d3ee;
+  --sport-gradient: linear-gradient(135deg, #071a1a 0%, #115e59 52%, #0d9488 88%, #22d3ee 150%);
+  --sport-faint: rgba(13, 148, 136, 0.1);
   padding-block: 32px 56px;
 }
 
@@ -24,14 +23,14 @@ footer {
   margin-bottom: 24px;
   padding: 22px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 16px;
   background:
     radial-gradient(circle at center, transparent 0 48px, rgba(255, 255, 255, 0.16) 49px 50px, transparent 51px),
     linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.16) 49% 51%, transparent 51%),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 54px),
     var(--sport-gradient);
   color: white;
-  box-shadow: 0 18px 44px rgba(10, 49, 33, 0.18);
+  box-shadow: 0 20px 48px rgba(15, 118, 110, 0.18);
 }
 
 .eyebrow,
@@ -108,7 +107,7 @@ footer {
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 6px;
+  border-radius: 9px;
   background: rgba(255, 255, 255, 0.12);
   color: white;
   cursor: pointer;
@@ -131,7 +130,7 @@ footer {
 .game-count {
   padding: 7px 10px;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 5px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.12);
   color: white;
   font-size: 0.78rem;
@@ -147,16 +146,16 @@ footer {
 .match-skeleton {
   height: 194px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: linear-gradient(110deg, #ffffff 0 30%, #e8f6ed 45%, #ffffff 60% 100%);
+  border-radius: 14px;
+  background: linear-gradient(110deg, var(--surface-raised) 0 30%, var(--surface-soft) 45%, var(--surface-raised) 60% 100%);
   animation: fade 1.2s infinite alternate;
 }
 
 .state-panel {
   padding: 56px 24px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  background: var(--surface-raised);
   text-align: center;
 }
 
@@ -196,7 +195,7 @@ footer {
 footer {
   min-height: 72px;
   padding-block: 22px;
-  border-top: 1px solid rgba(16, 32, 25, 0.1);
+  border-top: 1px solid var(--soft-border);
   color: var(--muted);
   display: flex;
   justify-content: space-between;

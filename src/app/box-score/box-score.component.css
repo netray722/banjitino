@@ -15,8 +15,8 @@
   min-width: 0;
   overflow: hidden;
   border-top: 4px solid var(--team-color);
-  border-radius: 8px;
-  background: white;
+  border-radius: 12px;
+  background: var(--surface-raised);
   box-shadow: 0 8px 24px rgba(21, 23, 29, 0.06);
 }
 
@@ -26,11 +26,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border: 1px solid rgba(21, 23, 29, 0.1);
+  border: 1px solid var(--soft-border);
   border-top: 0;
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--team-color), transparent 88%), transparent),
-    white;
+    var(--surface-raised);
 }
 
 .team-box header span,
@@ -50,13 +50,13 @@
 }
 
 .team-box header > strong {
-  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-family: inherit;
   font-size: 1.75rem;
 }
 
 .table-scroll {
   overflow-x: auto;
-  border: 1px solid rgba(21, 23, 29, 0.1);
+  border: 1px solid var(--soft-border);
   border-top: 0;
 }
 
@@ -71,13 +71,13 @@ table {
 th,
 td {
   padding: 9px 10px;
-  border-bottom: 1px solid #eceef1;
+  border-bottom: 1px solid var(--soft-border);
   text-align: right;
   white-space: nowrap;
 }
 
 thead th {
-  background: #f8fafb;
+  background: var(--surface-header);
   color: var(--muted);
   font-size: 0.66rem;
   text-transform: uppercase;
@@ -88,7 +88,7 @@ th:first-child {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: white;
+  background: var(--surface-raised);
   text-align: left;
 }
 
@@ -111,12 +111,12 @@ tbody th small {
 tfoot th,
 tfoot td {
   border-bottom: 0;
-  background: #f1f5f4;
+  background: var(--surface-footer);
   font-weight: 900;
 }
 
 tfoot th:first-child {
-  background: #f1f5f4;
+  background: var(--surface-footer);
 }
 
 @media (max-width: 640px) {

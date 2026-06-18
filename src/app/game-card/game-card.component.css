@@ -1,18 +1,17 @@
 .game-card {
   overflow: hidden;
-  border: 1px solid rgba(21, 23, 29, 0.12);
-  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
   background:
-    linear-gradient(90deg, rgba(194, 65, 12, 0.07), transparent 30%),
-    white;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    linear-gradient(90deg, rgba(37, 99, 235, 0.08), transparent 34%),
+    var(--surface-raised);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .game-card:hover,
 .game-card.is-expanded {
-  border-color: rgba(194, 65, 12, 0.38);
-  box-shadow: 0 14px 34px rgba(42, 24, 17, 0.12);
+  border-color: rgba(37, 99, 235, 0.42);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
 }
 
 .game-summary {
@@ -39,7 +38,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #20242d;
+  color: var(--ink);
   font-size: 0.84rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -64,7 +63,7 @@
 
 .context {
   overflow: hidden;
-  color: #6f5f56;
+  color: var(--subtle-text);
   font-size: 0.74rem;
   line-height: 1.3;
   text-overflow: ellipsis;
@@ -101,9 +100,9 @@
   display: grid;
   place-items: center;
   position: relative;
-  border: 1px solid rgba(21, 23, 29, 0.08);
+  border: 1px solid var(--soft-border);
   border-radius: 50%;
-  background: linear-gradient(135deg, #fff 0%, #f8eee8 100%);
+  background: var(--surface-soft);
   color: var(--team-color);
   font-size: 0.65rem;
   font-weight: 900;
@@ -114,7 +113,7 @@
   height: 44px;
   position: absolute;
   inset: 0;
-  background: white;
+  background: var(--surface-raised);
   border-radius: 50%;
   object-fit: contain;
 }
@@ -132,7 +131,7 @@
 }
 
 .team-name span {
-  color: #6f5f56;
+  color: var(--subtle-text);
   font-size: 0.72rem;
 }
 
@@ -142,21 +141,21 @@
 }
 
 .record {
-  color: #7a6a61;
+  color: var(--subtle-text);
   font-size: 0.76rem;
 }
 
 .score {
   text-align: right;
-  color: #15171d;
-  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  color: var(--ink);
+  font-family: inherit;
   font-size: 1.8rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .expand-label {
-  color: #7a6a61;
+  color: var(--subtle-text);
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
@@ -173,10 +172,10 @@
 }
 
 .game-details {
-  border-top: 1px solid rgba(194, 65, 12, 0.14);
+  border-top: 1px solid rgba(37, 99, 235, 0.18);
   background:
-    linear-gradient(180deg, rgba(194, 65, 12, 0.06), transparent 120px),
-    #fbfaf8;
+    linear-gradient(180deg, rgba(37, 99, 235, 0.07), transparent 120px),
+    var(--surface-detail);
 }
 
 .scheduled-message,
@@ -193,7 +192,7 @@
 .scheduled-message svg {
   width: 24px;
   height: 24px;
-  color: #c2410c;
+  color: #2563eb;
 }
 
 .scheduled-message p,
@@ -214,7 +213,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #c2410c;
+  background: #2563eb;
   animation: pulse 900ms infinite alternate;
 }
 
@@ -242,9 +241,9 @@
   align-items: center;
   gap: 7px;
   padding: 8px 12px;
-  border: 1px solid rgba(194, 65, 12, 0.18);
-  border-radius: 5px;
-  background: white;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 8px;
+  background: var(--surface-raised);
   color: var(--ink);
   font-weight: 800;
   cursor: pointer;

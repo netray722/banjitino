@@ -1,22 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   color-scheme: light;
-  font-family: "Barlow", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #eef2f0;
-  color: #16181d;
-  --ink: #16181d;
-  --muted: #596474;
-  --border: #d8dee6;
-  --accent: #d4432f;
-  --accent-2: #f1b91f;
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--page-bg);
+  color: var(--ink);
+  --ink: #0f172a;
+  --muted: #526077;
+  --border: #dbe3ef;
+  --accent: #2563eb;
+  --accent-2: #06b6d4;
   --surface: #ffffff;
   --surface-soft: #f7f9fb;
-  --live: #07825f;
-  --page-bg: #eef2f0;
-  --page-line: rgba(22, 24, 29, 0.06);
-  --sport-gradient: linear-gradient(135deg, #171a20 0%, #303744 100%);
-  --sport-faint: rgba(212, 67, 47, 0.12);
+  --live: #15803d;
+  --page-bg: #f3f6fb;
+  --page-line: rgba(37, 99, 235, 0.1);
+  --sport-gradient: linear-gradient(135deg, #0f172a 0%, #1d4ed8 65%, #0891b2 140%);
+  --sport-faint: rgba(37, 99, 235, 0.1);
+  --surface-raised: #ffffff;
+  --surface-detail: #f8fafc;
+  --surface-header: #f1f5f9;
+  --surface-footer: #eef2f7;
+  --card-border: rgba(15, 23, 42, 0.11);
+  --soft-border: rgba(15, 23, 42, 0.09);
+  --subtle-text: #64748b;
+  --header-bg: rgba(9, 16, 30, 0.94);
+  --header-text: #ffffff;
+  --header-muted: rgba(255, 255, 255, 0.7);
+  --header-border: rgba(255, 255, 255, 0.16);
+  --header-control: rgba(255, 255, 255, 0.07);
+  --focus-ring: rgba(37, 99, 235, 0.45);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f8fafc;
+  --muted: #a8b4c7;
+  --border: #283548;
+  --surface: #111927;
+  --surface-soft: #182234;
+  --surface-raised: #131d2b;
+  --surface-detail: #0e1622;
+  --surface-header: #1a2536;
+  --surface-footer: #1a2536;
+  --card-border: rgba(148, 163, 184, 0.2);
+  --soft-border: rgba(148, 163, 184, 0.15);
+  --subtle-text: #a8b4c7;
+  --page-bg: #080d16;
+  --page-line: rgba(96, 165, 250, 0.12);
+  --header-bg: rgba(6, 11, 20, 0.94);
+  --header-text: #f8fafc;
+  --header-muted: #bac3cf;
+  --header-border: rgba(255, 255, 255, 0.2);
+  --header-control: rgba(255, 255, 255, 0.1);
+  --focus-ring: rgba(96, 165, 250, 0.62);
 }
 
 * {
@@ -31,11 +68,12 @@ body {
 body {
   margin: 0;
   background:
-    linear-gradient(90deg, var(--page-line) 1px, transparent 1px),
-    linear-gradient(0deg, var(--page-line) 1px, transparent 1px),
+    radial-gradient(circle at 12% -10%, var(--page-line), transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(6, 182, 212, 0.07), transparent 28%),
     var(--page-bg);
-  background-size: 42px 42px, 42px 42px, auto;
   min-width: 320px;
+  color: var(--ink);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 button,
@@ -47,7 +85,7 @@ textarea {
 
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(212, 67, 47, 0.3);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -58,6 +96,12 @@ h3,
 .game-count,
 .brand strong,
 .board-nav a {
-  font-family: "Barlow Condensed", "Arial Narrow", "Barlow", Inter, sans-serif;
-  letter-spacing: 0;
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }

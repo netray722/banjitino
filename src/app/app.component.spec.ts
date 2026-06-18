@@ -22,4 +22,24 @@ describe('AppComponent', () => {
     expect(links[0].getAttribute('href')).toBe('/nba');
     expect(links[1].getAttribute('href')).toBe('/fifa');
   });
+
+  it('toggles and saves the site theme', async () => {
+    window.localStorage.setItem('theme', 'light');
+
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+      providers: [provideRouter([])]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const toggle = fixture.nativeElement.querySelector('.theme-toggle') as HTMLButtonElement;
+
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(document.documentElement.dataset['theme']).toBe('dark');
+    expect(window.localStorage.getItem('theme')).toBe('dark');
+    expect(toggle.getAttribute('aria-label')).toBe('Switch to light theme');
+  });
 });
