@@ -1,6 +1,6 @@
 <header class="timeline-toolbar">
   <div class="toolbar-inner">
-    <div><p class="eyebrow">FIFA World Cup 2026</p><button class="date-picker" type="button" (click)="openDatePicker(dateInput)" aria-label="Jump to a FIFA match date"><svg lucideCalendarDays aria-hidden="true"></svg><span>{{ dateLabel(activeDate()) }}</span></button><input #dateInput class="date-input" id="fifa-date" type="date" min="2026-06-11" max="2026-07-19" [value]="activeDate()" (change)="changeDate($event)" aria-label="Jump to a FIFA match date"></div>
+    <div><p class="eyebrow">FIFA World Cup 2026</p><div class="date-controls"><button class="date-picker" type="button" (click)="openDatePicker(dateInput)" aria-label="Jump to a FIFA match date"><svg lucideCalendarDays aria-hidden="true"></svg><span>{{ dateLabel(activeDate()) }}</span></button>@if (showTodayButton()) { <button class="today-button" type="button" (click)="jumpToToday()" [disabled]="loading()">Today</button> }</div><input #dateInput class="date-input" id="fifa-date" type="date" min="2026-06-11" max="2026-07-19" [value]="activeDate()" (change)="changeDate($event)" aria-label="Jump to a FIFA match date"></div>
     <div class="toolbar-actions"><span class="tournament-range">Jun 11 – Jul 19</span><span class="updated">{{ updatedLabel() }}</span><button class="refresh-button" type="button" [class.is-spinning]="refreshing()" [disabled]="refreshing()" (click)="refresh()" aria-label="Refresh visible FIFA scores"><svg lucideRefreshCw aria-hidden="true"></svg></button></div>
   </div>
 </header>
@@ -9,7 +9,13 @@
   @if (loading()) {
     <section class="initial-loader" aria-label="Loading FIFA timeline"><span class="loader-dot"></span><p>Finding the nearest match day…</p></section>
   } @else if (days().length) {
-    <div #previousSentinel class="edge-sentinel" aria-hidden="true">@if (loadingPrevious()) { <span class="edge-loader">Loading earlier matches…</span> }</div>
+    <div #previousSentinel class="edge-sentinel edge-sentinel-top">
+      @if (hasEarlierDates()) {
+        <button class="load-earlier-button" type="button" [disabled]="loadingPrevious()" (click)="loadEarlier()">
+          @if (loadingPrevious()) { <span class="button-spinner" aria-hidden="true"></span> Loading earlier match days… } @else { Load earlier match days }
+        </button>
+      } @else { <span class="timeline-boundary">Tournament begins June 11</span> }
+    </div>
     <section class="timeline" aria-label="FIFA World Cup matches by date">
       @for (day of days(); track day.date) {
         <article class="timeline-day" [attr.data-date]="day.date" [attr.aria-labelledby]="'fifa-day-' + day.date">

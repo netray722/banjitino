@@ -49,6 +49,7 @@ export interface FifaTeamStat {
   homeValue: string;
   awayValue: string;
   winner: 'home' | 'away' | null;
+  lowerIsBetter?: boolean;
 }
 
 export interface FifaMatchFact {

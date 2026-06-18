@@ -46,6 +46,7 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
   protected readonly days = signal<NbaTimelineDay[]>([]);
   protected readonly loading = signal(true);
   protected readonly loadingPrevious = signal(false);
+  protected readonly hasEarlierDates = signal(true);
   protected readonly loadingNext = signal(false);
   protected readonly refreshing = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -127,6 +128,14 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
     if (value) void this.jumpToDate(value, true);
   }
 
+  protected showTodayButton(): boolean {
+    return this.activeDate() !== browserDateKey();
+  }
+
+  protected jumpToToday(): void {
+    void this.jumpToDate(browserDateKey(), true);
+  }
+
   protected toggleGame(game: NbaGame): void {
     if (this.expandedGameId() === game.id) {
       this.expandedGameId.set(null);
@@ -138,6 +147,10 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
 
   protected retryBoxScore(game: NbaGame): void {
     this.loadBoxScore(game);
+  }
+
+  protected loadEarlier(): void {
+    void this.loadPrevious();
   }
 
   protected dateLabel(date: string): string {
@@ -173,6 +186,7 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
     }
 
     this.days.set([{ date: landing.gameDate, scoreboard: landing }]);
+    this.hasEarlierDates.set(true);
     this.activeDate.set(landing.gameDate);
     this.lastUpdated.set(new Date());
     this.loading.set(false);
@@ -189,12 +203,13 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
   }
 
   private async loadPrevious(): Promise<void> {
-    if (this.loadingPrevious() || this.loading()) return;
+    if (this.loadingPrevious() || this.loading() || !this.hasEarlierDates()) return;
     const first = this.days()[0];
     if (!first) return;
     this.loadingPrevious.set(true);
     const scoreboard = await this.findGameDay(addDays(first.date, -1), -1);
     if (scoreboard) this.days.update((days) => this.sortedUnique([scoreboard, ...days.map((day) => day.scoreboard)]));
+    else this.hasEarlierDates.set(false);
     this.loadingPrevious.set(false);
   }
 

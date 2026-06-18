@@ -177,8 +177,8 @@ describe('FIFA normalizers', () => {
         }]
       },
       boxscore: { teams: [
-        { homeAway: 'home', team: { id: '450', abbreviation: 'CZE' }, statistics: [{ name: 'totalShots', displayValue: '14' }] },
-        { homeAway: 'away', team: { id: '467', abbreviation: 'RSA' }, statistics: [{ name: 'totalShots', displayValue: '17' }] }
+        { homeAway: 'home', team: { id: '450', abbreviation: 'CZE' }, statistics: [{ name: 'totalShots', displayValue: '14' }, { name: 'foulsCommitted', displayValue: '12' }] },
+        { homeAway: 'away', team: { id: '467', abbreviation: 'RSA' }, statistics: [{ name: 'totalShots', displayValue: '17' }, { name: 'foulsCommitted', displayValue: '10' }] }
       ] },
       rosters: [{ homeAway: 'home', formation: '3-5-2' }, { homeAway: 'away', formation: '4-3-3' }],
       gameInfo: { venue: { fullName: 'Mercedes-Benz Stadium', address: { city: 'Atlanta, Georgia' } }, attendance: 67442 }
@@ -188,6 +188,9 @@ describe('FIFA normalizers', () => {
     expect(details.homeTeam.tactics).toBe('3-5-2');
     expect(details.goals[0]).toMatchObject({ player: 'M. Sadilek', teamCode: 'CZE' });
     expect(details.stats[0]).toEqual({ label: 'Shots', homeValue: '14', awayValue: '17', winner: 'away' });
+    expect(details.stats.find((stat) => stat.label === 'Fouls')).toMatchObject({
+      homeValue: '12', awayValue: '10', winner: 'away', lowerIsBetter: true
+    });
   });
 
   it('formats a FIFA match date label', () => {
