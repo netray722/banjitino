@@ -1,31 +1,48 @@
 # Dependencies
 node_modules/
 
-# Local toolchain downloaded by Codex
+# Local AI/tooling state and downloaded toolchains
 .tools/
+.codex/
+.agents/
 
 # Build output
 dist/
 out-tsc/
+*.tsbuildinfo
 
-# Angular cache
-.angular/cache/
+# Framework and test caches/reports
+.angular/
 coverage/
+.nyc_output/
+playwright-report/
+test-results/
 
 # Logs
-ng-serve.log
-ng-serve.err.log
-*-scoreboard.png
-mobile-emulated.png
-mobile-expanded.png
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# wrangler files
-.wrangler
+# Local QA screenshots
+/desktop-*.png
+/mobile-*.png
+/*-scoreboard.png
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Cloudflare/Wrangler local state
+.wrangler/
 .dev.vars*
 !.dev.vars.example
+
+# Local environment and machine-specific files
 .env*
 !.env.example
+*.local
+.DS_Store
+Thumbs.db
+.idea/

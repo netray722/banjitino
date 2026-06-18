@@ -189,12 +189,18 @@ footer {
 .error-panel button {
   margin-top: 18px;
   padding: 10px 16px;
-  border: 0;
-  border-radius: 5px;
-  background: var(--ink);
-  color: white;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #ffffff;
   font-weight: 800;
   cursor: pointer;
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.error-panel button:hover {
+  background: #1d4ed8;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
 }
 
 footer {

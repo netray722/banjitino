@@ -46,10 +46,10 @@ describe('NbaBoardComponent', () => {
     expect(dataService.getScoreboard).toHaveBeenCalledTimes(2);
 
     const dateInput = fixture.nativeElement.querySelector('#nba-date') as HTMLInputElement;
-    dateInput.value = '2026-06-18';
+    dateInput.value = '2030-01-01';
     dateInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2026-06-18');
+    expect(dataService.getScoreboard).toHaveBeenLastCalledWith('2030-01-01');
     fixture.destroy();
   });
 
@@ -79,6 +79,27 @@ describe('NbaBoardComponent', () => {
 
     expect(showPicker).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(dateInput);
+    fixture.destroy();
+  });
+
+  it('shows a clear no-games state for an empty successful schedule', async () => {
+    const dataService = {
+      getScoreboard: vi.fn(() => of({ ...scoreboardFixture, games: [] })),
+      getBoxScore: vi.fn(() => of(boxScoreFixture))
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [NbaBoardComponent],
+      providers: [{ provide: NbaDataService, useValue: dataService }]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NbaBoardComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.textContent).toContain('No games');
+    expect(fixture.nativeElement.textContent).toContain('No NBA games are scheduled for today.');
+    expect(fixture.nativeElement.textContent).not.toContain('temporarily unavailable');
     fixture.destroy();
   });
 });

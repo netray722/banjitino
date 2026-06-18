@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map } from 'rxjs';
 
 import { BoxScore, NbaGame, Scoreboard } from './nba.models';
-import { normalizeBoxScore, normalizeScoreboard } from './nba.utils';
+import { browserDateKey, normalizeBoxScore, normalizeScoreboard } from './nba.utils';
 
 @Injectable({ providedIn: 'root' })
 export class NbaDataService {
@@ -18,7 +18,10 @@ export class NbaDataService {
         .pipe(map(normalizeScoreboard));
     }
 
-    return this.http.get<unknown>('/api/nba/scoreboard').pipe(map(normalizeScoreboard));
+    return this.http.get<unknown>('/api/nba/scoreboard').pipe(
+      catchError(() => this.getEspnScoreboard(browserDateKey())),
+      map(normalizeScoreboard)
+    );
   }
 
   getBoxScore(game: NbaGame): Observable<BoxScore> {
@@ -33,5 +36,12 @@ export class NbaDataService {
     return this.http
       .get<unknown>(`/api/nba/boxscore/${encodeURIComponent(game.id)}`)
       .pipe(map(normalizeBoxScore));
+  }
+
+  private getEspnScoreboard(gameDate: string): Observable<unknown> {
+    return this.http.get<unknown>(
+      'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
+      { params: { dates: gameDate.replace(/-/g, '') } }
+    );
   }
 }
