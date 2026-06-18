@@ -320,7 +320,10 @@ function espnDetailStats(home: EspnSummaryTeam | undefined, away: EspnSummaryTea
     { name: 'shotsOnTarget', label: 'Shots on target' },
     { name: 'possessionPct', label: 'Possession', suffix: '%' },
     { name: 'wonCorners', label: 'Corners' },
-    { name: 'foulsCommitted', label: 'Fouls' }
+    { name: 'foulsCommitted', label: 'Fouls', lowerIsBetter: true },
+    { name: 'yellowCards', label: 'Yellow cards', lowerIsBetter: true },
+    { name: 'redCards', label: 'Red cards', lowerIsBetter: true },
+    { name: 'offsides', label: 'Offsides', lowerIsBetter: true }
   ];
   const value = (team: EspnSummaryTeam | undefined, name: string) => team?.statistics?.find((stat) => stat.name === name)?.displayValue ?? '';
   return definitions.flatMap((definition) => {
@@ -331,7 +334,10 @@ function espnDetailStats(home: EspnSummaryTeam | undefined, away: EspnSummaryTea
       label: definition.label,
       homeValue: homeValue + (definition.suffix && !homeValue.includes(definition.suffix) ? definition.suffix : ''),
       awayValue: awayValue + (definition.suffix && !awayValue.includes(definition.suffix) ? definition.suffix : ''),
-      winner: statWinner(homeValue, awayValue)
+      winner: definition.lowerIsBetter
+        ? statWinner(awayValue, homeValue)
+        : statWinner(homeValue, awayValue),
+      lowerIsBetter: definition.lowerIsBetter
     }];
   });
 }

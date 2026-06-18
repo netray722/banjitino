@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
-  it('renders banner navigation for NBA and FIFA boards', async () => {
+  it('renders the personal banner and Sports dropdown', async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [provideRouter([])]
@@ -14,10 +14,14 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
 
-    const text = fixture.nativeElement.textContent;
-    const links = fixture.nativeElement.querySelectorAll('.board-nav a') as NodeListOf<HTMLAnchorElement>;
-
-    expect(text).toContain('banjitino.com');
+    expect(fixture.nativeElement.textContent).toContain('sidequests.');
+    expect(fixture.nativeElement.querySelector('.brand-mark')).toBeNull();
+    const menuButton = fixture.nativeElement.querySelector('.sports-menu-button') as HTMLButtonElement;
+    expect(menuButton.getAttribute('aria-expanded')).toBe('false');
+    menuButton.click();
+    fixture.detectChanges();
+    const links = fixture.nativeElement.querySelectorAll('.sports-menu a') as NodeListOf<HTMLAnchorElement>;
+    expect(menuButton.getAttribute('aria-expanded')).toBe('true');
     expect(links.length).toBe(2);
     expect(links[0].getAttribute('href')).toBe('/nba');
     expect(links[1].getAttribute('href')).toBe('/fifa');

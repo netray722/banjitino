@@ -30,6 +30,7 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   protected readonly days = signal<FifaTimelineDay[]>([]);
   protected readonly loading = signal(true);
   protected readonly loadingPrevious = signal(false);
+  protected readonly hasEarlierDates = signal(true);
   protected readonly loadingNext = signal(false);
   protected readonly refreshing = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -80,12 +81,15 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   protected refresh(): void { void this.refreshActiveDate(false); }
   protected openDatePicker(input: HTMLInputElement): void { input.focus(); if (typeof input.showPicker === 'function') input.showPicker(); else input.click(); }
   protected changeDate(event: Event): void { const value = (event.target as HTMLInputElement).value; if (value) void this.jumpToDate(clampDate(value), true); }
+  protected showTodayButton(): boolean { const today = browserDateKey(); return today >= TOURNAMENT_START && today <= TOURNAMENT_END && this.activeDate() !== today; }
+  protected jumpToToday(): void { void this.jumpToDate(browserDateKey(), true); }
   protected toggleMatch(match: FifaMatch): void {
     if (this.expandedMatchId() === match.id) { this.expandedMatchId.set(null); return; }
     this.expandedMatchId.set(match.id);
     if (match.status !== 'scheduled' && !this.details()[match.id]?.data) this.loadDetails(match);
   }
   protected retryDetails(match: FifaMatch): void { this.loadDetails(match); }
+  protected loadEarlier(): void { void this.loadPrevious(); }
   protected dateLabel(date: string): string { return formatFifaDate(date); }
   protected fullDateLabel(date: string): string { return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(parseDate(date)); }
   protected updatedLabel(): string { const date = this.lastUpdated(); return date ? `Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date)}` : 'Loading the tournament'; }
@@ -97,7 +101,7 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
     const landing = await this.findGameDay(date, 1) ?? await this.findGameDay(addDays(date, -1), -1);
     if (generation !== this.generation) return;
     if (!landing) { this.days.set([]); this.loading.set(false); this.error.set('No World Cup matches were found in the tournament window.'); return; }
-    this.days.set([{ date: landing.matchDate, scoreboard: landing }]); this.activeDate.set(landing.matchDate); this.lastUpdated.set(new Date()); this.loading.set(false);
+    this.days.set([{ date: landing.matchDate, scoreboard: landing }]); this.hasEarlierDates.set(landing.matchDate > TOURNAMENT_START); this.activeDate.set(landing.matchDate); this.lastUpdated.set(new Date()); this.loading.set(false);
     const [previous, next] = await Promise.all([this.findGameDay(addDays(landing.matchDate, -1), -1), this.findGameDay(addDays(landing.matchDate, 1), 1)]);
     if (generation !== this.generation) return;
     this.days.set(this.sortedUnique([previous, landing, next].filter((day): day is FifaScoreboard => Boolean(day))));
@@ -105,11 +109,15 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   }
 
   private async loadPrevious(): Promise<void> {
-    if (this.loadingPrevious() || this.loading()) return;
+    if (this.loadingPrevious() || this.loading() || !this.hasEarlierDates()) return;
     const first = this.days()[0]; if (!first || first.date <= TOURNAMENT_START) return;
     this.loadingPrevious.set(true);
     const scoreboard = await this.findGameDay(addDays(first.date, -1), -1);
-    if (scoreboard) this.days.update((days) => this.sortedUnique([scoreboard, ...days.map((day) => day.scoreboard)]));
+    if (scoreboard) {
+      this.days.update((days) => this.sortedUnique([scoreboard, ...days.map((day) => day.scoreboard)]));
+      this.hasEarlierDates.set(scoreboard.matchDate > TOURNAMENT_START);
+    }
+    else this.hasEarlierDates.set(false);
     this.loadingPrevious.set(false);
   }
   private async loadNext(): Promise<void> {

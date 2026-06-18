@@ -56,6 +56,15 @@ describe('NbaBoardComponent', () => {
     dateInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-20');
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.today-button')).not.toBeNull();
+    });
+    (fixture.nativeElement.querySelector('.today-button') as HTMLButtonElement).click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.today-button')).toBeNull();
+    });
     fixture.destroy();
   });
 

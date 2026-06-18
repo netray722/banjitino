@@ -27,6 +27,11 @@ describe('FifaBoardComponent', () => {
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelectorAll('.match-summary').length).toBeGreaterThanOrEqual(2);
     });
+    const earlierButton = fixture.nativeElement.querySelector('.load-earlier-button') as HTMLButtonElement;
+    expect(earlierButton.textContent).toContain('Load earlier match days');
+    const callsBeforeEarlierLoad = dataService.getScoreboard.mock.calls.length;
+    earlierButton.click();
+    await vi.waitFor(() => expect(dataService.getScoreboard.mock.calls.length).toBeGreaterThan(callsBeforeEarlierLoad));
     const cards = fixture.nativeElement.querySelector('[data-date="2026-06-18"]')
       .querySelectorAll('.match-summary') as NodeListOf<HTMLButtonElement>;
     expect(cards.length).toBe(2);
@@ -52,6 +57,15 @@ describe('FifaBoardComponent', () => {
     dateInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-20');
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.today-button')).not.toBeNull();
+    });
+    (fixture.nativeElement.querySelector('.today-button') as HTMLButtonElement).click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.today-button')).toBeNull();
+    });
     fixture.destroy();
   });
 

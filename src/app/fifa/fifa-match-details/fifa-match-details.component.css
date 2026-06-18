@@ -108,8 +108,7 @@ h3 {
   text-transform: uppercase;
 }
 
-.event-panel p,
-.stat-row {
+.event-panel p {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -118,8 +117,7 @@ h3 {
   font-size: 0.82rem;
 }
 
-.event-panel p:first-of-type,
-.stat-row:first-of-type {
+.event-panel p:first-of-type {
   border-top: 0;
 }
 
@@ -132,7 +130,7 @@ h3 {
 }
 
 .team-stats header,
-.stat-row {
+.stat-values {
   display: grid;
   grid-template-columns: minmax(64px, 1fr) minmax(120px, 1.4fr) minmax(64px, 1fr);
   align-items: center;
@@ -146,14 +144,71 @@ h3 {
   text-transform: uppercase;
 }
 
-.stat-row strong {
-  border-radius: 999px;
-  padding: 4px 8px;
+.stat-comparison {
+  padding-block: 12px;
+  border-top: 1px solid var(--soft-border);
 }
 
-.stat-row .stat-winner {
-  background: #dcfce7;
-  color: #16633a;
+.stat-comparison:first-of-type {
+  border-top: 0;
+}
+
+.stat-values {
+  display: grid;
+  grid-template-columns: minmax(56px, 1fr) minmax(130px, 1.4fr) minmax(56px, 1fr);
+  align-items: center;
+  text-align: center;
+  font-size: 0.84rem;
+}
+
+.stat-values strong {
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.stat-values small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.stat-values .stat-favorable {
+  background: rgba(16, 185, 129, 0.13);
+  color: #0d8a62;
+}
+
+.comparison-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.bar-lane {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
+.bar-lane span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--subtle-text);
+  opacity: 0.72;
+}
+
+.home-lane span { margin-left: auto; }
+.away-lane span { margin-right: auto; }
+.bar-lane span.is-favorable { background: #10b981; opacity: 1; }
+
+:host-context([data-theme="dark"]) .stat-values .stat-favorable {
+  color: #6ee7b7;
 }
 
 @media (max-width: 760px) {
