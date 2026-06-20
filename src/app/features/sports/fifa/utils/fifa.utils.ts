@@ -244,16 +244,17 @@ interface EspnSummaryEvent {
   scoringPlay?: boolean;
   clock?: { displayValue?: string };
   type?: { text?: string; type?: string };
-  team?: { id?: string; abbreviation?: string };
+  team?: { id?: string; abbreviation?: string; displayName?: string };
   participants?: Array<{ athlete?: { displayName?: string } }>;
 }
 
 function normalizeEspnFifaMatchDetails(payload: unknown): FifaMatchDetails | null {
   const root = payload as {
-    header?: { id?: string; season?: { type?: { name?: string } }; competitions?: Array<{ date?: string; status?: { type?: { shortDetail?: string } }; competitors?: EspnSummaryTeam[]; details?: EspnSummaryEvent[] }> };
+    header?: { id?: string; season?: { type?: { name?: string } }; competitions?: Array<{ date?: string; altGameNote?: string; status?: { type?: { shortDetail?: string } }; competitors?: EspnSummaryTeam[]; details?: EspnSummaryEvent[] }> };
     boxscore?: { teams?: EspnSummaryTeam[] };
     rosters?: Array<{ homeAway?: 'home' | 'away'; formation?: string; team?: { id?: string; abbreviation?: string; displayName?: string; name?: string } }>;
     gameInfo?: { venue?: { fullName?: string; address?: { city?: string } }; attendance?: number; officials?: Array<{ displayName?: string; position?: { name?: string } }> };
+    keyEvents?: EspnSummaryEvent[];
   };
   if (!root.header?.competitions?.length || !root.boxscore?.teams?.length) return null;
 
@@ -265,8 +266,11 @@ function normalizeEspnFifaMatchDetails(payload: unknown): FifaMatchDetails | nul
   const home = espnDetailTeam(headerHome ?? statsHome, root.rosters?.find((team) => team.homeAway === 'home') ?? root.rosters?.[0]);
   const away = espnDetailTeam(headerAway ?? statsAway, root.rosters?.find((team) => team.homeAway === 'away') ?? root.rosters?.[1]);
   const teamCodes = new Map([[home.id, home.code], [away.id, away.code]]);
-  const events = competition.details ?? [];
+  // ESPN only exposes scoring plays in competition.details. Cards and
+  // substitutions live in the top-level keyEvents feed when it is available.
+  const events = root.keyEvents?.length ? root.keyEvents : competition.details ?? [];
   const referee = root.gameInfo?.officials?.find((official) => official.position?.name === 'Referee')?.displayName ?? root.gameInfo?.officials?.[0]?.displayName ?? '';
+  const group = competition.altGameNote?.match(/Group\s+[A-Z0-9]+/i)?.[0] ?? '';
 
   return {
     id: root.header.id ?? '',
@@ -278,18 +282,19 @@ function normalizeEspnFifaMatchDetails(payload: unknown): FifaMatchDetails | nul
     awayTeam: away,
     facts: [
       fact('Stage', root.header.season?.type?.name ?? ''),
+      fact('Group', group),
       fact('Referee', referee),
       fact('Kickoff', competition.date ? formatFifaKickoff(competition.date) : '')
     ].filter((item): item is FifaMatchFact => Boolean(item)),
     stats: espnDetailStats(statsHome, statsAway),
-    goals: events.filter((event) => event.scoringPlay).map((event) => espnDetailEvent(event, teamCodes)),
-    bookings: events.filter((event) => event.type?.type?.includes('card')).map((event) => espnDetailEvent(event, teamCodes)),
+    goals: events.filter((event) => event.scoringPlay).map((event) => espnDetailEvent(event, teamCodes)).sort(sortEvents),
+    bookings: events.filter((event) => event.type?.type?.includes('card')).map((event) => espnDetailEvent(event, teamCodes)).sort(sortEvents),
     substitutions: events.filter((event) => event.type?.type === 'substitution').map((event) => ({
       minute: event.clock?.displayValue ?? '',
       teamCode: teamCodes.get(event.team?.id ?? '') ?? event.team?.abbreviation ?? '',
       player: event.participants?.[0]?.athlete?.displayName ?? 'Substitution',
       detail: event.participants?.[1]?.athlete?.displayName ? `On for ${event.participants[1].athlete?.displayName}` : 'Substitution'
-    }))
+    })).sort(sortEvents)
   };
 }
 

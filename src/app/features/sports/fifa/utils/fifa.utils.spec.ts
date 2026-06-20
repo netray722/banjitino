@@ -173,6 +173,7 @@ describe('FIFA normalizers', () => {
             { homeAway: 'home', score: '1', team: { id: '450', abbreviation: 'CZE', displayName: 'Czechia' } },
             { homeAway: 'away', score: '1', team: { id: '467', abbreviation: 'RSA', displayName: 'South Africa' } }
           ],
+          altGameNote: 'FIFA World Cup, Group A',
           details: [{ scoringPlay: true, clock: { displayValue: "6'" }, type: { text: 'Goal', type: 'goal' }, team: { id: '450' }, participants: [{ athlete: { displayName: 'M. Sadilek' } }] }]
         }]
       },
@@ -181,12 +182,37 @@ describe('FIFA normalizers', () => {
         { homeAway: 'away', team: { id: '467', abbreviation: 'RSA' }, statistics: [{ name: 'totalShots', displayValue: '17' }, { name: 'foulsCommitted', displayValue: '10' }] }
       ] },
       rosters: [{ homeAway: 'home', formation: '3-5-2' }, { homeAway: 'away', formation: '4-3-3' }],
-      gameInfo: { venue: { fullName: 'Mercedes-Benz Stadium', address: { city: 'Atlanta, Georgia' } }, attendance: 67442 }
+      gameInfo: { venue: { fullName: 'Mercedes-Benz Stadium', address: { city: 'Atlanta, Georgia' } }, attendance: 67442 },
+      keyEvents: [{
+        scoringPlay: true,
+        clock: { displayValue: "6'" },
+        type: { text: 'Goal', type: 'goal' },
+        team: { id: '450' },
+        participants: [{ athlete: { displayName: 'M. Sadilek' } }]
+      }, {
+        clock: { displayValue: "40'" },
+        type: { text: 'Yellow Card', type: 'yellow-card' },
+        team: { id: '467' },
+        participants: [{ athlete: { displayName: 'T. Mbatha' } }]
+      }, {
+        clock: { displayValue: "55'" },
+        type: { text: 'Substitution', type: 'substitution' },
+        team: { id: '450' },
+        participants: [
+          { athlete: { displayName: 'J. Zeleny' } },
+          { athlete: { displayName: 'A. Sojka' } }
+        ]
+      }]
     });
 
     expect(details.venue).toBe('Mercedes-Benz Stadium');
     expect(details.homeTeam.tactics).toBe('3-5-2');
+    expect(details.facts).toContainEqual({ label: 'Group', value: 'Group A' });
     expect(details.goals[0]).toMatchObject({ player: 'M. Sadilek', teamCode: 'CZE' });
+    expect(details.bookings[0]).toMatchObject({ player: 'T. Mbatha', teamCode: 'RSA', detail: 'Yellow Card' });
+    expect(details.substitutions[0]).toEqual({
+      minute: "55'", teamCode: 'CZE', player: 'J. Zeleny', detail: 'On for A. Sojka'
+    });
     expect(details.stats[0]).toEqual({ label: 'Shots', homeValue: '14', awayValue: '17', winner: 'away' });
     expect(details.stats.find((stat) => stat.label === 'Fouls')).toMatchObject({
       homeValue: '12', awayValue: '10', winner: 'away', lowerIsBetter: true
