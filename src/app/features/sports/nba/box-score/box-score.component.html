@@ -1,0 +1,73 @@
+@let currentBoxScore = boxScore();
+<div class="box-score">
+  @if (currentBoxScore.arena) {
+    <p class="arena">{{ currentBoxScore.arena }}</p>
+  }
+
+  @for (team of teams(); track team.id) {
+    <section class="team-box" [style.--team-color]="team.color">
+      <header>
+        <div>
+          <span>{{ team.city }}</span>
+          <h3>{{ team.name }}</h3>
+        </div>
+        <strong>{{ team.score }}</strong>
+      </header>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Player</th>
+              <th scope="col">MIN</th>
+              <th scope="col">PTS</th>
+              <th scope="col">REB</th>
+              <th scope="col">AST</th>
+              <th scope="col">FG</th>
+              <th scope="col">3PT</th>
+              <th scope="col">FT</th>
+              <th scope="col">STL</th>
+              <th scope="col">BLK</th>
+              <th scope="col">TO</th>
+              <th scope="col">+/-</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (player of team.players; track player.id) {
+              <tr>
+                <th scope="row">
+                  <span>{{ player.shortName }}</span>
+                  <small>#{{ player.jersey }} {{ player.position }}{{ player.starter ? ' · Starter' : '' }}</small>
+                </th>
+                <td>{{ player.minutes }}</td>
+                <td class="emphasis">{{ player.points }}</td>
+                <td>{{ player.rebounds }}</td>
+                <td>{{ player.assists }}</td>
+                <td>{{ player.fieldGoals }}</td>
+                <td>{{ player.threePointers }}</td>
+                <td>{{ player.freeThrows }}</td>
+                <td>{{ player.steals }}</td>
+                <td>{{ player.blocks }}</td>
+                <td>{{ player.turnovers }}</td>
+                <td>{{ plusMinus(player.plusMinus) }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Team totals</th>
+              <td></td>
+              <td>{{ team.totals.points }}</td>
+              <td>{{ team.totals.rebounds }}</td>
+              <td>{{ team.totals.assists }}</td>
+              <td>{{ team.totals.fieldGoals }}</td>
+              <td>{{ team.totals.threePointers }}</td>
+              <td>{{ team.totals.freeThrows }}</td>
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  }
+</div>

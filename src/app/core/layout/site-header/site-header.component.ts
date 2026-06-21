@@ -1,63 +1,65 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-site-header',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './site-header.component.html',
-  styleUrl: './site-header.component.css'
+  styleUrl: './site-header.component.scss'
 })
 export class SiteHeaderComponent {
-  @ViewChild('sportsMenuRoot') private sportsMenuRoot?: ElementRef<HTMLElement>;
-  @ViewChild('sportsMenuButton') private sportsMenuButton?: ElementRef<HTMLButtonElement>;
-
-  isDarkTheme = false;
-  sportsMenuOpen = false;
+  private readonly document = inject(DOCUMENT);
+  private readonly view = this.document.defaultView;
+  private readonly sportsMenuRoot = viewChild<ElementRef<HTMLElement>>('sportsMenuRoot');
+  private readonly sportsMenuButton = viewChild<ElementRef<HTMLButtonElement>>('sportsMenuButton');
+  protected readonly isDarkTheme = signal(false);
+  protected readonly sportsMenuOpen = signal(false);
 
   constructor() {
-    if (typeof window === 'undefined') return;
-    const savedTheme = window.localStorage.getItem('theme');
-    this.isDarkTheme = savedTheme
+    if (!this.view) return;
+    const savedTheme = this.view.localStorage.getItem('theme');
+    this.isDarkTheme.set(savedTheme
       ? savedTheme === 'dark'
-      : window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+      : this.view.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
     this.applyTheme();
   }
 
-  toggleTheme(): void {
-    this.isDarkTheme = !this.isDarkTheme;
-    window.localStorage.setItem('theme', this.isDarkTheme ? 'dark' : 'light');
+  protected toggleTheme(): void {
+    this.isDarkTheme.update((isDark) => !isDark);
+    this.view?.localStorage.setItem('theme', this.isDarkTheme() ? 'dark' : 'light');
     this.applyTheme();
   }
 
-  toggleSportsMenu(): void {
-    this.sportsMenuOpen = !this.sportsMenuOpen;
+  protected toggleSportsMenu(): void {
+    this.sportsMenuOpen.update((isOpen) => !isOpen);
   }
 
-  openSportsMenu(event: Event): void {
+  protected openSportsMenu(event: Event): void {
     event.preventDefault();
-    this.sportsMenuOpen = true;
-    setTimeout(() => this.sportsMenuRoot?.nativeElement.querySelector<HTMLAnchorElement>('a')?.focus());
+    this.sportsMenuOpen.set(true);
+    setTimeout(() => this.sportsMenuRoot()?.nativeElement.querySelector<HTMLAnchorElement>('a')?.focus());
   }
 
-  closeSportsMenu(): void {
-    this.sportsMenuOpen = false;
+  protected closeSportsMenu(): void {
+    this.sportsMenuOpen.set(false);
   }
 
   @HostListener('document:click', ['$event'])
   closeSportsMenuOnOutsideClick(event: MouseEvent): void {
-    if (this.sportsMenuOpen && !this.sportsMenuRoot?.nativeElement.contains(event.target as Node)) {
+    if (this.sportsMenuOpen() && !this.sportsMenuRoot()?.nativeElement.contains(event.target as Node)) {
       this.closeSportsMenu();
     }
   }
 
   @HostListener('document:keydown.escape')
   closeSportsMenuOnEscape(): void {
-    if (!this.sportsMenuOpen) return;
+    if (!this.sportsMenuOpen()) return;
     this.closeSportsMenu();
-    this.sportsMenuButton?.nativeElement.focus();
+    this.sportsMenuButton()?.nativeElement.focus();
   }
 
   private applyTheme(): void {
-    document.documentElement.dataset['theme'] = this.isDarkTheme ? 'dark' : 'light';
+    this.document.documentElement.dataset['theme'] = this.isDarkTheme() ? 'dark' : 'light';
   }
 }

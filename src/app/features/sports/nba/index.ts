@@ -1,1 +1,1 @@
-export { NbaBoardComponent } from './components/nba-board/nba-board.component';
+export { NbaBoardComponent } from './nba-board/nba-board.component';

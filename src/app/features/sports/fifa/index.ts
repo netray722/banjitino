@@ -1,1 +1,1 @@
-export { FifaBoardComponent } from './components/fifa-board/fifa-board.component';
+export { FifaBoardComponent } from './fifa-board/fifa-board.component';

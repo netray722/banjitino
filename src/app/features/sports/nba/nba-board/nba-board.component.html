@@ -1,0 +1,66 @@
+<header class="timeline-toolbar">
+  <div class="toolbar-inner">
+    <div>
+      <p class="eyebrow">NBA timeline</p>
+      <div class="date-controls">
+        <button class="date-picker" type="button" (click)="openDatePicker(dateInput)" aria-label="Jump to an NBA date">
+          <svg lucideCalendarDays aria-hidden="true"></svg>
+          <span>{{ dateLabel(activeDate()) }}</span>
+        </button>
+        @if (showTodayButton()) { <button class="today-button" type="button" (click)="jumpToToday()" [disabled]="loading()">Today</button> }
+      </div>
+      <input #dateInput class="date-input" id="nba-date" type="date" [value]="activeDate()" (change)="changeDate($event)" aria-label="Jump to an NBA date">
+    </div>
+    <div class="toolbar-actions">
+      <span class="updated">{{ updatedLabel() }}</span>
+      <button class="refresh-button" type="button" [class.is-spinning]="refreshing()" [disabled]="refreshing()" (click)="refresh()" aria-label="Refresh visible NBA scores">
+        <svg lucideRefreshCw aria-hidden="true"></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="page-shell nba-page">
+  @if (error()) {
+    <div class="inline-error" role="status">{{ error() }}</div>
+  }
+  @if (loading()) {
+    <section class="initial-loader" aria-label="Loading NBA timeline">
+      <span class="loader-dot"></span><p>Finding the nearest game day…</p>
+    </section>
+  } @else if (days().length) {
+    <app-timeline-previous-loader
+      [available]="hasEarlierDates()"
+      [loading]="loadingPrevious()"
+      itemLabel="game days"
+      boundaryText="No earlier game days found"
+      (loadPrevious)="loadEarlier()"
+    />
+    <section class="timeline" aria-label="NBA games by date">
+      @for (day of days(); track day.date) {
+        <article class="timeline-day" [attr.data-date]="day.date" [attr.aria-labelledby]="'nba-day-' + day.date">
+          <header class="day-heading">
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div>
+              <p class="relative-date">{{ dateLabel(day.date) }}</p>
+              <h1 [id]="'nba-day-' + day.date">{{ fullDateLabel(day.date) }}</h1>
+            </div>
+            <span class="day-count">{{ day.scoreboard.games.length }} {{ day.scoreboard.games.length === 1 ? 'game' : 'games' }}</span>
+          </header>
+          <div class="game-list">
+            @for (game of day.scoreboard.games; track game.id) {
+              <app-game-card [game]="game" [expanded]="expandedGameId() === game.id" [boxScoreState]="boxScoreFor(game.id)" (toggle)="toggleGame(game)" (retry)="retryBoxScore(game)" />
+            }
+          </div>
+        </article>
+      }
+    </section>
+    <div #nextSentinel class="edge-sentinel" aria-hidden="true">
+      @if (loadingNext()) { <span class="edge-loader">Loading upcoming games…</span> }
+    </div>
+  } @else {
+    <section class="state-panel"><h1>No games found</h1><p>Try another date from the picker above.</p></section>
+  }
+</main>
+
+<footer><span>Visible NBA scores refresh every 30 seconds.</span><span>Earlier and upcoming dates load as you scroll.</span></footer>

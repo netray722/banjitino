@@ -1,0 +1,17 @@
+<div class="previous-loader" [class.is-pulling]="pullProgress() > 0">
+  @if (available()) {
+    <button class="load-earlier-button" type="button" [disabled]="loading()" [style.transform]="pullTransform()" (click)="requestLoad()">
+      @if (loading()) {
+        <span class="spinner" aria-hidden="true"></span> Loading earlier {{ itemLabel() }}…
+      } @else if (pullState() === 'ready') {
+        Release to load earlier {{ itemLabel() }}
+      } @else if (pullState() === 'pulling') {
+        Pull farther to load earlier {{ itemLabel() }}
+      } @else {
+        Load earlier {{ itemLabel() }} — pull down, scroll up, or click
+      }
+    </button>
+  } @else {
+    <span class="boundary">{{ boundaryText() }}</span>
+  }
+</div>

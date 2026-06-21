@@ -1,0 +1,89 @@
+@let currentGame = game();
+@let currentBoxScore = boxScoreState();
+<article class="game-card" [class.is-expanded]="expanded()">
+  <button
+    type="button"
+    class="game-summary"
+    [attr.aria-expanded]="expanded()"
+    [attr.aria-controls]="'box-score-' + currentGame.id"
+    (click)="toggle.emit()"
+  >
+    <div class="game-meta">
+      <span class="status" [class.live]="currentGame.status === 'live'">
+        @if (currentGame.status === 'live') {
+          <span class="live-dot"></span>
+        } @else if (currentGame.status === 'scheduled') {
+          <svg lucideClock3 aria-hidden="true"></svg>
+        }
+        {{ statusLabel() }}
+      </span>
+      @if (currentGame.label || currentGame.seriesText) {
+        <span class="context">{{ currentGame.seriesText || currentGame.label }}</span>
+      }
+    </div>
+
+    <div class="matchup">
+      <div class="team-row" [style.--team-color]="currentGame.awayTeam.color">
+        <span class="team-logo" aria-hidden="true">
+          <span>{{ currentGame.awayTeam.code }}</span>
+          <img [src]="logoUrl(currentGame.awayTeam)" alt="" width="44" height="44" (error)="hideBrokenImage($event)">
+        </span>
+        <div class="team-name">
+          <span>{{ currentGame.awayTeam.city }}</span>
+          <strong>{{ currentGame.awayTeam.name }}</strong>
+        </div>
+        <span class="record">{{ record(currentGame.awayTeam) }}</span>
+        @if (currentGame.status !== 'scheduled') {
+          <strong class="score">{{ currentGame.awayTeam.score }}</strong>
+        }
+      </div>
+
+      <div class="team-row" [style.--team-color]="currentGame.homeTeam.color">
+        <span class="team-logo" aria-hidden="true">
+          <span>{{ currentGame.homeTeam.code }}</span>
+          <img [src]="logoUrl(currentGame.homeTeam)" alt="" width="44" height="44" (error)="hideBrokenImage($event)">
+        </span>
+        <div class="team-name">
+          <span>{{ currentGame.homeTeam.city }}</span>
+          <strong>{{ currentGame.homeTeam.name }}</strong>
+        </div>
+        <span class="record">{{ record(currentGame.homeTeam) }}</span>
+        @if (currentGame.status !== 'scheduled') {
+          <strong class="score">{{ currentGame.homeTeam.score }}</strong>
+        }
+      </div>
+    </div>
+
+    <span class="expand-label">{{ expanded() ? 'Hide' : 'Box score' }}</span>
+    <svg class="chevron" lucideChevronDown aria-hidden="true"></svg>
+  </button>
+
+  @if (expanded()) {
+    <section class="game-details" [id]="'box-score-' + currentGame.id">
+      @if (currentGame.status === 'scheduled') {
+        <div class="scheduled-message">
+          <svg lucideClock3 aria-hidden="true"></svg>
+          <div>
+            <strong>Tipoff {{ statusLabel() }}</strong>
+            <p>Player box scores will appear here after the game starts.</p>
+          </div>
+        </div>
+      } @else if (currentBoxScore?.loading) {
+        <div class="details-loading">
+          <span></span><span></span><span></span>
+          <p>Loading box score</p>
+        </div>
+      } @else if (currentBoxScore?.data; as boxScore) {
+        <app-box-score [boxScore]="boxScore" />
+      } @else {
+        <div class="details-error">
+          <p>{{ currentBoxScore?.error || 'Box score is not available yet.' }}</p>
+          <button type="button" (click)="retry.emit(); $event.stopPropagation()">
+            <svg lucideRefreshCw aria-hidden="true"></svg>
+            Retry
+          </button>
+        </div>
+      }
+    </section>
+  }
+</article>
