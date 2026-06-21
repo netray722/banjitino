@@ -1,8 +1,4 @@
-interface TeamLogoContext {
-  params: {
-    teamId?: string | string[];
-  };
-}
+import { TeamLogoContext } from './logo.types';
 
 export const onRequestGet = async (context: TeamLogoContext): Promise<Response> => {
   const teamId = Array.isArray(context.params.teamId)

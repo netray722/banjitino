@@ -1,4 +1,5 @@
-const FIFA_API = 'https://api.fifa.com/api/v3';
+import { FIFA_API } from './fifa.constants';
+import { FifaDateWindow } from './fifa.types';
 export async function fetchFifaJson(path: string, cacheSeconds: number): Promise<Response> {
   const upstream = await fetch(`${FIFA_API}/${path}`, {
     headers: fifaHeaders('application/json')
@@ -39,7 +40,7 @@ export async function fetchFifaImage(path: string, cacheSeconds: number): Promis
   });
 }
 
-export function fifaDateWindow(matchDate: string): { matchDate: string; from: string; to: string } {
+export function fifaDateWindow(matchDate: string): FifaDateWindow {
   const previousDate = addDays(matchDate, -1);
   const nextDate = addDays(matchDate, 2);
 

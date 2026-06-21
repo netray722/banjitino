@@ -1,4 +1,4 @@
-const NBA_CDN = 'https://cdn.nba.com/static/json/liveData';
+import { NBA_CDN } from './nba.constants';
 
 export async function fetchNbaJson(path: string, cacheSeconds: number): Promise<Response> {
   const upstream = await fetch(`${NBA_CDN}/${path}`, {

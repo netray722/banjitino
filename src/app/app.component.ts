@@ -7,6 +7,6 @@ import { SiteHeaderComponent } from './core/layout/site-header/site-header.compo
   selector: 'app-root',
   imports: [RouterOutlet, SiteHeaderComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {}
