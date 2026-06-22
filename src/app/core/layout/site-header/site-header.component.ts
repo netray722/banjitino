@@ -15,6 +15,7 @@ export class SiteHeaderComponent {
   private readonly sportsMenuButton = viewChild<ElementRef<HTMLButtonElement>>('sportsMenuButton');
   protected readonly isDarkTheme = signal(false);
   protected readonly sportsMenuOpen = signal(false);
+  protected readonly nbaMenuOpen = signal(false);
 
   constructor() {
     if (!this.view) return;
@@ -38,11 +39,17 @@ export class SiteHeaderComponent {
   protected openSportsMenu(event: Event): void {
     event.preventDefault();
     this.sportsMenuOpen.set(true);
-    setTimeout(() => this.sportsMenuRoot()?.nativeElement.querySelector<HTMLAnchorElement>('a')?.focus());
+    setTimeout(() => this.sportsMenuRoot()?.nativeElement.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
+  }
+
+  protected toggleNbaMenu(event: Event): void {
+    event.stopPropagation();
+    this.nbaMenuOpen.update((isOpen) => !isOpen);
   }
 
   protected closeSportsMenu(): void {
     this.sportsMenuOpen.set(false);
+    this.nbaMenuOpen.set(false);
   }
 
   @HostListener('document:click', ['$event'])

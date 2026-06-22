@@ -44,4 +44,25 @@ describe('FifaDataService', () => {
     http.expectOne('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=760438').flush({});
     http.verify();
   });
+
+  it('loads and normalizes current FIFA standings', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [FifaDataService, provideHttpClient(), provideHttpClientTesting()]
+    });
+    const service = TestBed.inject(FifaDataService);
+    const http = TestBed.inject(HttpTestingController);
+    let points = -1;
+
+    service.getStandings().subscribe((standings) => points = standings[0].points);
+    http.expectOne('/api/fifa/standings').flush({
+      children: [{
+        name: 'Group A',
+        standings: { entries: [{ team: { id: '203', abbreviation: 'MEX' }, stats: [{ name: 'points', value: 6 }] }] }
+      }]
+    });
+
+    expect(points).toBe(6);
+    http.verify();
+  });
 });

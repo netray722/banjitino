@@ -20,11 +20,15 @@ describe('SiteHeaderComponent', () => {
     expect(menuButton.getAttribute('aria-expanded')).toBe('false');
     menuButton.click();
     fixture.detectChanges();
-    const links = fixture.nativeElement.querySelectorAll('.sports-menu a') as NodeListOf<HTMLAnchorElement>;
     expect(menuButton.getAttribute('aria-expanded')).toBe('true');
-    expect(links.length).toBe(2);
-    expect(links[0].getAttribute('href')).toBe('/nba');
-    expect(links[1].getAttribute('href')).toBe('/fifa');
+    const nbaButton = fixture.nativeElement.querySelector('.section-menu-button') as HTMLButtonElement;
+    expect(nbaButton.getAttribute('aria-expanded')).toBe('false');
+    nbaButton.click();
+    fixture.detectChanges();
+    const nbaLinks = fixture.nativeElement.querySelectorAll('.section-submenu a') as NodeListOf<HTMLAnchorElement>;
+    expect(nbaButton.getAttribute('aria-expanded')).toBe('true');
+    expect([...nbaLinks].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/nba/trades']);
+    expect(fixture.nativeElement.querySelector('.sports-menu > a').getAttribute('href')).toBe('/fifa');
   });
 
   it('toggles and saves the site theme', async () => {

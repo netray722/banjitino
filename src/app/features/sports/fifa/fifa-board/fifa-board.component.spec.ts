@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FifaDataService } from '../fifa-data.service';
-import { fifaDetailsFixture, fifaScoreboardFixture } from '../fifa-test-data';
+import { fifaDetailsFixture, fifaScoreboardFixture, fifaStandingsFixture } from '../fifa-test-data';
 import { FifaBoardComponent } from './fifa-board.component';
 
 describe('FifaBoardComponent', () => {
@@ -17,7 +17,8 @@ describe('FifaBoardComponent', () => {
   it('renders matches and loads details when a completed match is expanded', async () => {
     const dataService = {
       getScoreboard: vi.fn(() => of(fifaScoreboardFixture)),
-      getMatchDetails: vi.fn(() => of(fifaDetailsFixture))
+      getMatchDetails: vi.fn(() => of(fifaDetailsFixture)),
+      getStandings: vi.fn(() => of(fifaStandingsFixture))
     };
 
     await TestBed.configureTestingModule({
@@ -32,7 +33,8 @@ describe('FifaBoardComponent', () => {
     expect(dataService.getScoreboard).toHaveBeenCalledWith('2026-06-18');
     await vi.waitFor(() => {
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelectorAll('.match-summary').length).toBeGreaterThanOrEqual(2);
+      expect(fixture.nativeElement.querySelectorAll('.match-summary').length).toBeGreaterThanOrEqual(6);
+      expect(fixture.nativeElement.querySelectorAll('.standing-row').length).toBeGreaterThanOrEqual(12);
     });
     const earlierButton = fixture.nativeElement.querySelector('.load-earlier-button') as HTMLButtonElement;
     expect(earlierButton.textContent).toContain('Load earlier match days');
@@ -55,9 +57,11 @@ describe('FifaBoardComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Mercedes-Benz Stadium');
 
     const refreshButton = fixture.nativeElement.querySelector('.refresh-button') as HTMLButtonElement;
+    dataService.getStandings.mockReturnValueOnce(throwError(() => new Error('standings unavailable')));
     refreshButton.click();
     fixture.detectChanges();
     expect(dataService.getScoreboard.mock.calls.length).toBeGreaterThan(1);
+    expect(fixture.nativeElement.querySelectorAll('.standing-row').length).toBeGreaterThanOrEqual(12);
 
     const dateInput = fixture.nativeElement.querySelector('#fifa-date') as HTMLInputElement;
     dateInput.value = '2026-06-20';
@@ -79,7 +83,8 @@ describe('FifaBoardComponent', () => {
   it('opens the native date picker from the desktop date button', async () => {
     const dataService = {
       getScoreboard: vi.fn(() => of(fifaScoreboardFixture)),
-      getMatchDetails: vi.fn(() => of(fifaDetailsFixture))
+      getMatchDetails: vi.fn(() => of(fifaDetailsFixture)),
+      getStandings: vi.fn(() => of(fifaStandingsFixture))
     };
 
     await TestBed.configureTestingModule({
@@ -102,6 +107,31 @@ describe('FifaBoardComponent', () => {
 
     expect(showPicker).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(dateInput);
+    fixture.destroy();
+  });
+
+  it('does not overlap standings refresh requests', async () => {
+    const standingsRequest = new Subject<typeof fifaStandingsFixture>();
+    const dataService = {
+      getScoreboard: vi.fn(() => of(fifaScoreboardFixture)),
+      getMatchDetails: vi.fn(() => of(fifaDetailsFixture)),
+      getStandings: vi.fn(() => standingsRequest)
+    };
+    await TestBed.configureTestingModule({
+      imports: [FifaBoardComponent],
+      providers: [{ provide: FifaDataService, useValue: dataService }]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(FifaBoardComponent);
+    fixture.detectChanges();
+
+    expect(dataService.getStandings).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(60_000);
+    expect(dataService.getStandings).toHaveBeenCalledOnce();
+
+    standingsRequest.next(fifaStandingsFixture);
+    standingsRequest.complete();
+    vi.advanceTimersByTime(60_000);
+    expect(dataService.getStandings).toHaveBeenCalledTimes(2);
     fixture.destroy();
   });
 });

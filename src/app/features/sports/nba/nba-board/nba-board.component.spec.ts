@@ -1,17 +1,18 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { browserDateKey } from '../nba-data';
 import { NbaDataService } from '../nba-data.service';
-import { boxScoreFixture, scoreboardFixture } from '../nba-test-data';
+import { boxScoreFixture, scoreboardFixture, standingsFixture } from '../nba-test-data';
 import { NbaBoardComponent } from './nba-board.component';
 
 describe('NbaBoardComponent', () => {
   it('renders games and loads a box score when a completed game is expanded', async () => {
     const dataService = {
       getScoreboard: vi.fn(() => of(scoreboardFixture)),
-      getBoxScore: vi.fn(() => of(boxScoreFixture))
+      getBoxScore: vi.fn(() => of(boxScoreFixture)),
+      getStandings: vi.fn(() => of(standingsFixture))
     };
 
     await TestBed.configureTestingModule({
@@ -24,6 +25,7 @@ describe('NbaBoardComponent', () => {
     await fixture.whenStable();
 
     expect(dataService.getScoreboard).toHaveBeenCalledWith(undefined);
+    expect(dataService.getStandings).toHaveBeenCalledOnce();
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelectorAll('.game-summary').length).toBeGreaterThanOrEqual(2);
@@ -71,7 +73,8 @@ describe('NbaBoardComponent', () => {
   it('opens the native date picker from the desktop date button', async () => {
     const dataService = {
       getScoreboard: vi.fn(() => of(scoreboardFixture)),
-      getBoxScore: vi.fn(() => of(boxScoreFixture))
+      getBoxScore: vi.fn(() => of(boxScoreFixture)),
+      getStandings: vi.fn(() => of(standingsFixture))
     };
 
     await TestBed.configureTestingModule({
@@ -94,6 +97,40 @@ describe('NbaBoardComponent', () => {
 
     expect(showPicker).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(dateInput);
+    fixture.destroy();
+  });
+
+  it('prevents overlapping standings requests and preserves the last successful standings', async () => {
+    TestBed.resetTestingModule();
+    const pending = new Subject<typeof standingsFixture>();
+    const dataService = {
+      getScoreboard: vi.fn(() => of(scoreboardFixture)),
+      getBoxScore: vi.fn(() => of(boxScoreFixture)),
+      getStandings: vi.fn()
+        .mockReturnValueOnce(pending)
+        .mockReturnValueOnce(throwError(() => new Error('offline')))
+    };
+    await TestBed.configureTestingModule({
+      imports: [NbaBoardComponent],
+      providers: [{ provide: NbaDataService, useValue: dataService }]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(NbaBoardComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (fixture.nativeElement.querySelector('.refresh-button') as HTMLButtonElement).click();
+    expect(dataService.getStandings).toHaveBeenCalledOnce();
+
+    pending.next(standingsFixture);
+    pending.complete();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('#3 East · 42-28');
+    });
+
+    (fixture.nativeElement.querySelector('.refresh-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(dataService.getStandings).toHaveBeenCalledTimes(2);
+    expect(fixture.nativeElement.textContent).toContain('#3 East · 42-28');
     fixture.destroy();
   });
 });

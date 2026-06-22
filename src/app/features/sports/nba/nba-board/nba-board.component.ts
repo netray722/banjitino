@@ -10,19 +10,19 @@ import {
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LucideCalendarDays, LucideRefreshCw } from '@lucide/angular';
-import { Subject, catchError, firstValueFrom, interval, of, takeUntil } from 'rxjs';
+import { Subject, catchError, finalize, firstValueFrom, interval, of, takeUntil } from 'rxjs';
 
 import { TimelinePreviousLoaderComponent } from '../../../../shared/timeline/timeline-previous-loader.component';
-import { browserDateKey, formatGameDate } from '../nba-data';
+import { TimelineDateToolbarComponent } from '../../../../shared/timeline/timeline-date-toolbar/timeline-date-toolbar.component';
+import { browserDateKey, buildNbaStandingsLookup, findNbaStanding, formatGameDate } from '../nba-data';
 import { NbaDataService } from '../nba-data.service';
-import { BoxScore, BoxScoreState, NbaGame, Scoreboard } from '../nba.types';
+import { BoxScore, BoxScoreState, NbaGame, NbaStanding, NbaStandingsLookup, Scoreboard, TeamSummary } from '../nba.types';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { NbaTimelineDay } from './nba-board.types';
 
 @Component({
   selector: 'app-nba-board',
-  imports: [GameCardComponent, TimelinePreviousLoaderComponent, LucideCalendarDays, LucideRefreshCw],
+  imports: [GameCardComponent, TimelinePreviousLoaderComponent, TimelineDateToolbarComponent],
   templateUrl: './nba-board.component.html',
   styleUrl: './nba-board.component.scss'
 })
@@ -33,6 +33,7 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
   private readonly destroyed = new Subject<void>();
   private readonly cache = new Map<string, Scoreboard>();
   private readonly pending = new Map<string, Promise<Scoreboard | null>>();
+  private readonly standingsLoading = signal(false);
   private observer?: IntersectionObserver;
   private generation = 0;
   private scrollFrame = 0;
@@ -50,10 +51,13 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
   protected readonly boxScores = signal<Record<string, BoxScoreState>>({});
   protected readonly lastUpdated = signal<Date | null>(null);
   protected readonly activeDate = signal(browserDateKey());
+  protected readonly standings = signal<NbaStandingsLookup>({});
 
   ngOnInit(): void {
     void this.jumpToDate(browserDateKey(), false);
+    this.refreshStandings();
     this.startScoreboardRefresh();
+    this.startStandingsRefresh();
     this.startLiveBoxScoreRefresh();
     this.registerCleanup();
   }
@@ -66,6 +70,10 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
     interval(30_000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => void this.refreshActiveDate(true));
+  }
+
+  private startStandingsRefresh(): void {
+    interval(60_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refreshStandings());
   }
 
   private startLiveBoxScoreRefresh(): void {
@@ -122,18 +130,10 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
 
   protected refresh(): void {
     void this.refreshActiveDate(false);
+    this.refreshStandings();
   }
 
-  protected openDatePicker(input: HTMLInputElement): void {
-    input.focus();
-    if (typeof input.showPicker === 'function') input.showPicker();
-    else input.click();
-  }
-
-  protected changeDate(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    if (value) void this.jumpToDate(value, true);
-  }
+  protected changeDate(value: string): void { void this.jumpToDate(value, true); }
 
   protected showTodayButton(): boolean {
     return this.activeDate() !== browserDateKey();
@@ -176,6 +176,20 @@ export class NbaBoardComponent implements OnInit, AfterViewInit {
 
   protected boxScoreFor(gameId: string): BoxScoreState | null {
     return this.boxScores()[gameId] ?? null;
+  }
+
+  protected standingFor(team: TeamSummary): NbaStanding | null { return findNbaStanding(this.standings(), team); }
+
+  private refreshStandings(): void {
+    if (this.standingsLoading()) return;
+    this.standingsLoading.set(true);
+    this.dataService.getStandings().pipe(
+      catchError(() => of(null)),
+      finalize(() => this.standingsLoading.set(false)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((standings) => {
+      if (standings) this.standings.set(buildNbaStandingsLookup(standings));
+    });
   }
 
   private async jumpToDate(date: string, smooth: boolean): Promise<void> {

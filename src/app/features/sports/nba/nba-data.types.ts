@@ -118,3 +118,65 @@ export interface EspnBoxScorePayload {
     id?: string;
   };
 }
+
+export interface EspnStandingStat {
+  name?: string;
+  value?: number;
+  displayValue?: string;
+}
+
+export interface EspnStandingEntry {
+  team?: { id?: string; abbreviation?: string };
+  stats?: EspnStandingStat[];
+}
+
+export interface EspnStandingsPayload {
+  children?: Array<{
+    name?: string;
+    abbreviation?: string;
+    standings?: { entries?: EspnStandingEntry[] };
+  }>;
+}
+
+export interface EspnTransaction {
+  date?: string;
+  description?: string;
+  team?: {
+    id?: string;
+    abbreviation?: string;
+    displayName?: string;
+    logos?: Array<{ href?: string; rel?: string[] }>;
+  };
+}
+
+export interface EspnTransactionsPayload {
+  pageIndex?: number;
+  pageCount?: number;
+  transactions?: EspnTransaction[];
+}
+
+export interface EspnPlayerSearchPayload {
+  results?: Array<{
+    type?: string;
+    contents?: Array<{
+      type?: string;
+      displayName?: string;
+      description?: string;
+      defaultLeagueSlug?: string;
+      uid?: string;
+      image?: { default?: string };
+    }>;
+  }>;
+}
+
+export interface EspnPlayerStatsPayload {
+  categories?: Array<{
+    name?: string;
+    names?: string[];
+    statistics?: Array<{
+      season?: { year?: number; displayName?: string };
+      position?: string;
+      stats?: string[];
+    }>;
+  }>;
+}

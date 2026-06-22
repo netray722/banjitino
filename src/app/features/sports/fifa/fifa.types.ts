@@ -27,6 +27,20 @@ export interface FifaScoreboard {
   matches: FifaMatch[];
 }
 
+export interface FifaStanding {
+  teamId: string;
+  teamCode: string;
+  group: string;
+  rank: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  points: number;
+  goalDifference: number;
+}
+
+export type FifaStandingsLookup = Readonly<Record<string, FifaStanding>>;
+
 export interface FifaPlayer {
   id: string;
   name: string;

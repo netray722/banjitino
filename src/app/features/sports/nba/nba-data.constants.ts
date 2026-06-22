@@ -10,3 +10,25 @@ export const TEAM_COLORS: Record<string, string> = {
 export const ESPN_CODE_OVERRIDES: Record<string, string> = {
   GS: 'GSW', NY: 'NYK', NO: 'NOP', SA: 'SAS', UTAH: 'UTA', WSH: 'WAS'
 };
+
+export const NBA_TRADE_PAGE_SIZE = 100;
+export const NBA_FIRST_TRANSACTION_SEASON = 2000;
+export const NBA_MAX_PLAYER_ENRICHMENT_COUNT = 12;
+
+export const NBA_TEAM_OPTIONS = [
+  { code: 'ATL', name: 'Atlanta Hawks' }, { code: 'BOS', name: 'Boston Celtics' },
+  { code: 'BKN', name: 'Brooklyn Nets' }, { code: 'CHA', name: 'Charlotte Hornets' },
+  { code: 'CHI', name: 'Chicago Bulls' }, { code: 'CLE', name: 'Cleveland Cavaliers' },
+  { code: 'DAL', name: 'Dallas Mavericks' }, { code: 'DEN', name: 'Denver Nuggets' },
+  { code: 'DET', name: 'Detroit Pistons' }, { code: 'GSW', name: 'Golden State Warriors' },
+  { code: 'HOU', name: 'Houston Rockets' }, { code: 'IND', name: 'Indiana Pacers' },
+  { code: 'LAC', name: 'LA Clippers' }, { code: 'LAL', name: 'Los Angeles Lakers' },
+  { code: 'MEM', name: 'Memphis Grizzlies' }, { code: 'MIA', name: 'Miami Heat' },
+  { code: 'MIL', name: 'Milwaukee Bucks' }, { code: 'MIN', name: 'Minnesota Timberwolves' },
+  { code: 'NOP', name: 'New Orleans Pelicans' }, { code: 'NYK', name: 'New York Knicks' },
+  { code: 'OKC', name: 'Oklahoma City Thunder' }, { code: 'ORL', name: 'Orlando Magic' },
+  { code: 'PHI', name: 'Philadelphia 76ers' }, { code: 'PHX', name: 'Phoenix Suns' },
+  { code: 'POR', name: 'Portland Trail Blazers' }, { code: 'SAC', name: 'Sacramento Kings' },
+  { code: 'SAS', name: 'San Antonio Spurs' }, { code: 'TOR', name: 'Toronto Raptors' },
+  { code: 'UTA', name: 'Utah Jazz' }, { code: 'WAS', name: 'Washington Wizards' }
+] as const;

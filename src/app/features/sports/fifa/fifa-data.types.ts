@@ -79,3 +79,29 @@ export interface EspnFifaMatchDetailsPayload {
 }
 
 export interface StatValues { home: unknown; away: unknown; }
+
+export interface EspnStandingStat {
+  name?: string;
+  value?: number;
+  displayValue?: string;
+}
+
+export interface EspnStandingEntry {
+  team?: {
+    id?: string;
+    abbreviation?: string;
+  };
+  note?: {
+    rank?: number;
+  };
+  stats?: EspnStandingStat[];
+}
+
+export interface EspnStandingsPayload {
+  children?: Array<{
+    name?: string;
+    standings?: {
+      entries?: EspnStandingEntry[];
+    };
+  }>;
+}

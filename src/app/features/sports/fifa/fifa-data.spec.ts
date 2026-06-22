@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatFifaDate, normalizeFifaMatchDetails, normalizeFifaScoreboard } from './fifa-data';
+import { buildFifaStandingsLookup, findFifaStanding, formatFifaDate, normalizeFifaMatchDetails, normalizeFifaScoreboard, normalizeFifaStandings } from './fifa-data';
 
 describe('FIFA normalizers', () => {
+  it('normalizes all standings groups by statistic name and supports id/code lookup', () => {
+    const standings = normalizeFifaStandings({
+      children: Array.from({ length: 12 }, (_, index) => ({
+        name: `Group ${String.fromCharCode(65 + index)}`,
+        standings: {
+          entries: [{
+            team: { id: String(200 + index), abbreviation: `T${index}` },
+            stats: [
+              { name: 'points', value: 6 },
+              { name: 'losses', value: 0 },
+              { name: 'rank', value: 1 },
+              { name: 'pointDifferential', displayValue: '+3' },
+              { name: 'ties', value: 0 },
+              { name: 'wins', value: 2 }
+            ]
+          }]
+        }
+      }))
+    });
+
+    expect(standings).toHaveLength(12);
+    expect(standings[0]).toEqual({
+      teamId: '200', teamCode: 'T0', group: 'Group A', rank: 1,
+      wins: 2, draws: 0, losses: 0, points: 6, goalDifference: 3
+    });
+
+    const lookup = buildFifaStandingsLookup(standings);
+    expect(findFifaStanding(lookup, { id: '200', code: 'XXX', name: '', score: null })).toBe(standings[0]);
+    expect(findFifaStanding(lookup, { id: '', code: 't0', name: '', score: null })).toBe(standings[0]);
+  });
+
   it('normalizes the ESPN World Cup fallback feed', () => {
     const scoreboard = normalizeFifaScoreboard({
       matchDate: '2026-06-18',

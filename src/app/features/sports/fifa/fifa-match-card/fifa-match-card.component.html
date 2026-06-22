@@ -1,5 +1,7 @@
 @let currentMatch = match();
 @let currentDetails = detailsState();
+@let currentHomeStanding = displayedHomeStanding();
+@let currentAwayStanding = displayedAwayStanding();
 <article class="match-card" [class.is-expanded]="expanded()">
   <button
     type="button"
@@ -28,7 +30,11 @@
         </span>
         <div class="team-name">
           <strong>{{ currentMatch.homeTeam.name }}</strong>
-          <span>{{ currentMatch.homeTeam.code }}</span>
+          @if (currentHomeStanding; as standing) {
+            <span class="standing-row" [attr.aria-label]="standingLabel(currentMatch.homeTeam, standing)">{{ standingText(standing) }}</span>
+          } @else {
+            <span>{{ currentMatch.homeTeam.code }}</span>
+          }
         </div>
         @if (currentMatch.status !== 'scheduled') {
           <strong class="score">{{ currentMatch.homeTeam.score }}</strong>
@@ -42,7 +48,11 @@
         </span>
         <div class="team-name">
           <strong>{{ currentMatch.awayTeam.name }}</strong>
-          <span>{{ currentMatch.awayTeam.code }}</span>
+          @if (currentAwayStanding; as standing) {
+            <span class="standing-row" [attr.aria-label]="standingLabel(currentMatch.awayTeam, standing)">{{ standingText(standing) }}</span>
+          } @else {
+            <span>{{ currentMatch.awayTeam.code }}</span>
+          }
         </div>
         @if (currentMatch.status !== 'scheduled') {
           <strong class="score">{{ currentMatch.awayTeam.score }}</strong>

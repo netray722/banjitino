@@ -18,6 +18,14 @@
 .sports-menu { position: absolute; top: calc(100% + 10px); right: 0; width: 250px; padding: 8px; border: 1px solid var(--header-border); border-radius: 14px; background: var(--header-bg); box-shadow: 0 20px 48px rgba(2,8,23,.32); }
 .sports-menu::before { position: absolute; top: -5px; right: 29px; width: 9px; height: 9px; content: ''; border-top: 1px solid var(--header-border); border-left: 1px solid var(--header-border); background: var(--header-bg); transform: rotate(45deg); }
 .sports-menu > p { margin: 4px 8px 7px; color: var(--header-muted); font-size: .64rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.sports-section { border-radius: 9px; }
+.section-menu-button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--header-muted); text-align: left; cursor: pointer; }
+.section-menu-button:hover,.section-menu-button:focus-visible,.sports-section.section-active > .section-menu-button { background: rgba(37,99,235,.17); color: var(--header-text); }
+.section-menu-button strong,.section-menu-button small { display: block; }
+.section-menu-button strong { font-size: .86rem; }
+.section-menu-button small { margin-top: 2px; color: var(--header-muted); font-size: .68rem; }
+.section-submenu { margin: 3px 0 5px 14px; padding-left: 8px; border-left: 1px solid rgba(125,211,252,.28); }
+.sports-menu .section-submenu a { padding-block: 9px; }
 .sports-menu a { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 12px; border-radius: 9px; color: var(--header-muted); text-decoration: none; transition: background 160ms ease,color 160ms ease; }
 .sports-menu a:hover,.sports-menu a:focus-visible,.sports-menu a.active { background: rgba(37,99,235,.17); color: var(--header-text); }
 .sports-menu a strong,.sports-menu a small { display: block; }

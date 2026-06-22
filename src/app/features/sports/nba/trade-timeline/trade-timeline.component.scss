@@ -1,0 +1,22 @@
+:host { --accent: #2563eb; --accent-bright: #22d3ee; display: block; }
+.trade-page { width: 100%; max-width: 1120px; min-height: 70vh; margin-inline: auto; padding: 36px 16px 64px; }
+.sr-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.trade-timeline { position: relative; }
+.trade-timeline::before { position: absolute; top: 22px; bottom: 0; left: 23px; width: 2px; content: ''; background: linear-gradient(var(--accent-bright),var(--accent),rgba(37,99,235,.15)); }
+.trade-day { scroll-margin-top: 160px; position: relative; padding: 0 0 64px 64px; }
+.trade-day > header { min-height: 48px; display: flex; align-items: center; gap: 16px; margin-bottom: 17px; }
+.timeline-node { position: absolute; left: 14px; top: 13px; width: 20px; height: 20px; border: 5px solid var(--page-bg); border-radius: 50%; background: var(--accent-bright); box-shadow: 0 0 0 2px var(--accent),0 0 22px rgba(34,211,238,.38); }
+.relative-date,.trade-day h1 { margin: 0; }
+.relative-date { color: var(--accent); font-size: .73rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.trade-day h1 { margin-top: 2px; font-size: clamp(1.25rem,3vw,1.75rem); }
+.day-count { margin-left: auto; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-raised); color: var(--muted); font-size: .72rem; font-weight: 800; }
+.trade-list,.trade-skeletons { display: grid; gap: 14px; }
+.trade-skeletons div { height: 115px; border-radius: 1rem; background: var(--surface-raised); animation: pulse 1.2s ease-in-out infinite alternate; }
+.empty-state,.inline-error { padding: 3rem 1rem; text-align: center; }
+.empty-state h1,.empty-state p,.inline-error p { margin: 0; }
+.empty-state p { margin-top: 8px; color: var(--muted); }
+.inline-error { margin-bottom: 20px; padding: 12px 16px; border: 1px solid #ef4444; border-radius: 10px; background: rgba(239,68,68,.08); }
+.inline-error button { margin-top: 8px; padding: .55rem 1rem; border: 0; border-radius: 999px; color: white; background: var(--accent); font-weight: 750; }
+@keyframes pulse { to { opacity: .45; } }
+@media (max-width:640px) { .trade-page { padding-inline: 12px; }.trade-timeline::before { left: 13px; }.trade-day { scroll-margin-top: 170px; padding-left: 38px; }.timeline-node { left: 4px; }.trade-day > header { gap: 8px; }.day-count { padding: 5px 8px; } }
+@media (prefers-reduced-motion:reduce) { .trade-skeletons div { animation: none; } }
