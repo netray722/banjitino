@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { boxScoreFixture, finalGame, scheduledGame } from '../nba-test-data';
+import { boxScoreFixture, finalGame, scheduledGame, standingsFixture } from '../nba-test-data';
 import { GameCardComponent } from './game-card.component';
 
 describe('GameCardComponent', () => {
@@ -20,6 +20,21 @@ describe('GameCardComponent', () => {
     logo.dispatchEvent(new Event('error'));
     fixture.detectChanges();
     expect(logo.hidden).toBe(true);
+    fixture.destroy();
+  });
+
+  it('shows current conference seed and record with scoreboard fallback', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({ imports: [GameCardComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(GameCardComponent);
+    fixture.componentRef.setInput('game', scheduledGame);
+    fixture.componentRef.setInput('awayStanding', standingsFixture[0]);
+    fixture.detectChanges();
+
+    const records = fixture.nativeElement.querySelectorAll('.record') as NodeListOf<HTMLElement>;
+    expect(records[0].textContent).toContain('#3 East · 42-28');
+    expect(records[0].getAttribute('aria-label')).toContain('Eastern Conference seed 3');
+    expect(records[1].textContent).toContain('48-34');
     fixture.destroy();
   });
 

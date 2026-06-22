@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
-import { normalizeFifaMatchDetails, normalizeFifaScoreboard } from './fifa-data';
-import { FifaMatchDetails, FifaScoreboard } from './fifa.types';
+import { normalizeFifaMatchDetails, normalizeFifaScoreboard, normalizeFifaStandings } from './fifa-data';
+import { FifaMatchDetails, FifaScoreboard, FifaStanding } from './fifa.types';
 
 @Injectable({ providedIn: 'root' })
 export class FifaDataService {
@@ -23,5 +23,11 @@ export class FifaDataService {
         params: { event: matchId }
       })
       .pipe(map((payload) => normalizeFifaMatchDetails(payload)));
+  }
+
+  getStandings(): Observable<FifaStanding[]> {
+    return this.http
+      .get<unknown>('/api/fifa/standings')
+      .pipe(map((payload) => normalizeFifaStandings(payload)));
   }
 }

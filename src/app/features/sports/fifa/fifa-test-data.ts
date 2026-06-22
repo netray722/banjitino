@@ -1,4 +1,4 @@
-import { FifaMatch, FifaMatchDetails, FifaScoreboard } from './fifa.types';
+import { FifaMatch, FifaMatchDetails, FifaScoreboard, FifaStanding } from './fifa.types';
 
 export const scheduledFifaMatch: FifaMatch = {
   id: '400021401',
@@ -51,6 +51,13 @@ export const fifaScoreboardFixture: FifaScoreboard = {
   matchDate: '2026-06-17',
   matches: [scheduledFifaMatch, finalFifaMatch]
 };
+
+export const fifaStandingsFixture: FifaStanding[] = [
+  { teamId: '43922', teamCode: 'CAN', group: 'Group A', rank: 1, wins: 2, draws: 0, losses: 0, points: 6, goalDifference: 3 },
+  { teamId: '43935', teamCode: 'JPN', group: 'Group A', rank: 2, wins: 1, draws: 0, losses: 1, points: 3, goalDifference: 1 },
+  { teamId: '43976', teamCode: 'ARG', group: 'Group C', rank: 1, wins: 2, draws: 0, losses: 0, points: 6, goalDifference: 5 },
+  { teamId: '43938', teamCode: 'TUN', group: 'Group C', rank: 4, wins: 0, draws: 0, losses: 2, points: 0, goalDifference: -4 }
+];
 
 export const fifaDetailsFixture: FifaMatchDetails = {
   id: finalFifaMatch.id,

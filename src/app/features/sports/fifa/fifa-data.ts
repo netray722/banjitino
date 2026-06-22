@@ -1,6 +1,53 @@
 import { ESPN_STAT_DEFINITIONS, STAT_DEFINITIONS } from './fifa-data.constants';
-import { EspnFifaCompetitor, EspnFifaMatchDetailsPayload, EspnFifaScoreboardPayload, EspnRoster, EspnSummaryEvent, EspnSummaryTeam, FifaScoreboardPayload, LocalizedText, RawFifaEvent, RawFifaMatch, RawFifaOfficial, RawFifaPlayer, RawFifaSubstitution, RawFifaTeam, RawFifaWeather, StatValues } from './fifa-data.types';
-import { FifaEvent, FifaMatch, FifaMatchDetails, FifaMatchFact, FifaMatchStatus, FifaPlayer, FifaScoreboard, FifaTeam, FifaTeamStat } from './fifa.types';
+import { EspnFifaCompetitor, EspnFifaMatchDetailsPayload, EspnFifaScoreboardPayload, EspnRoster, EspnStandingEntry, EspnStandingStat, EspnStandingsPayload, EspnSummaryEvent, EspnSummaryTeam, FifaScoreboardPayload, LocalizedText, RawFifaEvent, RawFifaMatch, RawFifaOfficial, RawFifaPlayer, RawFifaSubstitution, RawFifaTeam, RawFifaWeather, StatValues } from './fifa-data.types';
+import { FifaEvent, FifaMatch, FifaMatchDetails, FifaMatchFact, FifaMatchStatus, FifaPlayer, FifaScoreboard, FifaStanding, FifaStandingsLookup, FifaTeam, FifaTeamStat } from './fifa.types';
+
+export function normalizeFifaStandings(payload: unknown): FifaStanding[] {
+  const root = payload as EspnStandingsPayload;
+  return (root.children ?? []).flatMap((group) =>
+    (group.standings?.entries ?? []).flatMap((entry) => {
+      const teamId = entry.team?.id ?? '';
+      const teamCode = entry.team?.abbreviation?.toUpperCase() ?? '';
+      if (!teamId && !teamCode) return [];
+
+      return [{
+        teamId,
+        teamCode,
+        group: group.name ?? '',
+        rank: standingValue(entry, 'rank') || entry.note?.rank || 0,
+        wins: standingValue(entry, 'wins'),
+        draws: standingValue(entry, 'ties'),
+        losses: standingValue(entry, 'losses'),
+        points: standingValue(entry, 'points'),
+        goalDifference: standingValue(entry, 'pointDifferential')
+      }];
+    })
+  );
+}
+
+export function buildFifaStandingsLookup(standings: FifaStanding[]): FifaStandingsLookup {
+  const lookup: Record<string, FifaStanding> = {};
+  for (const standing of standings) {
+    if (standing.teamId) lookup[`id:${standing.teamId}`] = standing;
+    if (standing.teamCode) lookup[`code:${standing.teamCode.toUpperCase()}`] = standing;
+  }
+  return lookup;
+}
+
+export function findFifaStanding(lookup: FifaStandingsLookup, team: FifaTeam): FifaStanding | null {
+  return lookup[`id:${team.id}`] ?? lookup[`code:${team.code.toUpperCase()}`] ?? null;
+}
+
+function standingValue(entry: EspnStandingEntry, name: string): number {
+  const stat = entry.stats?.find((candidate) => candidate.name === name);
+  return standingStatNumber(stat);
+}
+
+function standingStatNumber(stat: EspnStandingStat | undefined): number {
+  if (stat?.value !== undefined && Number.isFinite(stat.value)) return stat.value;
+  const parsed = Number.parseFloat(stat?.displayValue?.replace(/[^\d.-]/g, '') ?? '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 export function normalizeFifaScoreboard(payload: unknown, now = new Date()): FifaScoreboard {
   const espnScoreboard = normalizeEspnFifaScoreboard(payload, now);

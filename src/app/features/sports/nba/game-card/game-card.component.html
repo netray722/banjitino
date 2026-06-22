@@ -32,7 +32,7 @@
           <span>{{ currentGame.awayTeam.city }}</span>
           <strong>{{ currentGame.awayTeam.name }}</strong>
         </div>
-        <span class="record">{{ record(currentGame.awayTeam) }}</span>
+        <span class="record" [attr.aria-label]="recordLabel(currentGame.awayTeam, awayStanding())">{{ record(currentGame.awayTeam, awayStanding()) }}</span>
         @if (currentGame.status !== 'scheduled') {
           <strong class="score">{{ currentGame.awayTeam.score }}</strong>
         }
@@ -47,7 +47,7 @@
           <span>{{ currentGame.homeTeam.city }}</span>
           <strong>{{ currentGame.homeTeam.name }}</strong>
         </div>
-        <span class="record">{{ record(currentGame.homeTeam) }}</span>
+        <span class="record" [attr.aria-label]="recordLabel(currentGame.homeTeam, homeStanding())">{{ record(currentGame.homeTeam, homeStanding()) }}</span>
         @if (currentGame.status !== 'scheduled') {
           <strong class="score">{{ currentGame.homeTeam.score }}</strong>
         }

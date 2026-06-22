@@ -83,3 +83,110 @@ export interface BoxScoreState {
   loading: boolean;
   error: string | null;
 }
+
+export type NbaConference = 'East' | 'West';
+
+export interface NbaStanding {
+  teamId: number;
+  teamCode: string;
+  conference: NbaConference;
+  seed: number;
+  wins: number;
+  losses: number;
+  winPercentage: number;
+  gamesBehind: number;
+}
+
+export type NbaStandingsLookup = Record<string, NbaStanding>;
+
+export interface NbaTradeEntry {
+  id: string;
+  date: string;
+  season: string;
+  teamId: number;
+  teamCode: string;
+  teamName: string;
+  teamLogoUrl: string;
+  description: string;
+}
+
+export type NbaTradeAssetKind = 'player' | 'pick' | 'cash' | 'consideration';
+
+export interface NbaTradeAsset {
+  id: string;
+  kind: NbaTradeAssetKind;
+  label: string;
+  playerName?: string;
+  position?: string;
+}
+
+export interface NbaTradePlayer extends NbaTradeAsset {
+  kind: 'player';
+  playerName: string;
+}
+
+export interface NbaTradePick extends NbaTradeAsset {
+  kind: 'pick';
+}
+
+export interface NbaTradeTeam {
+  id: number;
+  code: string;
+  name: string;
+  logoUrl: string;
+  received: NbaTradeAsset[];
+  sent: NbaTradeAsset[];
+  sourceNotes: string[];
+}
+
+export interface NbaTradeGroup {
+  id: string;
+  date: string;
+  season: string;
+  teams: NbaTradeTeam[];
+  playerNames: string[];
+  sourceNotes: string[];
+  combined: boolean;
+}
+
+export interface NbaTradeMovement {
+  reporterTeamCode: string;
+  fromTeamCode: string;
+  toTeamCode: string;
+  assets: NbaTradeAsset[];
+}
+
+export interface NbaPlayerSeasonSummary {
+  id: string;
+  name: string;
+  season: string;
+  position: string;
+  headshotUrl: string;
+  points: number | null;
+  rebounds: number | null;
+  assists: number | null;
+}
+
+export interface NbaPlayerSearchMatch {
+  id: string;
+  name: string;
+  headshotUrl: string;
+}
+
+export interface NbaPlayerEnrichmentState {
+  data: Record<string, NbaPlayerSeasonSummary>;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface NbaPlayerSummaryBatch {
+  data: Record<string, NbaPlayerSeasonSummary>;
+  failedNames: string[];
+}
+
+export interface NbaTradePage {
+  season: string;
+  page: number;
+  pageCount: number;
+  trades: NbaTradeEntry[];
+}

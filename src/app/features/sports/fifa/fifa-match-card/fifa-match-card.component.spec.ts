@@ -1,10 +1,36 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { fifaDetailsFixture, finalFifaMatch, scheduledFifaMatch } from '../fifa-test-data';
+import { fifaDetailsFixture, fifaStandingsFixture, finalFifaMatch, scheduledFifaMatch } from '../fifa-test-data';
 import { FifaMatchCardComponent } from './fifa-match-card.component';
 
 describe('FifaMatchCardComponent', () => {
+  it('shows current rank, W-D-L, points, and goal difference for group matches', async () => {
+    await TestBed.configureTestingModule({ imports: [FifaMatchCardComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(FifaMatchCardComponent);
+    fixture.componentRef.setInput('match', scheduledFifaMatch);
+    fixture.componentRef.setInput('homeStanding', fifaStandingsFixture[0]);
+    fixture.componentRef.setInput('awayStanding', fifaStandingsFixture[1]);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.standing-row') as NodeListOf<HTMLElement>;
+    expect(rows).toHaveLength(2);
+    expect(rows[0].textContent).toContain('#1 · 2-0-0 · 6 pts · GD +3');
+    expect(rows[0].getAttribute('aria-label')).toContain('Canada current Group A standing');
+  });
+
+  it('hides group standings for knockout matches', async () => {
+    await TestBed.configureTestingModule({ imports: [FifaMatchCardComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(FifaMatchCardComponent);
+    fixture.componentRef.setInput('match', { ...scheduledFifaMatch, group: '', stage: 'Round of 32' });
+    fixture.componentRef.setInput('homeStanding', fifaStandingsFixture[0]);
+    fixture.componentRef.setInput('awayStanding', fifaStandingsFixture[1]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.standing-row')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('CAN');
+  });
+
   it('shows kickoff details for a scheduled match', async () => {
     await TestBed.configureTestingModule({
       imports: [FifaMatchCardComponent]
@@ -17,6 +43,7 @@ describe('FifaMatchCardComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Kickoff');
     expect(fixture.nativeElement.textContent).toContain('BMO Field');
+    expect(fixture.nativeElement.textContent).toContain('CAN');
   });
 
   it('renders expanded FIFA match details when present', async () => {

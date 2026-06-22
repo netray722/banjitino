@@ -1,0 +1,49 @@
+<app-timeline-date-toolbar
+  eyebrow="NBA trade timeline"
+  [date]="activeDate()"
+  [dateLabel]="dateLabel(activeDate())"
+  dateAriaLabel="Jump to an NBA trade date"
+  inputId="nba-trade-date"
+  [updatedLabel]="updatedLabel()"
+  [loading]="loading()"
+  [refreshing]="refreshing()"
+  [showToday]="showTodayButton()"
+  [maxDate]="today"
+  (dateChange)="changeDate($event)"
+  (today)="jumpToToday()"
+  (refresh)="refresh()"
+/>
+
+<main class="trade-page">
+  <p class="sr-status" aria-live="polite">{{ loading() ? 'Loading trade history' : tradeGroups().length + ' trades loaded' }}</p>
+  @if (error()) { <section class="inline-error" role="status"><p>{{ error() }}</p><button type="button" (click)="retry()">Retry</button></section> }
+  @if (loading()) {
+    <section class="trade-skeletons" aria-label="Loading trade history"><div></div><div></div><div></div></section>
+  } @else if (days().length) {
+    <app-timeline-previous-loader [available]="hasEarlier()" [loading]="loadingOlder()" itemLabel="trade history" boundaryText="Start of NBA trade history" (loadPrevious)="loadEarlier()" />
+    <section class="trade-timeline" aria-label="NBA player trades by date">
+      @for (day of days(); track day.date) {
+        <article class="trade-day" [attr.data-date]="day.date" [attr.aria-labelledby]="'trade-day-' + day.date">
+          <header>
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div><p class="relative-date">{{ dateLabel(day.date) }}</p><h1 [id]="'trade-day-' + day.date">{{ fullDateLabel(day.date) }}</h1></div>
+            <span class="day-count">{{ day.trades.length }} {{ day.trades.length === 1 ? 'trade' : 'trades' }}</span>
+          </header>
+          <div class="trade-list">
+            @for (trade of day.trades; track trade.id) {
+              <app-trade-card
+                [trade]="trade"
+                [expanded]="expandedTradeId() === trade.id"
+                [playerState]="playerStateFor(trade.id)"
+                (toggle)="toggleTrade(trade)"
+                (retry)="retryPlayerEnrichment(trade)"
+              />
+            }
+          </div>
+        </article>
+      }
+    </section>
+  } @else if (!error()) {
+    <section class="empty-state"><h1>No earlier trades found</h1><p>Choose a later date to browse recent NBA trades.</p></section>
+  }
+</main>

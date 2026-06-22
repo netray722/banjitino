@@ -14,7 +14,7 @@
       @for (day of days(); track day.date) {
         <article class="timeline-day" [attr.data-date]="day.date" [attr.aria-labelledby]="'fifa-day-' + day.date">
           <header class="day-heading"><span class="timeline-node" aria-hidden="true"></span><div><p class="relative-date">{{ dateLabel(day.date) }}</p><h1 [id]="'fifa-day-' + day.date">{{ fullDateLabel(day.date) }}</h1></div><span class="day-count">{{ day.scoreboard.matches.length }} {{ day.scoreboard.matches.length === 1 ? 'match' : 'matches' }}</span></header>
-          <div class="match-list">@for (match of day.scoreboard.matches; track match.id) { <app-fifa-match-card [match]="match" [expanded]="expandedMatchId() === match.id" [detailsState]="detailsFor(match.id)" (toggle)="toggleMatch(match)" (retry)="retryDetails(match)" /> }</div>
+          <div class="match-list">@for (match of day.scoreboard.matches; track match.id) { <app-fifa-match-card [match]="match" [expanded]="expandedMatchId() === match.id" [detailsState]="detailsFor(match.id)" [homeStanding]="standingFor(match.homeTeam)" [awayStanding]="standingFor(match.awayTeam)" (toggle)="toggleMatch(match)" (retry)="retryDetails(match)" /> }</div>
         </article>
       }
     </section>

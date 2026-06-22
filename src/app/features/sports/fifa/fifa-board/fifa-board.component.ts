@@ -1,12 +1,12 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, OnInit, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideCalendarDays, LucideRefreshCw } from '@lucide/angular';
-import { Subject, catchError, firstValueFrom, interval, of, takeUntil } from 'rxjs';
+import { Subject, catchError, finalize, firstValueFrom, interval, of, takeUntil } from 'rxjs';
 
 import { TimelinePreviousLoaderComponent } from '../../../../shared/timeline/timeline-previous-loader.component';
-import { browserDateKey, formatFifaDate } from '../fifa-data';
+import { browserDateKey, buildFifaStandingsLookup, findFifaStanding, formatFifaDate } from '../fifa-data';
 import { FifaDataService } from '../fifa-data.service';
-import { FifaDetailsState, FifaMatch, FifaMatchDetails, FifaScoreboard } from '../fifa.types';
+import { FifaDetailsState, FifaMatch, FifaMatchDetails, FifaScoreboard, FifaStanding, FifaStandingsLookup, FifaTeam } from '../fifa.types';
 import { FifaMatchCardComponent } from '../fifa-match-card/fifa-match-card.component';
 import { TOURNAMENT_END, TOURNAMENT_START } from './fifa-board.constants';
 import { FifaTimelineDay } from './fifa-board.types';
@@ -19,6 +19,7 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   private readonly destroyed = new Subject<void>();
   private readonly cache = new Map<string, FifaScoreboard>();
   private readonly pending = new Map<string, Promise<FifaScoreboard | null>>();
+  private readonly standingsLoading = signal(false);
   private observer?: IntersectionObserver;
   private generation = 0;
   private scrollFrame = 0;
@@ -34,12 +35,15 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   protected readonly error = signal<string | null>(null);
   protected readonly expandedMatchId = signal<string | null>(null);
   protected readonly details = signal<Record<string, FifaDetailsState>>({});
+  protected readonly standings = signal<FifaStandingsLookup>({});
   protected readonly lastUpdated = signal<Date | null>(null);
   protected readonly activeDate = signal(clampDate(browserDateKey()));
 
   ngOnInit(): void {
     void this.jumpToDate(clampDate(browserDateKey()), false);
+    this.refreshStandings();
     this.startScoreboardRefresh();
+    this.startStandingsRefresh();
     this.startLiveDetailsRefresh();
     this.registerCleanup();
   }
@@ -50,6 +54,10 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
 
   private startScoreboardRefresh(): void {
     interval(30_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => void this.refreshActiveDate(true));
+  }
+
+  private startStandingsRefresh(): void {
+    interval(60_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refreshStandings());
   }
 
   private startLiveDetailsRefresh(): void {
@@ -91,7 +99,7 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  protected refresh(): void { void this.refreshActiveDate(false); }
+  protected refresh(): void { void this.refreshActiveDate(false); this.refreshStandings(); }
   protected openDatePicker(input: HTMLInputElement): void { input.focus(); if (typeof input.showPicker === 'function') input.showPicker(); else input.click(); }
   protected changeDate(event: Event): void { const value = (event.target as HTMLInputElement).value; if (value) void this.jumpToDate(clampDate(value), true); }
   protected showTodayButton(): boolean { const today = browserDateKey(); return today >= TOURNAMENT_START && today <= TOURNAMENT_END && this.activeDate() !== today; }
@@ -107,6 +115,19 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   protected fullDateLabel(date: string): string { return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(parseDate(date)); }
   protected updatedLabel(): string { const date = this.lastUpdated(); return date ? `Updated ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date)}` : 'Loading the tournament'; }
   protected detailsFor(matchId: string): FifaDetailsState | null { return this.details()[matchId] ?? null; }
+  protected standingFor(team: FifaTeam): FifaStanding | null { return findFifaStanding(this.standings(), team); }
+
+  private refreshStandings(): void {
+    if (this.standingsLoading()) return;
+    this.standingsLoading.set(true);
+    this.dataService.getStandings().pipe(
+      catchError(() => of(null)),
+      finalize(() => this.standingsLoading.set(false)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((standings) => {
+      if (standings) this.standings.set(buildFifaStandingsLookup(standings));
+    });
+  }
 
   private async jumpToDate(date: string, smooth: boolean): Promise<void> {
     const generation = ++this.generation;
