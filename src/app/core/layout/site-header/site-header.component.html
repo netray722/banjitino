@@ -34,7 +34,6 @@
               </button>
               <div id="nba-pages-menu" class="section-submenu" role="group" aria-label="NBA pages" [hidden]="!nbaMenuOpen()">
                 <a routerLink="/nba" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeSportsMenu()"><span><strong>Scores</strong><small>Games and box scores</small></span></a>
-                <a routerLink="/nba/trades" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeSportsMenu()"><span><strong>Trades</strong><small>Player trade timeline</small></span></a>
               </div>
             </div>
             <a routerLink="/fifa" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeSportsMenu()">

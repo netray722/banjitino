@@ -5,42 +5,14 @@ import {
   formatGameClock,
   formatMinutes,
   buildNbaStandingsLookup,
-  currentNbaSeason,
   findNbaStanding,
-  nbaSeasonDateRange,
   normalizeBoxScore,
   normalizeNbaStandings,
-  normalizeNbaTrades,
-  normalizeNbaPlayerSearch,
-  normalizeNbaPlayerStats,
-  nbaPlayerKey,
   normalizeScoreboard,
   periodLabel
 } from './nba-data';
 
 describe('NBA data normalization', () => {
-  it('requires an exact NBA player match and reads season averages by semantic name', () => {
-    const match = normalizeNbaPlayerSearch({ results: [{ type: 'player', contents: [{
-      type: 'player', displayName: 'Nikola Vučević', description: 'NBA', defaultLeagueSlug: 'nba',
-      uid: 's:40~l:46~a:6478', image: { default: 'headshot.png' }
-    }, { type: 'player', displayName: 'Nikola Vučević', description: 'NCAAM', uid: 's:40~l:41~a:1' }] }] }, 'Nikola Vucevic');
-    expect(match).toEqual({ id: '6478', name: 'Nikola Vučević', headshotUrl: 'headshot.png' });
-    expect(nbaPlayerKey('Nikola Vučević')).toBe(nbaPlayerKey('Nikola Vucevic'));
-    const summary = normalizeNbaPlayerStats({ categories: [{
-      name: 'averages', names: ['avgAssists', 'avgPoints', 'avgRebounds'],
-      statistics: [{ season: { year: 2026 }, position: 'C', stats: ['3.4', '18.2', '10.1'] }]
-    }] }, match!, '2025-26');
-    expect(summary).toMatchObject({ position: 'C', points: 18.2, rebounds: 10.1, assists: 3.4 });
-    expect(normalizeNbaPlayerStats({}, match!, '2025-26')).toMatchObject({ points: null, rebounds: null, assists: null, headshotUrl: 'headshot.png' });
-  });
-
-  it('accepts one canonical suffix match but rejects ambiguous player matches', () => {
-    const content = (name: string, id: string) => ({
-      type: 'player', displayName: name, description: 'NBA', defaultLeagueSlug: 'nba', uid: `s:40~l:46~a:${id}`
-    });
-    expect(normalizeNbaPlayerSearch({ results: [{ type: 'player', contents: [content('Gary Trent Jr.', '1')] }] }, 'Gary Trent')?.id).toBe('1');
-    expect(normalizeNbaPlayerSearch({ results: [{ type: 'player', contents: [content('Gary Trent Jr.', '1'), content('Gary Trent Sr.', '2')] }] }, 'Gary Trent')).toBeNull();
-  });
   it('normalizes conference standings by stat name and supports id and code lookup', () => {
     const standings = normalizeNbaStandings({ children: [{ name: 'Eastern Conference', standings: { entries: [{
       team: { id: '18', abbreviation: 'NY' },
@@ -59,26 +31,6 @@ describe('NBA data normalization', () => {
     expect(findNbaStanding(lookup, { id: 0, code: 'NY' } as never)?.wins).toBe(42);
   });
 
-  it('keeps only trade-related sentences and normalizes pagination', () => {
-    const page = normalizeNbaTrades({ pageIndex: 2, pageCount: 4, transactions: [{
-      date: '2026-02-05T08:00Z',
-      description: 'Waived G One. Acquired G Two from Boston in exchange for a pick. Signed F Three.',
-      team: { id: '13', abbreviation: 'LAL', displayName: 'Los Angeles Lakers', logos: [{ href: 'logo.png', rel: ['scoreboard'] }] }
-    }, {
-      date: '2026-02-04T08:00Z', description: 'Hired a new head coach.', team: { id: '1', abbreviation: 'ATL' }
-    }] }, '2025-26');
-
-    expect(page).toMatchObject({ season: '2025-26', page: 2, pageCount: 4 });
-    expect(page.trades).toHaveLength(1);
-    expect(page.trades[0].description).toBe('Acquired G Two from Boston in exchange for a pick.');
-    expect(page.trades[0].teamLogoUrl).toBe('logo.png');
-  });
-
-  it('calculates current NBA seasons around the July boundary', () => {
-    expect(currentNbaSeason(new Date(2026, 5, 30))).toBe('2025-26');
-    expect(currentNbaSeason(new Date(2026, 6, 1))).toBe('2026-27');
-    expect(nbaSeasonDateRange('2025-26')).toBe('20250701-20260630');
-  });
   it('normalizes and sorts scheduled, live, and final games', () => {
     const scoreboard = normalizeScoreboard({
       scoreboard: {
@@ -433,3 +385,4 @@ describe('NBA data normalization', () => {
     expect(boxScore.awayTeam.players).toEqual([]);
   });
 });
+

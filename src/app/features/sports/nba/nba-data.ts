@@ -1,50 +1,6 @@
 import { ESPN_CODE_OVERRIDES, TEAM_COLORS } from './nba-data.constants';
-import { EspnBoxScorePayload, EspnPlayerSearchPayload, EspnPlayerStatsPayload, EspnScoreboardPayload, EspnStandingEntry, EspnStandingStat, EspnStandingsPayload, EspnTransaction, EspnTransactionsPayload, NbaBoxScorePayload, NbaScoreboardPayload, RawEspnAthleteStats, RawEspnBoxTeam, RawEspnCompetitor, RawEspnPlayerGroup, RawEspnStatBlock, RawPlayer, RawStatistics, RawStatsResultSet, RawTeam, StatsScoreboardPayload } from './nba-data.types';
-import { BoxScore, BoxScoreTeam, GameStatus, NbaConference, NbaGame, NbaPlayerSearchMatch, NbaPlayerSeasonSummary, NbaStanding, NbaStandingsLookup, NbaTradeEntry, NbaTradePage, PlayerStats, Scoreboard, TeamSummary } from './nba.types';
-
-export function normalizeNbaPlayerSearch(payload: unknown, requestedName: string): NbaPlayerSearchMatch | null {
-  const root = payload as EspnPlayerSearchPayload;
-  const requestedKey = nbaPlayerKey(requestedName);
-  const candidates = root.results?.flatMap((result) => result.type === 'player' ? result.contents ?? [] : [])
-    .filter((item) => item.type === 'player' && (item.defaultLeagueSlug === 'nba' || item.description === 'NBA')) ?? [];
-  const exact = candidates.find((item) => nbaPlayerKey(item.displayName ?? '') === requestedKey);
-  const canonicalMatches = candidates.filter((item) => nbaPlayerMatchKey(item.displayName ?? '') === nbaPlayerMatchKey(requestedName));
-  const candidate = exact ?? (canonicalMatches.length === 1 ? canonicalMatches[0] : undefined);
-  const id = /~a:(\d+)/.exec(candidate?.uid ?? '')?.[1] ?? '';
-  if (!candidate || !id) return null;
-  return { id, name: candidate.displayName ?? requestedName, headshotUrl: candidate.image?.default ?? '' };
-}
-
-export function normalizeNbaPlayerStats(payload: unknown, match: NbaPlayerSearchMatch, season: string): NbaPlayerSeasonSummary {
-  const root = payload as EspnPlayerStatsPayload;
-  const seasonEnd = Number.parseInt(season.slice(0, 4), 10) + 1;
-  const category = root.categories?.find((candidate) => candidate.name?.toLowerCase() === 'averages');
-  const row = category?.statistics?.find((candidate) => candidate.season?.year === seasonEnd)
-    ?? category?.statistics?.find((candidate) => candidate.season?.displayName?.includes(String(seasonEnd)));
-  const value = (...names: string[]) => {
-    const index = category?.names?.findIndex((name) => names.includes(name)) ?? -1;
-    const parsed = Number.parseFloat(index >= 0 ? row?.stats?.[index] ?? '' : '');
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-  return {
-    id: match.id,
-    name: match.name,
-    season,
-    position: row?.position ?? '',
-    headshotUrl: match.headshotUrl,
-    points: value('avgPoints', 'points'),
-    rebounds: value('avgRebounds', 'rebounds'),
-    assists: value('avgAssists', 'assists')
-  };
-}
-
-export function nbaPlayerKey(value: string): string {
-  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
-}
-
-function nbaPlayerMatchKey(value: string): string {
-  return nbaPlayerKey(value).replace(/(?:jr|sr|ii|iii|iv)$/, '');
-}
+import { EspnBoxScorePayload, EspnScoreboardPayload, EspnStandingEntry, EspnStandingStat, EspnStandingsPayload, NbaBoxScorePayload, NbaScoreboardPayload, RawEspnAthleteStats, RawEspnBoxTeam, RawEspnCompetitor, RawEspnPlayerGroup, RawEspnStatBlock, RawPlayer, RawStatistics, RawStatsResultSet, RawTeam, StatsScoreboardPayload } from './nba-data.types';
+import { BoxScore, BoxScoreTeam, GameStatus, NbaConference, NbaGame, NbaStanding, NbaStandingsLookup, PlayerStats, Scoreboard, TeamSummary } from './nba.types';
 
 export function normalizeNbaStandings(payload: unknown): NbaStanding[] {
   const root = payload as EspnStandingsPayload;
@@ -82,60 +38,6 @@ export function findNbaStanding(lookup: NbaStandingsLookup, team: TeamSummary): 
   return lookup[`id:${team.id}`] ?? lookup[`code:${nbaCode(team.code)}`] ?? null;
 }
 
-export function normalizeNbaTrades(payload: unknown, season: string): NbaTradePage {
-  const root = payload as EspnTransactionsPayload;
-  const trades = (root.transactions ?? []).flatMap((transaction) => normalizeTrade(transaction, season));
-  return {
-    season,
-    page: Math.max(1, root.pageIndex ?? 1),
-    pageCount: Math.max(1, root.pageCount ?? 1),
-    trades
-  };
-}
-
-export function currentNbaSeason(date = new Date()): string {
-  const year = date.getFullYear();
-  const startYear = date.getMonth() >= 6 ? year : year - 1;
-  return formatNbaSeason(startYear);
-}
-
-export function nbaSeasonDateRange(season: string): string {
-  const startYear = Number.parseInt(season.slice(0, 4), 10);
-  return `${startYear}0701-${startYear + 1}0630`;
-}
-
-function normalizeTrade(transaction: EspnTransaction, season: string): NbaTradeEntry[] {
-  const description = tradeDescription(transaction.description ?? '');
-  if (!description) return [];
-  const teamId = Number.parseInt(transaction.team?.id ?? '', 10) || 0;
-  const teamCode = nbaCode(transaction.team?.abbreviation ?? '');
-  const date = transaction.date?.slice(0, 10) ?? '';
-  if (!date || (!teamId && !teamCode)) return [];
-  const teamName = transaction.team?.displayName ?? teamCode;
-  const logo = transaction.team?.logos?.find((candidate) => candidate.rel?.includes('scoreboard'))?.href
-    ?? transaction.team?.logos?.find((candidate) => candidate.rel?.includes('default'))?.href
-    ?? '';
-  return [{
-    id: `${date}:${teamId || teamCode}:${stableTextHash(description)}`,
-    date,
-    season,
-    teamId,
-    teamCode,
-    teamName,
-    teamLogoUrl: logo,
-    description
-  }];
-}
-
-function tradeDescription(description: string): string {
-  return description
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => /\btrad(?:e|ed|ing)\b/i.test(sentence)
-      || (/\bacquired\b/i.test(sentence) && /\b(from|for|in exchange)\b/i.test(sentence)))
-    .join(' ');
-}
-
 function nbaConference(value: string): NbaConference | null {
   if (/east/i.test(value)) return 'East';
   if (/west/i.test(value)) return 'West';
@@ -151,16 +53,6 @@ function standingStatNumber(stat: EspnStandingStat | undefined): number {
   if (stat?.value !== undefined && Number.isFinite(stat.value)) return stat.value;
   const parsed = Number.parseFloat(stat?.displayValue?.replace(/[^\d.-]/g, '') ?? '');
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatNbaSeason(startYear: number): string {
-  return `${startYear}-${String(startYear + 1).slice(-2)}`;
-}
-
-function stableTextHash(value: string): string {
-  let hash = 0;
-  for (const character of value) hash = Math.imul(31, hash) + character.charCodeAt(0) | 0;
-  return Math.abs(hash).toString(36);
 }
 
 export function normalizeScoreboard(payload: unknown): Scoreboard {

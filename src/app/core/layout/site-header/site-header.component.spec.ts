@@ -27,7 +27,7 @@ describe('SiteHeaderComponent', () => {
     fixture.detectChanges();
     const nbaLinks = fixture.nativeElement.querySelectorAll('.section-submenu a') as NodeListOf<HTMLAnchorElement>;
     expect(nbaButton.getAttribute('aria-expanded')).toBe('true');
-    expect([...nbaLinks].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/nba/trades']);
+    expect([...nbaLinks].map((link) => link.getAttribute('href'))).toEqual(['/nba']);
     expect(fixture.nativeElement.querySelector('.sports-menu > a').getAttribute('href')).toBe('/fifa');
   });
 

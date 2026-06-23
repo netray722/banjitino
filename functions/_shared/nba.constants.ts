@@ -1,9 +1,3 @@
 export const NBA_CDN = 'https://cdn.nba.com/static/json/liveData';
 export const ESPN_NBA_API = 'https://site.api.espn.com';
-export const ESPN_NBA_WEB_API = 'https://site.web.api.espn.com';
 export const NBA_STANDINGS_CACHE_SECONDS = 60;
-export const NBA_TRADES_CACHE_SECONDS = 300;
-export const NBA_TRADES_MAX_PAGE_SIZE = 100;
-export const NBA_PLAYER_SEARCH_CACHE_SECONDS = 86_400;
-export const NBA_ACTIVE_PLAYER_STATS_CACHE_SECONDS = 3_600;
-export const NBA_HISTORICAL_PLAYER_STATS_CACHE_SECONDS = 86_400;

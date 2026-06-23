@@ -11,10 +11,6 @@ export const ESPN_CODE_OVERRIDES: Record<string, string> = {
   GS: 'GSW', NY: 'NYK', NO: 'NOP', SA: 'SAS', UTAH: 'UTA', WSH: 'WAS'
 };
 
-export const NBA_TRADE_PAGE_SIZE = 100;
-export const NBA_FIRST_TRANSACTION_SEASON = 2000;
-export const NBA_MAX_PLAYER_ENRICHMENT_COUNT = 12;
-
 export const NBA_TEAM_OPTIONS = [
   { code: 'ATL', name: 'Atlanta Hawks' }, { code: 'BOS', name: 'Boston Celtics' },
   { code: 'BKN', name: 'Brooklyn Nets' }, { code: 'CHA', name: 'Charlotte Hornets' },

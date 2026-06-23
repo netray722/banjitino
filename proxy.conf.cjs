@@ -65,26 +65,6 @@ module.exports = {
     pathRewrite: { '^/api/nba/standings': '/apis/v2/sports/basketball/nba/standings' },
     headers: { Referer: 'https://www.espn.com/', 'User-Agent': 'Mozilla/5.0' }
   },
-  '/api/nba/trades': {
-    target: 'https://site.api.espn.com',
-    secure: true,
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/nba/trades\\?season=[^&]+&': '/apis/site/v2/sports/basketball/nba/transactions?',
-      '^/api/nba/trades': '/apis/site/v2/sports/basketball/nba/transactions'
-    },
-    headers: { Referer: 'https://www.espn.com/', 'User-Agent': 'Mozilla/5.0' }
-  },
-  '/api/nba/player-search': {
-    target: 'https://site.web.api.espn.com', secure: true, changeOrigin: true,
-    pathRewrite: { '^/api/nba/player-search': '/apis/search/v2' },
-    headers: { Referer: 'https://www.espn.com/', 'User-Agent': 'Mozilla/5.0' }
-  },
-  '/api/nba/player-stats': {
-    target: 'https://site.web.api.espn.com', secure: true, changeOrigin: true,
-    pathRewrite: { '^/api/nba/player-stats/([^?]+)': '/apis/common/v3/sports/basketball/nba/athletes/$1/stats' },
-    headers: { Referer: 'https://www.espn.com/', 'User-Agent': 'Mozilla/5.0' }
-  },
   '/api/fifa/scoreboard': {
     target: 'https://site.api.espn.com',
     secure: true,

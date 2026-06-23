@@ -1,4 +1,4 @@
-import { BoxScore, NbaGame, NbaStanding, NbaTradeGroup, NbaTradePage, Scoreboard } from './nba.types';
+import { BoxScore, NbaGame, NbaStanding, Scoreboard } from './nba.types';
 
 export const scheduledGame: NbaGame = {
   id: '0022500001',
@@ -68,39 +68,6 @@ export const standingsFixture: NbaStanding[] = [{
   winPercentage: .571,
   gamesBehind: 7
 }];
-
-export const tradePageFixture: NbaTradePage = {
-  season: '2025-26',
-  page: 1,
-  pageCount: 1,
-  trades: [{
-    id: '2026-02-05:13:test',
-    date: '2026-02-05',
-    season: '2025-26',
-    teamId: 13,
-    teamCode: 'LAL',
-    teamName: 'Los Angeles Lakers',
-    teamLogoUrl: 'https://example.com/lal.png',
-    description: 'Acquired G Example Player from Boston in exchange for a first-round pick.'
-  }]
-};
-
-export const tradeGroupFixture: NbaTradeGroup = {
-  id: 'trade:test', date: '2026-02-05', season: '2025-26', combined: true,
-  playerNames: ['Example Player', 'Other Player'],
-  sourceNotes: ['Los Angeles acquired Example Player from Boston.', 'Boston acquired Other Player from Los Angeles.'],
-  teams: [{
-    id: 13, code: 'LAL', name: 'Los Angeles Lakers', logoUrl: 'lal.png',
-    received: [{ id: 'player:example', kind: 'player', label: 'Example Player', playerName: 'Example Player', position: 'G' }],
-    sent: [{ id: 'player:other', kind: 'player', label: 'Other Player', playerName: 'Other Player', position: 'F' }],
-    sourceNotes: ['Los Angeles acquired Example Player from Boston.']
-  }, {
-    id: 2, code: 'BOS', name: 'Boston Celtics', logoUrl: 'bos.png',
-    received: [{ id: 'player:other', kind: 'player', label: 'Other Player', playerName: 'Other Player', position: 'F' }],
-    sent: [{ id: 'player:example', kind: 'player', label: 'Example Player', playerName: 'Example Player', position: 'G' }],
-    sourceNotes: ['Boston acquired Other Player from Los Angeles.']
-  }]
-};
 
 export const boxScoreFixture: BoxScore = {
   gameId: finalGame.id,
