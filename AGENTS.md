@@ -2,6 +2,8 @@
 
 - Use native `git` commands for repository status, diffs, staging, commits, and pushes.
 - Do not require or use GitHub CLI (`gh`) for Git operations.
+- Do not push code changes directly to `main`.
+- For each new code change, create a branch named `{type}/{simple-description}` before committing or pushing, such as `fix/nba-score-refresh` or `feature/world-cup-filters`.
 - Stage only files that belong to the requested change; preserve unrelated worktree changes.
 
 ## Angular project style
