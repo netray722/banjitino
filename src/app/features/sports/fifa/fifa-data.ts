@@ -2,6 +2,8 @@ import { ESPN_STAT_DEFINITIONS, STAT_DEFINITIONS } from './fifa-data.constants';
 import { EspnFifaCompetitor, EspnFifaMatchDetailsPayload, EspnFifaScoreboardPayload, EspnRoster, EspnStandingEntry, EspnStandingStat, EspnStandingsPayload, EspnSummaryEvent, EspnSummaryTeam, FifaScoreboardPayload, LocalizedText, RawFifaEvent, RawFifaMatch, RawFifaOfficial, RawFifaPlayer, RawFifaSubstitution, RawFifaTeam, RawFifaWeather, StatValues } from './fifa-data.types';
 import { FifaEvent, FifaMatch, FifaMatchDetails, FifaMatchFact, FifaMatchStatus, FifaPlayer, FifaScoreboard, FifaStanding, FifaStandingsLookup, FifaTeam, FifaTeamStat } from './fifa.types';
 
+const FIFA_TIME_ZONE = 'America/New_York';
+
 export function normalizeFifaStandings(payload: unknown): FifaStanding[] {
   const root = payload as EspnStandingsPayload;
   return (root.children ?? []).flatMap((group) =>
@@ -285,6 +287,7 @@ export function formatFifaKickoff(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
     hour: 'numeric',
     minute: '2-digit',
+    timeZone: FIFA_TIME_ZONE,
     timeZoneName: 'short'
   }).format(new Date(value));
 }
@@ -616,7 +619,8 @@ function localDateKey(date: Date): string {
   const parts = new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
+    timeZone: FIFA_TIME_ZONE
   }).formatToParts(date);
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
   return `${get('year')}-${get('month')}-${get('day')}`;
