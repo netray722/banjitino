@@ -1,6 +1,4 @@
-import { TeamLogoContext } from './logo.types';
-
-export const onRequestGet = async (context: TeamLogoContext): Promise<Response> => {
+export const onRequestGet: PagesFunction<{ teamId?: string | string[] }> = async (context) => {
   const teamId = Array.isArray(context.params.teamId)
     ? context.params.teamId[0]
     : context.params.teamId;

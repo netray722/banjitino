@@ -18,6 +18,7 @@ export class TimelineDateToolbarComponent {
   readonly loading = input(false);
   readonly refreshing = input(false);
   readonly showToday = input(false);
+  readonly minDate = input<string | null>(null);
   readonly maxDate = input<string | null>(null);
   readonly dateChange = output<string>();
   readonly today = output<void>();
