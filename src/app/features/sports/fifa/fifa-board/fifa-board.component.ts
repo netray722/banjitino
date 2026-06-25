@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, OnInit, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LucideCalendarDays, LucideRefreshCw } from '@lucide/angular';
 import { Subject, catchError, finalize, firstValueFrom, interval, of, takeUntil } from 'rxjs';
 
 import { TimelinePreviousLoaderComponent } from '../../../../shared/timeline/timeline-previous-loader.component';
+import { TimelineDateToolbarComponent } from '../../../../shared/timeline/timeline-date-toolbar/timeline-date-toolbar.component';
 import { browserDateKey, buildFifaStandingsLookup, findFifaStanding, formatFifaDate } from '../fifa-data';
 import { FifaDataService } from '../fifa-data.service';
 import { FifaDetailsState, FifaMatch, FifaMatchDetails, FifaScoreboard, FifaStanding, FifaStandingsLookup, FifaTeam } from '../fifa.types';
@@ -11,7 +11,7 @@ import { FifaMatchCardComponent } from '../fifa-match-card/fifa-match-card.compo
 import { TOURNAMENT_END, TOURNAMENT_START } from './fifa-board.constants';
 import { FifaTimelineDay } from './fifa-board.types';
 
-@Component({ selector: 'app-fifa-board', imports: [FifaMatchCardComponent, TimelinePreviousLoaderComponent, LucideCalendarDays, LucideRefreshCw], templateUrl: './fifa-board.component.html', styleUrl: './fifa-board.component.scss' })
+@Component({ selector: 'app-fifa-board', imports: [FifaMatchCardComponent, TimelinePreviousLoaderComponent, TimelineDateToolbarComponent], templateUrl: './fifa-board.component.html', styleUrl: './fifa-board.component.scss' })
 export class FifaBoardComponent implements OnInit, AfterViewInit {
   private readonly dataService = inject(FifaDataService);
   private readonly destroyRef = inject(DestroyRef);
@@ -38,6 +38,8 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   protected readonly standings = signal<FifaStandingsLookup>({});
   protected readonly lastUpdated = signal<Date | null>(null);
   protected readonly activeDate = signal(clampDate(browserDateKey()));
+  protected readonly tournamentStart = TOURNAMENT_START;
+  protected readonly tournamentEnd = TOURNAMENT_END;
 
   ngOnInit(): void {
     void this.jumpToDate(clampDate(browserDateKey()), false);
@@ -100,8 +102,7 @@ export class FifaBoardComponent implements OnInit, AfterViewInit {
   }
 
   protected refresh(): void { void this.refreshActiveDate(false); this.refreshStandings(); }
-  protected openDatePicker(input: HTMLInputElement): void { input.focus(); if (typeof input.showPicker === 'function') input.showPicker(); else input.click(); }
-  protected changeDate(event: Event): void { const value = (event.target as HTMLInputElement).value; if (value) void this.jumpToDate(clampDate(value), true); }
+  protected changeDate(value: string): void { void this.jumpToDate(clampDate(value), true); }
   protected showTodayButton(): boolean { const today = browserDateKey(); return today >= TOURNAMENT_START && today <= TOURNAMENT_END && this.activeDate() !== today; }
   protected jumpToToday(): void { void this.jumpToDate(browserDateKey(), true); }
   protected toggleMatch(match: FifaMatch): void {

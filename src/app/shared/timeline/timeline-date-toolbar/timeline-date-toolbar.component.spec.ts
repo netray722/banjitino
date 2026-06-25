@@ -13,6 +13,8 @@ describe('TimelineDateToolbarComponent', () => {
     fixture.componentRef.setInput('dateAriaLabel', 'Jump to a date');
     fixture.componentRef.setInput('updatedLabel', 'Updated now');
     fixture.componentRef.setInput('showToday', true);
+    fixture.componentRef.setInput('minDate', '2026-06-11');
+    fixture.componentRef.setInput('maxDate', '2026-07-19');
     const dateChange = vi.fn();
     const today = vi.fn();
     const refresh = vi.fn();
@@ -22,6 +24,8 @@ describe('TimelineDateToolbarComponent', () => {
     fixture.detectChanges();
 
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.min).toBe('2026-06-11');
+    expect(input.max).toBe('2026-07-19');
     input.value = '2026-06-20';
     input.dispatchEvent(new Event('change'));
     expect(dateChange).toHaveBeenCalledWith('2026-06-20');
