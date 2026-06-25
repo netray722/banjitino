@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
 
+import { CoverComponent } from './features/cover';
 import { FifaBoardComponent } from './features/sports/fifa';
 import { NbaBoardComponent, NbaShellComponent } from './features/sports/nba';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'nba' },
+  { path: '', component: CoverComponent, title: 'sidequests.' },
   {
     path: 'nba',
     component: NbaShellComponent,
@@ -13,5 +14,5 @@ export const routes: Routes = [
     ]
   },
   { path: 'fifa', component: FifaBoardComponent, title: 'FIFA World Cup 2026 · sidequests.' },
-  { path: '**', redirectTo: 'nba' }
+  { path: '**', redirectTo: '' }
 ];
