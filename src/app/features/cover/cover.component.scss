@@ -1,0 +1,135 @@
+:host {
+  display: block;
+}
+
+.cover {
+  position: relative;
+  min-height: calc(100vh - 73px);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 24px;
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, .46), rgba(2, 6, 23, .08) 45%, rgba(2, 6, 23, .64)),
+    radial-gradient(circle at center, transparent 0 34%, rgba(2, 6, 23, .24));
+}
+
+.cover-nav,
+.weather,
+.clock,
+.quote {
+  position: relative;
+  z-index: 1;
+}
+
+.cover-nav {
+  justify-self: center;
+  display: flex;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .28);
+  backdrop-filter: blur(16px);
+}
+
+.cover-nav a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cover-nav a:hover,
+.cover-nav a:focus-visible {
+  background: rgba(255, 255, 255, .18);
+}
+
+.weather {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  display: grid;
+  justify-items: end;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
+}
+
+.weather strong {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.weather span {
+  margin-top: 4px;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.clock {
+  align-self: center;
+  justify-self: center;
+  text-shadow: 0 8px 34px rgba(0, 0, 0, .36);
+}
+
+.clock h1 {
+  margin: 0;
+  font-size: 9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.quote {
+  justify-self: center;
+  max-width: min(720px, calc(100vw - 40px));
+  margin: 0;
+  padding-bottom: 12px;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .62);
+}
+
+.quote blockquote {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.quote figcaption {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, .82);
+  font-size: .85rem;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .cover {
+    min-height: calc(100vh - 73px);
+    padding: 18px;
+  }
+
+  .cover-nav {
+    justify-self: start;
+  }
+
+  .weather {
+    top: 82px;
+    right: 18px;
+  }
+
+  .clock h1 {
+    font-size: 3.75rem;
+  }
+
+  .quote blockquote {
+    font-size: 1rem;
+  }
+}
