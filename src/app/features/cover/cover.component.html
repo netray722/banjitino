@@ -1,19 +1,12 @@
 <main class="cover" [style.background-image]="'url(' + coverImage() + ')'">
   <div class="shade" aria-hidden="true"></div>
 
-  <nav class="cover-nav" aria-label="Primary">
-    <a routerLink="/">Home</a>
-    <a routerLink="/nba">NBA</a>
-    <a routerLink="/fifa">FIFA</a>
-  </nav>
-
-  <section class="weather" aria-label="Local weather">
-    <strong>{{ weather() }}</strong>
-    <span>{{ place() }}</span>
-  </section>
-
   <section class="clock" aria-label="Local time">
     <h1>{{ time() }}</h1>
+    <div class="weather" aria-label="Local weather">
+      <strong>{{ weather() }}</strong>
+      <span>{{ place() }}</span>
+    </div>
   </section>
 
   <figure class="quote">

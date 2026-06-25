@@ -1,20 +1,151 @@
-:host { display: contents; }
-.timeline-toolbar { position: sticky; top: 72px; z-index: 19; padding: 12px 16px; border-bottom: 1px solid rgba(125,211,252,.2); background: rgba(7,13,24,.9); color: white; backdrop-filter: blur(18px); }
-.toolbar-inner { width: 100%; max-width: 1120px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-inline: auto; }
-.eyebrow { margin: 0 0 3px; color: #a5f3fc; font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
-.date-controls,.toolbar-actions { display: flex; align-items: center; gap: 10px; }
-.date-picker { display: flex; align-items: center; gap: 9px; padding: 0; border: 0; background: transparent; color: white; cursor: pointer; font-size: 1.35rem; font-weight: 800; }
-.date-picker:hover { color: #a5f3fc; }
-.date-picker svg,.refresh-button svg { width: 19px; height: 19px; }
-.today-button { padding: 5px 10px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(255,255,255,.1); color: white; font-size: .72rem; font-weight: 900; cursor: pointer; }
-.today-button:hover { border-color: #67e8f9; background: rgba(255,255,255,.18); }
-.today-button:disabled,.refresh-button:disabled { opacity: .55; cursor: wait; }
-.date-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.toolbar-actions { gap: 12px; }
-.updated { color: rgba(255,255,255,.68); font-size: .75rem; }
-.refresh-button { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: 10px; background: rgba(255,255,255,.08); color: white; cursor: pointer; }
-.refresh-button:hover { border-color: #67e8f9; background: rgba(255,255,255,.15); }
-.refresh-button.is-spinning svg { animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (max-width:640px) { .timeline-toolbar { padding-inline: 12px; }.updated { display: none; } }
-@media (prefers-reduced-motion:reduce) { .refresh-button.is-spinning svg { animation: none; } }
+:host {
+  display: contents;
+}
+
+.timeline-toolbar {
+  position: sticky;
+  top: 88px;
+  z-index: 19;
+  padding: 10px 16px;
+  color: var(--ink);
+}
+
+.toolbar-inner {
+  width: 100%;
+  max-width: 1120px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-inline: auto;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
+  box-shadow: 0 14px 34px rgba(2, 8, 23, .12);
+  backdrop-filter: blur(16px);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.date-controls,
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.date-picker:hover {
+  color: var(--accent);
+}
+
+.date-picker svg,
+.refresh-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.today-button,
+.refresh-button {
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-raised));
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.today-button {
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.today-button:hover,
+.refresh-button:hover {
+  border-color: var(--accent);
+}
+
+.today-button:disabled,
+.refresh-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.date-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toolbar-actions {
+  gap: 12px;
+}
+
+.updated {
+  color: var(--muted);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.refresh-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.refresh-button.is-spinning svg {
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .timeline-toolbar {
+    top: 76px;
+    padding-inline: 10px;
+  }
+
+  .toolbar-inner {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .updated {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refresh-button.is-spinning svg {
+    animation: none;
+  }
+}
