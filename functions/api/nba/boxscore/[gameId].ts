@@ -1,7 +1,6 @@
 import { fetchNbaJson } from '../../../_shared/nba';
-import { BoxScoreContext } from './boxscore.types';
 
-export const onRequestGet = async (context: BoxScoreContext): Promise<Response> => {
+export const onRequestGet: PagesFunction<{ gameId?: string | string[] }> = async (context) => {
   const gameId = Array.isArray(context.params.gameId)
     ? context.params.gameId[0]
     : context.params.gameId;

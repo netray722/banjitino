@@ -1,9 +1,19 @@
-<header class="timeline-toolbar">
-  <div class="toolbar-inner">
-    <div><p class="eyebrow">FIFA World Cup 2026</p><div class="date-controls"><button class="date-picker" type="button" (click)="openDatePicker(dateInput)" aria-label="Jump to a FIFA match date"><svg lucideCalendarDays aria-hidden="true"></svg><span>{{ dateLabel(activeDate()) }}</span></button>@if (showTodayButton()) { <button class="today-button" type="button" (click)="jumpToToday()" [disabled]="loading()">Today</button> }</div><input #dateInput class="date-input" id="fifa-date" type="date" min="2026-06-11" max="2026-07-19" [value]="activeDate()" (change)="changeDate($event)" aria-label="Jump to a FIFA match date"></div>
-    <div class="toolbar-actions"><span class="tournament-range">Jun 11 – Jul 19</span><span class="updated">{{ updatedLabel() }}</span><button class="refresh-button" type="button" [class.is-spinning]="refreshing()" [disabled]="refreshing()" (click)="refresh()" aria-label="Refresh visible FIFA scores"><svg lucideRefreshCw aria-hidden="true"></svg></button></div>
-  </div>
-</header>
+<app-timeline-date-toolbar
+  eyebrow="FIFA World Cup 2026"
+  [date]="activeDate()"
+  [dateLabel]="dateLabel(activeDate())"
+  dateAriaLabel="Jump to a FIFA match date"
+  inputId="fifa-date"
+  [updatedLabel]="updatedLabel()"
+  [loading]="loading()"
+  [refreshing]="refreshing()"
+  [showToday]="showTodayButton()"
+  [minDate]="tournamentStart"
+  [maxDate]="tournamentEnd"
+  (dateChange)="changeDate($event)"
+  (today)="jumpToToday()"
+  (refresh)="refresh()"
+/>
 <main class="page-shell fifa-page">
   @if (error()) { <div class="inline-error" role="status">{{ error() }}</div> }
   @if (loading()) {

@@ -9,7 +9,7 @@
         </button>
         @if (showToday()) { <button class="today-button" type="button" (click)="today.emit()" [disabled]="loading()">Today</button> }
       </div>
-      <input #dateInput class="date-input" [id]="inputId()" type="date" [value]="date()" [max]="maxDate()" (change)="changeDate($event)" [attr.aria-label]="dateAriaLabel()">
+      <input #dateInput class="date-input" [id]="inputId()" type="date" [value]="date()" [min]="minDate()" [max]="maxDate()" (change)="changeDate($event)" [attr.aria-label]="dateAriaLabel()">
     </div>
     <div class="toolbar-actions">
       <span class="updated">{{ updatedLabel() }}</span>
