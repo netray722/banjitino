@@ -1,14 +1,17 @@
 :host {
   display: block;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
 .cover {
   position: relative;
-  min-height: calc(100vh - 73px);
+  height: 100dvh;
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  padding: 24px;
+  grid-template-rows: 1fr auto;
+  padding: 107px 24px 24px;
   background-position: center;
   background-size: cover;
   color: #fff;
@@ -22,7 +25,6 @@
     radial-gradient(circle at center, transparent 0 34%, rgba(2, 6, 23, .24));
 }
 
-.cover-nav,
 .weather,
 .clock,
 .quote {
@@ -30,42 +32,14 @@
   z-index: 1;
 }
 
-.cover-nav {
-  justify-self: center;
-  display: flex;
-  gap: 6px;
-  padding: 7px;
-  border: 1px solid rgba(255, 255, 255, .28);
-  border-radius: 999px;
-  background: rgba(15, 23, 42, .28);
-  backdrop-filter: blur(16px);
-}
-
-.cover-nav a {
-  padding: 8px 14px;
-  border-radius: 999px;
-  color: #fff;
-  font-size: .9rem;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.cover-nav a:hover,
-.cover-nav a:focus-visible {
-  background: rgba(255, 255, 255, .18);
-}
-
 .weather {
-  position: absolute;
-  top: 28px;
-  right: 28px;
   display: grid;
-  justify-items: end;
+  justify-items: center;
   text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
 }
 
 .weather strong {
-  font-size: 1.55rem;
+  font-size: 1.2rem;
   line-height: 1;
 }
 
@@ -78,6 +52,9 @@
 .clock {
   align-self: center;
   justify-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
   text-shadow: 0 8px 34px rgba(0, 0, 0, .36);
 }
 
@@ -112,17 +89,8 @@
 
 @media (max-width: 640px) {
   .cover {
-    min-height: calc(100vh - 73px);
-    padding: 18px;
-  }
-
-  .cover-nav {
-    justify-self: start;
-  }
-
-  .weather {
-    top: 82px;
-    right: 18px;
+    height: 100dvh;
+    padding: 89px 18px 18px;
   }
 
   .clock h1 {

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { SiteHeaderComponent } from './site-header.component';
 
 describe('SiteHeaderComponent', () => {
-  it('renders the personal banner and Sports dropdown', async () => {
+  it('renders the personal banner and category dropdown', async () => {
     await TestBed.configureTestingModule({
       imports: [SiteHeaderComponent],
       providers: [provideRouter([])]
@@ -14,21 +14,17 @@ describe('SiteHeaderComponent', () => {
     const fixture = TestBed.createComponent(SiteHeaderComponent);
     fixture.detectChanges();
 
+    expect(fixture.nativeElement.textContent).toContain('Banjitino');
     expect(fixture.nativeElement.textContent).toContain('sidequests.');
-    expect(fixture.nativeElement.querySelector('.brand-mark')).toBeNull();
-    const menuButton = fixture.nativeElement.querySelector('.sports-menu-button') as HTMLButtonElement;
+    expect(fixture.nativeElement.querySelector('.brand-mark')?.textContent).toContain('B');
+    const menuButton = fixture.nativeElement.querySelector('.category-menu-button') as HTMLButtonElement;
     expect(menuButton.getAttribute('aria-expanded')).toBe('false');
     menuButton.click();
     fixture.detectChanges();
     expect(menuButton.getAttribute('aria-expanded')).toBe('true');
-    const nbaButton = fixture.nativeElement.querySelector('.section-menu-button') as HTMLButtonElement;
-    expect(nbaButton.getAttribute('aria-expanded')).toBe('false');
-    nbaButton.click();
-    fixture.detectChanges();
-    const nbaLinks = fixture.nativeElement.querySelectorAll('.section-submenu a') as NodeListOf<HTMLAnchorElement>;
-    expect(nbaButton.getAttribute('aria-expanded')).toBe('true');
-    expect([...nbaLinks].map((link) => link.getAttribute('href'))).toEqual(['/nba']);
-    expect(fixture.nativeElement.querySelector('.sports-menu > a').getAttribute('href')).toBe('/fifa');
+    expect(menuButton.textContent).toContain('Sports');
+    const links = fixture.nativeElement.querySelectorAll('.category-menu a') as NodeListOf<HTMLAnchorElement>;
+    expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/fifa']);
   });
 
   it('toggles and saves the site theme', async () => {

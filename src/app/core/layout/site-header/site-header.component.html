@@ -1,48 +1,49 @@
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" routerLink="/" aria-label="sidequests home">
+    <a class="brand" routerLink="/" aria-label="Banjitino sidequests home">
+      <span class="brand-mark" aria-hidden="true">
+        <span>B</span>
+      </span>
       <span class="brand-copy">
-        <strong class="brand-wordmark">sidequests<span aria-hidden="true">.</span></strong>
-        <small>scores, projects & curiosities</small>
+        <strong class="brand-wordmark">Banjitino</strong>
+        <small>sidequests.</small>
       </span>
     </a>
 
-    <div class="header-actions">
-      <nav #sportsMenuRoot class="sports-nav" routerLinkActive="section-active" aria-label="Interest sections">
+    <nav class="primary-nav" aria-label="Primary">
+      <div #categoryMenuRoot class="category-nav" routerLinkActive="section-active">
         <button
-          #sportsMenuButton
-          class="sports-menu-button"
+          #categoryMenuButton
+          class="category-menu-button"
           type="button"
           aria-haspopup="menu"
-          [attr.aria-expanded]="sportsMenuOpen()"
-          aria-controls="sports-menu"
-          (click)="toggleSportsMenu()"
-          (keydown.arrowdown)="openSportsMenu($event)"
+          [attr.aria-expanded]="categoryMenuOpen()"
+          aria-controls="category-menu"
+          (click)="toggleCategoryMenu()"
+          (keydown.arrowdown)="openCategoryMenu($event)"
         >
-          <span class="sports-ball" aria-hidden="true"></span>
+          <span class="category-dot" aria-hidden="true"></span>
           Sports
-          <svg class="menu-chevron" [class.is-open]="sportsMenuOpen()" aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 8 4 4 4-4" /></svg>
+          <svg class="menu-chevron" [class.is-open]="categoryMenuOpen()" aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 8 4 4 4-4" /></svg>
         </button>
 
-        @if (sportsMenuOpen()) {
-          <div id="sports-menu" class="sports-menu" role="menu">
+        @if (categoryMenuOpen()) {
+          <div id="category-menu" class="category-menu" role="menu">
             <p>Sports</p>
-            <div class="sports-section" routerLinkActive="section-active">
-              <button class="section-menu-button" type="button" role="menuitem" aria-haspopup="true" [attr.aria-expanded]="nbaMenuOpen()" aria-controls="nba-pages-menu" (click)="toggleNbaMenu($event)">
-                <span><strong>NBA</strong><small>Basketball</small></span>
-                <svg class="menu-chevron" [class.is-open]="nbaMenuOpen()" aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 8 4 4 4-4" /></svg>
-              </button>
-              <div id="nba-pages-menu" class="section-submenu" role="group" aria-label="NBA pages" [hidden]="!nbaMenuOpen()">
-                <a routerLink="/nba" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeSportsMenu()"><span><strong>Scores</strong><small>Games and box scores</small></span></a>
-              </div>
-            </div>
-            <a routerLink="/fifa" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeSportsMenu()">
-              <span><strong>FIFA 2026</strong><small>World Cup</small></span><span class="menu-arrow" aria-hidden="true">→</span>
+            <a routerLink="/nba" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeCategoryMenu()">
+              <span><strong>NBA</strong><small>Live scores and box scores</small></span>
+              <span class="menu-arrow" aria-hidden="true">→</span>
+            </a>
+            <a routerLink="/fifa" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeCategoryMenu()">
+              <span><strong>FIFA 2026</strong><small>World Cup match timeline</small></span>
+              <span class="menu-arrow" aria-hidden="true">→</span>
             </a>
           </div>
         }
-      </nav>
+      </div>
+    </nav>
 
+    <div class="header-actions">
       <button
         class="theme-toggle"
         type="button"

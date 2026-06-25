@@ -1,7 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 interface WeatherResponse {
   current?: {
@@ -20,7 +19,6 @@ const QUOTES = [
 
 @Component({
   selector: 'app-cover',
-  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cover.component.html',
   styleUrl: './cover.component.scss'

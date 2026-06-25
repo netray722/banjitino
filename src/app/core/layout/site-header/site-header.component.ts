@@ -11,11 +11,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export class SiteHeaderComponent {
   private readonly document = inject(DOCUMENT);
   private readonly view = this.document.defaultView;
-  private readonly sportsMenuRoot = viewChild<ElementRef<HTMLElement>>('sportsMenuRoot');
-  private readonly sportsMenuButton = viewChild<ElementRef<HTMLButtonElement>>('sportsMenuButton');
+  private readonly categoryMenuRoot = viewChild<ElementRef<HTMLElement>>('categoryMenuRoot');
+  private readonly categoryMenuButton = viewChild<ElementRef<HTMLButtonElement>>('categoryMenuButton');
   protected readonly isDarkTheme = signal(false);
-  protected readonly sportsMenuOpen = signal(false);
-  protected readonly nbaMenuOpen = signal(false);
+  protected readonly categoryMenuOpen = signal(false);
 
   constructor() {
     if (!this.view) return;
@@ -32,38 +31,32 @@ export class SiteHeaderComponent {
     this.applyTheme();
   }
 
-  protected toggleSportsMenu(): void {
-    this.sportsMenuOpen.update((isOpen) => !isOpen);
+  protected toggleCategoryMenu(): void {
+    this.categoryMenuOpen.update((isOpen) => !isOpen);
   }
 
-  protected openSportsMenu(event: Event): void {
+  protected openCategoryMenu(event: Event): void {
     event.preventDefault();
-    this.sportsMenuOpen.set(true);
-    setTimeout(() => this.sportsMenuRoot()?.nativeElement.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
+    this.categoryMenuOpen.set(true);
+    setTimeout(() => this.categoryMenuRoot()?.nativeElement.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
   }
 
-  protected toggleNbaMenu(event: Event): void {
-    event.stopPropagation();
-    this.nbaMenuOpen.update((isOpen) => !isOpen);
-  }
-
-  protected closeSportsMenu(): void {
-    this.sportsMenuOpen.set(false);
-    this.nbaMenuOpen.set(false);
+  protected closeCategoryMenu(): void {
+    this.categoryMenuOpen.set(false);
   }
 
   @HostListener('document:click', ['$event'])
-  closeSportsMenuOnOutsideClick(event: MouseEvent): void {
-    if (this.sportsMenuOpen() && !this.sportsMenuRoot()?.nativeElement.contains(event.target as Node)) {
-      this.closeSportsMenu();
+  closeCategoryMenuOnOutsideClick(event: MouseEvent): void {
+    if (this.categoryMenuOpen() && !this.categoryMenuRoot()?.nativeElement.contains(event.target as Node)) {
+      this.closeCategoryMenu();
     }
   }
 
   @HostListener('document:keydown.escape')
-  closeSportsMenuOnEscape(): void {
-    if (!this.sportsMenuOpen()) return;
-    this.closeSportsMenu();
-    this.sportsMenuButton()?.nativeElement.focus();
+  closeCategoryMenuOnEscape(): void {
+    if (!this.categoryMenuOpen()) return;
+    this.closeCategoryMenu();
+    this.categoryMenuButton()?.nativeElement.focus();
   }
 
   private applyTheme(): void {
