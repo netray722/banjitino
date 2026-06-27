@@ -265,21 +265,17 @@
   }
 
   .category-menu-button {
-    width: 42px;
-    padding: 0;
-    justify-content: center;
-  }
-
-  .category-menu-button {
-    font-size: 0;
+    padding-inline: 12px;
+    font-size: .82rem;
   }
 
   .category-menu {
     position: fixed;
-    top: 74px;
+    top: 76px;
     left: 10px;
     right: 10px;
     width: auto;
+    background: var(--surface-raised) !important;
   }
 }
 
