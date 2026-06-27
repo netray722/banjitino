@@ -134,6 +134,10 @@
     padding-inline: 10px;
   }
 
+  :host-context(:root.nav-menu-open) .timeline-toolbar {
+    top: 254px;
+  }
+
   .toolbar-inner {
     align-items: flex-start;
     padding: 10px;
