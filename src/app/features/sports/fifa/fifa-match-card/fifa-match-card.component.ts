@@ -40,6 +40,11 @@ export class FifaMatchCardComponent {
     return `/api/fifa/flag/${team.code}`;
   }
 
+  protected scoreLabel(team: FifaTeam): string {
+    const score = team.score ?? 0;
+    return team.penaltyScore === null || team.penaltyScore === undefined ? String(score) : `${score} (${team.penaltyScore})`;
+  }
+
   protected hideBrokenImage(event: Event): void {
     (event.currentTarget as HTMLImageElement).hidden = true;
   }

@@ -5,6 +5,7 @@ export interface FifaTeam {
   name: string;
   code: string;
   score: number | null;
+  penaltyScore?: number | null;
 }
 
 export interface FifaMatch {

@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import { FifaEvent, FifaMatchDetails, FifaTeamStat } from '../fifa.types';
+import { FifaEvent, FifaMatchDetails, FifaTeam, FifaTeamStat } from '../fifa.types';
 
 @Component({
   selector: 'app-fifa-match-details',
@@ -14,6 +14,14 @@ export class FifaMatchDetailsComponent {
     return events.length > 0;
   }
 
+  protected hasPenalties(details: FifaMatchDetails): boolean {
+    return this.hasPenaltyScore(details.homeTeam) || this.hasPenaltyScore(details.awayTeam);
+  }
+
+  protected penaltyScore(team: FifaTeam): string {
+    return this.hasPenaltyScore(team) ? String(team.penaltyScore) : '-';
+  }
+
   protected barWidth(stat: FifaTeamStat, side: 'home' | 'away'): number {
     const home = this.statNumber(stat.homeValue);
     const away = this.statNumber(stat.awayValue);
@@ -23,5 +31,9 @@ export class FifaMatchDetailsComponent {
 
   private statNumber(value: string): number {
     return Number.parseFloat(value.replace(/[^\d.-]/g, '')) || 0;
+  }
+
+  private hasPenaltyScore(team: FifaTeam): boolean {
+    return team.penaltyScore !== null && team.penaltyScore !== undefined;
   }
 }

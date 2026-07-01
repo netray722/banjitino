@@ -37,7 +37,7 @@
           }
         </div>
         @if (currentMatch.status !== 'scheduled') {
-          <strong class="score">{{ currentMatch.homeTeam.score }}</strong>
+          <strong class="score">{{ scoreLabel(currentMatch.homeTeam) }}</strong>
         }
       </div>
 
@@ -55,7 +55,7 @@
           }
         </div>
         @if (currentMatch.status !== 'scheduled') {
-          <strong class="score">{{ currentMatch.awayTeam.score }}</strong>
+          <strong class="score">{{ scoreLabel(currentMatch.awayTeam) }}</strong>
         }
       </div>
     </div>
