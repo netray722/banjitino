@@ -114,7 +114,8 @@ function normalizeEspnFifaTeam(competitor: EspnFifaCompetitor | undefined, statu
     id: competitor?.team?.id ?? '',
     name: competitor?.team?.displayName ?? competitor?.team?.name ?? '',
     code: competitor?.team?.abbreviation ?? '',
-    score: status === 'scheduled' ? null : Number.parseInt(competitor?.score ?? '0', 10) || 0
+    score: status === 'scheduled' ? null : Number.parseInt(competitor?.score ?? '0', 10) || 0,
+    penaltyScore: status === 'scheduled' ? null : statNumber(competitor?.shootoutScore ?? competitor?.penaltyScore)
   };
 }
 
@@ -129,8 +130,8 @@ export function normalizeFifaMatchDetails(payload: unknown, now = new Date()): F
   }
 
   const match = payload as RawFifaMatch;
-  const home = normalizeTeam(match.HomeTeam ?? match.Home);
-  const away = normalizeTeam(match.AwayTeam ?? match.Away);
+  const home = normalizeTeam(match.HomeTeam ?? match.Home, match.HomeTeamPenaltyScore);
+  const away = normalizeTeam(match.AwayTeam ?? match.Away, match.AwayTeamPenaltyScore);
   const playerLookup = new Map<string, string>();
 
   for (const player of [...normalizePlayers(match.HomeTeam ?? match.Home), ...normalizePlayers(match.AwayTeam ?? match.Away)]) {
@@ -221,6 +222,7 @@ function espnDetailTeam(team: EspnSummaryTeam | undefined, roster: EspnRoster | 
     name: source?.displayName ?? source?.name ?? '',
     code: source?.abbreviation ?? '',
     score: team?.score === undefined ? null : Number.parseInt(team.score, 10) || 0,
+    penaltyScore: statNumber(team?.shootoutScore ?? team?.penaltyScore),
     tactics: roster?.formation ?? '',
     players: []
   };
@@ -304,17 +306,18 @@ function normalizeFifaMatch(match: RawFifaMatch, now: Date): FifaMatch {
     venue: text(match.Stadium?.Name),
     city: text(match.Stadium?.CityName),
     attendance: match.Attendance ?? '',
-    homeTeam: normalizeTeam(match.HomeTeam ?? match.Home),
-    awayTeam: normalizeTeam(match.AwayTeam ?? match.Away)
+    homeTeam: normalizeTeam(match.HomeTeam ?? match.Home, match.HomeTeamPenaltyScore),
+    awayTeam: normalizeTeam(match.AwayTeam ?? match.Away, match.AwayTeamPenaltyScore)
   };
 }
 
-function normalizeTeam(team?: RawFifaTeam): FifaTeam {
+function normalizeTeam(team?: RawFifaTeam, penaltyScore?: unknown): FifaTeam {
   return {
     id: team?.IdTeam ?? '',
     name: text(team?.TeamName) || (team?.ShortClubName ?? ''),
     code: team?.Abbreviation ?? team?.IdCountry ?? '',
-    score: typeof team?.Score === 'number' ? team.Score : null
+    score: typeof team?.Score === 'number' ? team.Score : null,
+    penaltyScore: statNumber(penaltyScore ?? team?.PenaltyScore ?? team?.ShootoutScore)
   };
 }
 

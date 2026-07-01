@@ -66,6 +66,34 @@ describe('FifaMatchCardComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Shots on target');
   });
 
+  it('shows penalty shootout scores in the summary and expanded details', async () => {
+    await TestBed.configureTestingModule({
+      imports: [FifaMatchCardComponent]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FifaMatchCardComponent);
+    fixture.componentRef.setInput('match', {
+      ...finalFifaMatch,
+      homeTeam: { ...finalFifaMatch.homeTeam, score: 1, penaltyScore: 3 },
+      awayTeam: { ...finalFifaMatch.awayTeam, score: 1, penaltyScore: 2 }
+    });
+    fixture.componentRef.setInput('expanded', true);
+    fixture.componentRef.setInput('detailsState', {
+      data: {
+        ...fifaDetailsFixture,
+        homeTeam: { ...fifaDetailsFixture.homeTeam, score: 1, penaltyScore: 3 },
+        awayTeam: { ...fifaDetailsFixture.awayTeam, score: 1, penaltyScore: 2 }
+      },
+      loading: false,
+      error: null
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('1 (3)');
+    expect(fixture.nativeElement.textContent).toContain('Penalties');
+    expect(fixture.nativeElement.textContent).toContain('PSO');
+  });
+
   it('hides the team stats section when FIFA does not provide stats', async () => {
     await TestBed.configureTestingModule({
       imports: [FifaMatchCardComponent]

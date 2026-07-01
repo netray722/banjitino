@@ -78,7 +78,7 @@
 .team-row {
   min-width: 0;
   display: grid;
-  grid-template-columns: 40px minmax(130px, 1fr) 44px;
+  grid-template-columns: 40px minmax(130px, 1fr) 68px;
   align-items: center;
   gap: 12px;
   position: relative;
@@ -268,7 +268,7 @@
   }
 
   .team-row {
-    grid-template-columns: 40px minmax(100px, 1fr) 46px;
+    grid-template-columns: 40px minmax(100px, 1fr) 68px;
     gap: 9px;
   }
 

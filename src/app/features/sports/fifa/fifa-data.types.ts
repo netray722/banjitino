@@ -2,6 +2,7 @@ export interface LocalizedText { Description?: string; }
 
 export interface RawFifaTeam {
   Score?: number; IdTeam?: string; IdCountry?: string; Tactics?: string; TeamName?: LocalizedText[];
+  PenaltyScore?: number | string | null; ShootoutScore?: number | string | null;
   Abbreviation?: string; ShortClubName?: string; Players?: RawFifaPlayer[]; Goals?: RawFifaEvent[];
   Bookings?: RawFifaEvent[]; Substitutions?: RawFifaSubstitution[]; Statistics?: unknown; MatchStatistics?: unknown;
 }
@@ -21,13 +22,14 @@ export interface RawFifaMatch {
   MatchNumber?: number | string; Period?: number | string; ResultType?: number; Winner?: string;
   Home?: RawFifaTeam; Away?: RawFifaTeam; HomeTeam?: RawFifaTeam; AwayTeam?: RawFifaTeam;
   HomeTeamScore?: number | null; AwayTeamScore?: number | null; GroupName?: LocalizedText[]; StageName?: LocalizedText[];
+  HomeTeamPenaltyScore?: number | string | null; AwayTeamPenaltyScore?: number | string | null;
   Stadium?: { Name?: LocalizedText[]; CityName?: LocalizedText[] }; Attendance?: string;
   Officials?: RawFifaOfficial | RawFifaOfficial[]; Weather?: RawFifaWeather; Statistics?: unknown;
   MatchStatistics?: unknown; HomeTeamStatistics?: unknown; AwayTeamStatistics?: unknown;
 }
 
 export interface EspnFifaCompetitor {
-  homeAway?: 'home' | 'away'; score?: string;
+  homeAway?: 'home' | 'away'; score?: string; shootoutScore?: string; penaltyScore?: string;
   team?: { id?: string; abbreviation?: string; displayName?: string; name?: string };
 }
 

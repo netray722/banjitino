@@ -15,4 +15,18 @@ describe('FifaMatchDetailsComponent', () => {
     expect(fixture.nativeElement.querySelector('.team-stats')).not.toBeNull();
     expect(fixture.nativeElement.querySelectorAll('.stat-comparison').length).toBeGreaterThan(0);
   });
+
+  it('renders penalty shootout scores when present', async () => {
+    await TestBed.configureTestingModule({ imports: [FifaMatchDetailsComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(FifaMatchDetailsComponent);
+    fixture.componentRef.setInput('details', {
+      ...fifaDetailsFixture,
+      homeTeam: { ...fifaDetailsFixture.homeTeam, penaltyScore: 3 },
+      awayTeam: { ...fifaDetailsFixture.awayTeam, penaltyScore: 2 }
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Penalties');
+    expect(fixture.nativeElement.textContent).toContain('PSO');
+  });
 });

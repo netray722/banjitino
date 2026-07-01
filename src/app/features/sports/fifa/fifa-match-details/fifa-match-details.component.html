@@ -31,6 +31,19 @@
     </section>
   }
 
+  @if (hasPenalties(matchDetails)) {
+    <section class="penalties-panel">
+      <h3>Penalties</h3>
+      <div class="penalties-score">
+        <strong>{{ matchDetails.homeTeam.code }}</strong>
+        <span>{{ penaltyScore(matchDetails.homeTeam) }}</span>
+        <small>PSO</small>
+        <span>{{ penaltyScore(matchDetails.awayTeam) }}</span>
+        <strong>{{ matchDetails.awayTeam.code }}</strong>
+      </div>
+    </section>
+  }
+
   <section class="event-grid">
     <div class="event-panel">
       <h3>Goals</h3>
