@@ -1,59 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 :root {
   color-scheme: light;
-  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
   background: var(--page-bg);
   color: var(--ink);
-  --ink: #0f172a;
-  --muted: #526077;
-  --border: #dbe3ef;
-  --accent: #2563eb;
-  --accent-2: #06b6d4;
-  --surface: #ffffff;
-  --surface-soft: #f7f9fb;
-  --live: #15803d;
-  --page-bg: #f3f6fb;
-  --page-line: rgba(37, 99, 235, 0.1);
-  --sport-gradient: linear-gradient(135deg, #0f172a 0%, #1d4ed8 65%, #0891b2 140%);
-  --sport-faint: rgba(37, 99, 235, 0.1);
-  --surface-raised: #ffffff;
-  --surface-detail: #f8fafc;
-  --surface-header: #f1f5f9;
-  --surface-footer: #eef2f7;
-  --card-border: rgba(15, 23, 42, 0.11);
-  --soft-border: rgba(15, 23, 42, 0.09);
-  --subtle-text: #64748b;
-  --header-bg: rgba(9, 16, 30, 0.94);
-  --header-text: #ffffff;
-  --header-muted: rgba(255, 255, 255, 0.7);
-  --header-border: rgba(255, 255, 255, 0.16);
-  --header-control: rgba(255, 255, 255, 0.07);
-  --focus-ring: rgba(37, 99, 235, 0.45);
+  --display-font: Georgia, "Times New Roman", serif;
+  --ink: #211e1a;
+  --muted: #6e665d;
+  --border: #cfc4b6;
+  --accent: #b63d26;
+  --accent-2: #d16a3a;
+  --surface: #f9f4eb;
+  --surface-soft: #eee5d8;
+  --live: #197052;
+  --page-bg: #f2eadf;
+  --page-line: rgba(33, 30, 26, .055);
+  --surface-raised: #fffaf2;
+  --surface-detail: #f6efe5;
+  --surface-header: #e9dfd1;
+  --surface-footer: #e5dacb;
+  --card-border: #c8bcad;
+  --soft-border: #d9cfc2;
+  --subtle-text: #766d63;
+  --focus-ring: rgba(182, 61, 38, .48);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f8fafc;
-  --muted: #a8b4c7;
-  --border: #283548;
-  --surface: #111927;
-  --surface-soft: #182234;
-  --surface-raised: #131d2b;
-  --surface-detail: #0e1622;
-  --surface-header: #1a2536;
-  --surface-footer: #1a2536;
-  --card-border: rgba(148, 163, 184, 0.2);
-  --soft-border: rgba(148, 163, 184, 0.15);
-  --subtle-text: #a8b4c7;
-  --page-bg: #080d16;
-  --page-line: rgba(96, 165, 250, 0.12);
-  --header-bg: rgba(6, 11, 20, 0.94);
-  --header-text: #f8fafc;
-  --header-muted: #bac3cf;
-  --header-border: rgba(255, 255, 255, 0.2);
-  --header-control: rgba(255, 255, 255, 0.1);
-  --focus-ring: rgba(96, 165, 250, 0.62);
+  --ink: #f3eadf;
+  --muted: #b5aa9e;
+  --border: #4c443b;
+  --accent: #ee7657;
+  --accent-2: #f29b67;
+  --surface: #1d1a17;
+  --surface-soft: #28231e;
+  --surface-raised: #231f1b;
+  --surface-detail: #1a1714;
+  --surface-header: #302a24;
+  --surface-footer: #302a24;
+  --card-border: #50463d;
+  --soft-border: #3d3730;
+  --subtle-text: #b5aa9e;
+  --page-bg: #161310;
+  --page-line: rgba(243, 234, 223, .045);
+  --focus-ring: rgba(238, 118, 87, .62);
 }
 
 * {
@@ -68,9 +57,9 @@ body {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at 12% -10%, var(--page-line), transparent 34%),
-    radial-gradient(circle at 88% 8%, rgba(6, 182, 212, 0.07), transparent 28%),
+    linear-gradient(90deg, transparent 49.8%, var(--page-line) 50%, transparent 50.2%),
     var(--page-bg);
+  background-size: 48px 48px;
   min-width: 320px;
   color: var(--ink);
   transition: background-color 200ms ease, color 200ms ease;
@@ -92,12 +81,9 @@ a:focus-visible {
 h1,
 h2,
 h3,
-.status,
-.game-count,
-.brand strong,
-.board-nav a {
-  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing: -0.01em;
+.display-type {
+  font-family: var(--display-font);
+  letter-spacing: -.035em;
 }
 
 @media (prefers-reduced-motion: reduce) {
