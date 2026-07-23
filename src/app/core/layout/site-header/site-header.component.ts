@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, inject, signal, viewChild } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -8,13 +8,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.scss'
 })
-export class SiteHeaderComponent implements OnDestroy {
+export class SiteHeaderComponent {
   private readonly document = inject(DOCUMENT);
   private readonly view = this.document.defaultView;
-  private readonly categoryMenuRoot = viewChild<ElementRef<HTMLElement>>('categoryMenuRoot');
-  private readonly categoryMenuButton = viewChild<ElementRef<HTMLButtonElement>>('categoryMenuButton');
   protected readonly isDarkTheme = signal(false);
-  protected readonly categoryMenuOpen = signal(false);
 
   constructor() {
     if (!this.view) return;
@@ -31,44 +28,7 @@ export class SiteHeaderComponent implements OnDestroy {
     this.applyTheme();
   }
 
-  protected toggleCategoryMenu(): void {
-    this.setCategoryMenuOpen(!this.categoryMenuOpen());
-  }
-
-  protected openCategoryMenu(event: Event): void {
-    event.preventDefault();
-    this.setCategoryMenuOpen(true);
-    setTimeout(() => this.categoryMenuRoot()?.nativeElement.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
-  }
-
-  protected closeCategoryMenu(): void {
-    this.setCategoryMenuOpen(false);
-  }
-
-  ngOnDestroy(): void {
-    this.document.documentElement.classList.remove('nav-menu-open');
-  }
-
-  @HostListener('document:click', ['$event'])
-  closeCategoryMenuOnOutsideClick(event: MouseEvent): void {
-    if (this.categoryMenuOpen() && !this.categoryMenuRoot()?.nativeElement.contains(event.target as Node)) {
-      this.closeCategoryMenu();
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  closeCategoryMenuOnEscape(): void {
-    if (!this.categoryMenuOpen()) return;
-    this.closeCategoryMenu();
-    this.categoryMenuButton()?.nativeElement.focus();
-  }
-
   private applyTheme(): void {
     this.document.documentElement.dataset['theme'] = this.isDarkTheme() ? 'dark' : 'light';
-  }
-
-  private setCategoryMenuOpen(isOpen: boolean): void {
-    this.categoryMenuOpen.set(isOpen);
-    this.document.documentElement.classList.toggle('nav-menu-open', isOpen);
   }
 }

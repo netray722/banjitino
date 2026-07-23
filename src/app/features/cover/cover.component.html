@@ -1,16 +1,25 @@
 <main class="cover" [style.background-image]="'url(' + coverImage() + ')'">
   <div class="shade" aria-hidden="true"></div>
 
-  <section class="clock" aria-label="Local time">
-    <h1>{{ time() }}</h1>
-    <div class="weather" aria-label="Local weather">
-      <strong>{{ weather() }}</strong>
-      <span>{{ place() }}</span>
-    </div>
+  <div class="issue-line">
+    <span>Daily dispatch / {{ place() }}</span>
+    <span aria-label="Local weather">{{ weather() }}</span>
+  </div>
+
+  <section class="cover-story" aria-labelledby="cover-title">
+    <p class="kicker">A personal corner of the internet</p>
+    <h1 id="cover-title">Make time for<br><em>sidequests.</em></h1>
+    <p class="deck">Scores, small curiosities, and whatever feels worth following today.</p>
+    <a routerLink="/nba">Open the NBA desk <span aria-hidden="true">↗</span></a>
+  </section>
+
+  <section class="clock" aria-label="Local time and weather">
+    <span>Local time</span>
+    <strong>{{ time() }}</strong>
   </section>
 
   <figure class="quote">
     <blockquote>“{{ quote().text }}”</blockquote>
-    <figcaption>{{ quote().author }}</figcaption>
+    <figcaption>— {{ quote().author }}</figcaption>
   </figure>
 </main>

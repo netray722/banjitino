@@ -1,5 +1,5 @@
 <app-timeline-date-toolbar
-  eyebrow="NBA timeline"
+  eyebrow="Scoreboard index"
   [date]="activeDate()"
   [dateLabel]="dateLabel(activeDate())"
   dateAriaLabel="Jump to an NBA date"
@@ -14,6 +14,13 @@
 />
 
 <main class="page-shell nba-page">
+  <section class="desk-intro" aria-labelledby="nba-desk-title">
+    <div>
+      <p>Basketball / Live ledger</p>
+      <h1 id="nba-desk-title">The NBA Desk</h1>
+    </div>
+    <p>Every game day in one continuous read: scores first, box scores when you want the fine print.</p>
+  </section>
   @if (error()) {
     <div class="inline-error" role="status">{{ error() }}</div>
   }
@@ -36,7 +43,7 @@
             <span class="timeline-node" aria-hidden="true"></span>
             <div>
               <p class="relative-date">{{ dateLabel(day.date) }}</p>
-              <h1 [id]="'nba-day-' + day.date">{{ fullDateLabel(day.date) }}</h1>
+              <h2 [id]="'nba-day-' + day.date">{{ fullDateLabel(day.date) }}</h2>
             </div>
             <span class="day-count">{{ day.scoreboard.games.length }} {{ day.scoreboard.games.length === 1 ? 'game' : 'games' }}</span>
           </header>
@@ -52,7 +59,7 @@
       @if (loadingNext()) { <span class="edge-loader">Loading upcoming games…</span> }
     </div>
   } @else {
-    <section class="state-panel"><h1>No games found</h1><p>Try another date from the picker above.</p></section>
+    <section class="state-panel"><h2>No games found</h2><p>Try another date from the picker above.</p></section>
   }
 </main>
 

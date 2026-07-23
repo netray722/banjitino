@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { SiteHeaderComponent } from './site-header.component';
 
 describe('SiteHeaderComponent', () => {
-  it('renders the personal banner and category dropdown', async () => {
+  it('renders the personal banner and primary navigation', async () => {
     await TestBed.configureTestingModule({
       imports: [SiteHeaderComponent],
       providers: [provideRouter([])]
@@ -15,16 +15,9 @@ describe('SiteHeaderComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Banjitino');
-    expect(fixture.nativeElement.textContent).toContain('sidequests.');
-    expect(fixture.nativeElement.querySelector('.brand-mark')?.textContent).toContain('B');
-    const menuButton = fixture.nativeElement.querySelector('.category-menu-button') as HTMLButtonElement;
-    expect(menuButton.getAttribute('aria-expanded')).toBe('false');
-    menuButton.click();
-    fixture.detectChanges();
-    expect(menuButton.getAttribute('aria-expanded')).toBe('true');
-    expect(menuButton.textContent).toContain('Sports');
-    const links = fixture.nativeElement.querySelectorAll('.category-menu a') as NodeListOf<HTMLAnchorElement>;
-    expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/fifa']);
+    expect(fixture.nativeElement.textContent).toContain('Field notes for curious people');
+    const links = fixture.nativeElement.querySelectorAll('.primary-nav a') as NodeListOf<HTMLAnchorElement>;
+    expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/nba']);
   });
 
   it('toggles and saves the site theme', async () => {

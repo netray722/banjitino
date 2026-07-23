@@ -1,23 +1,24 @@
 .game-card {
   overflow: hidden;
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  background:
-    linear-gradient(90deg, rgba(37, 99, 235, 0.08), transparent 34%),
-    var(--surface-raised);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  border-left: 5px solid var(--ink);
+  background: var(--surface-raised);
+  transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .game-card:hover,
 .game-card.is-expanded {
-  border-color: rgba(37, 99, 235, 0.42);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  border-color: var(--accent);
+}
+
+.game-card:hover {
+  transform: translateX(3px);
 }
 
 .game-summary {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(125px, 0.75fr) minmax(360px, 1.7fr) auto 24px;
+  grid-template-columns: minmax(125px, .7fr) minmax(360px, 1.7fr) auto 24px;
   align-items: center;
   gap: 22px;
   padding: 18px 20px 18px 22px;
@@ -37,10 +38,11 @@
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   color: var(--ink);
-  font-size: 0.84rem;
+  font-size: .7rem;
   font-weight: 900;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
@@ -58,13 +60,14 @@
   height: 7px;
   border-radius: 50%;
   background: var(--live);
-  box-shadow: 0 0 0 4px rgba(11, 143, 114, 0.12);
 }
 
 .context {
   overflow: hidden;
   color: var(--subtle-text);
-  font-size: 0.74rem;
+  font-family: var(--display-font);
+  font-size: .76rem;
+  font-style: italic;
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -72,49 +75,48 @@
 
 .matchup {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+  padding-left: 20px;
+  border-left: 1px solid var(--soft-border);
 }
 
 .team-row {
   min-width: 0;
   display: grid;
-  grid-template-columns: 44px minmax(110px, 1fr) minmax(92px, auto) 48px;
+  grid-template-columns: 42px minmax(110px, 1fr) minmax(92px, auto) 52px;
   align-items: center;
   gap: 12px;
   position: relative;
 }
 
 .team-row::before {
-  content: '';
-  width: 4px;
-  height: 34px;
+  width: 3px;
+  height: 28px;
   position: absolute;
-  margin-left: -20px;
-  border-radius: 999px;
+  left: -21px;
+  content: '';
   background: var(--team-color);
 }
 
 .team-logo {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
   position: relative;
   border: 1px solid var(--soft-border);
-  border-radius: 50%;
   background: var(--surface-soft);
   color: var(--team-color);
-  font-size: 0.65rem;
+  font-size: .62rem;
   font-weight: 900;
 }
 
 .team-logo img {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   position: absolute;
   inset: 0;
-  background: var(--surface-raised);
-  border-radius: 50%;
+  margin: auto;
   object-fit: contain;
 }
 
@@ -132,40 +134,45 @@
 
 .team-name span {
   color: var(--subtle-text);
-  font-size: 0.72rem;
+  font-size: .68rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 .team-name strong {
   margin-top: 1px;
-  font-size: 1.04rem;
+  font-family: var(--display-font);
+  font-size: 1.08rem;
 }
 
 .record {
   color: var(--subtle-text);
-  font-size: 0.76rem;
+  font-size: .7rem;
   white-space: nowrap;
   text-align: right;
 }
 
 .score {
-  text-align: right;
   color: var(--ink);
-  font-family: inherit;
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-family: var(--display-font);
+  font-size: 2rem;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .expand-label {
   color: var(--subtle-text);
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .06em;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .chevron {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   transition: transform 150ms ease;
 }
 
@@ -174,10 +181,8 @@
 }
 
 .game-details {
-  border-top: 1px solid rgba(37, 99, 235, 0.18);
-  background:
-    linear-gradient(180deg, rgba(37, 99, 235, 0.07), transparent 120px),
-    var(--surface-detail);
+  border-top: 1px solid var(--ink);
+  background: var(--surface-detail);
 }
 
 .scheduled-message,
@@ -194,7 +199,7 @@
 .scheduled-message svg {
   width: 24px;
   height: 24px;
-  color: #2563eb;
+  color: var(--accent);
 }
 
 .scheduled-message p,
@@ -214,23 +219,17 @@
 .details-loading span {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
-  background: #2563eb;
+  background: var(--accent);
   animation: pulse 900ms infinite alternate;
 }
 
-.details-loading span:nth-child(2) {
-  animation-delay: 150ms;
-}
-
-.details-loading span:nth-child(3) {
-  animation-delay: 300ms;
-}
+.details-loading span:nth-child(2) { animation-delay: 150ms; }
+.details-loading span:nth-child(3) { animation-delay: 300ms; }
 
 .details-loading p {
   margin-left: 8px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: .82rem;
 }
 
 .details-error {
@@ -243,8 +242,7 @@
   align-items: center;
   gap: 7px;
   padding: 8px 12px;
-  border: 1px solid rgba(37, 99, 235, 0.22);
-  border-radius: 8px;
+  border: 1px solid var(--ink);
   background: var(--surface-raised);
   color: var(--ink);
   font-weight: 800;
@@ -258,16 +256,20 @@
 
 @keyframes pulse {
   to {
-    opacity: 0.25;
+    opacity: .25;
     transform: translateY(-3px);
   }
 }
 
 @media (max-width: 760px) {
+  .game-card:hover {
+    transform: none;
+  }
+
   .game-summary {
     grid-template-columns: 1fr 22px;
     gap: 14px;
-    padding: 15px 16px 15px 18px;
+    padding: 15px 14px;
   }
 
   .game-meta,
@@ -276,7 +278,6 @@
   }
 
   .game-meta {
-    display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 8px;
   }
@@ -286,21 +287,31 @@
     text-align: right;
   }
 
-  .team-row {
-    grid-template-columns: 40px minmax(88px, 1fr) minmax(82px, auto) 46px;
-    gap: 9px;
+  .matchup {
+    padding-left: 14px;
   }
 
-  .record { font-size: .68rem; }
+  .team-row {
+    grid-template-columns: 38px minmax(72px, 1fr) minmax(64px, auto) 40px;
+    gap: 8px;
+  }
 
   .team-row::before {
-    margin-left: -18px;
+    left: -15px;
   }
 
   .team-logo,
   .team-logo img {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .record {
+    font-size: .62rem;
+  }
+
+  .score {
+    font-size: 1.65rem;
   }
 
   .expand-label {
@@ -310,6 +321,16 @@
   .chevron {
     grid-column: 2;
     grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-row {
+    grid-template-columns: 38px minmax(0, 1fr) 42px;
+  }
+
+  .record {
+    display: none;
   }
 }
 

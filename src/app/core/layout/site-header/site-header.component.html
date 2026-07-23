@@ -1,62 +1,33 @@
-<header class="site-header" [class.is-menu-open]="categoryMenuOpen()">
+<header class="site-header">
+  <div class="dispatch-line" aria-hidden="true">
+    <span>Personal index / New York</span>
+    <span>Scores · notes · sidequests</span>
+  </div>
   <div class="header-inner">
     <a class="brand" routerLink="/" aria-label="Banjitino sidequests home">
-      <span class="brand-mark" aria-hidden="true">
-        <span>B</span>
-      </span>
+      <span class="brand-mark" aria-hidden="true">B.</span>
       <span class="brand-copy">
-        <strong class="brand-wordmark">Banjitino</strong>
-        <small>sidequests.</small>
+        <strong>Banjitino</strong>
+        <small>Field notes for curious people</small>
       </span>
     </a>
 
     <nav class="primary-nav" aria-label="Primary">
-      <div #categoryMenuRoot class="category-nav" routerLinkActive="section-active">
-        <button
-          #categoryMenuButton
-          class="category-menu-button"
-          type="button"
-          aria-haspopup="menu"
-          [attr.aria-expanded]="categoryMenuOpen()"
-          aria-controls="category-menu"
-          (click)="toggleCategoryMenu()"
-          (keydown.arrowdown)="openCategoryMenu($event)"
-        >
-          <span class="category-dot" aria-hidden="true"></span>
-          Sports
-          <svg class="menu-chevron" [class.is-open]="categoryMenuOpen()" aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 8 4 4 4-4" /></svg>
-        </button>
-
-        @if (categoryMenuOpen()) {
-          <div id="category-menu" class="category-menu" role="menu">
-            <p>Sports</p>
-            <a routerLink="/nba" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeCategoryMenu()">
-              <span><strong>NBA</strong><small>Live scores and box scores</small></span>
-              <span class="menu-arrow" aria-hidden="true">→</span>
-            </a>
-            <a routerLink="/fifa" routerLinkActive="active" ariaCurrentWhenActive="page" role="menuitem" (click)="closeCategoryMenu()">
-              <span><strong>FIFA 2026</strong><small>World Cup match timeline</small></span>
-              <span class="menu-arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
-        }
-      </div>
+      <a routerLink="/nba" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <span class="live-mark" aria-hidden="true"></span>
+        NBA desk
+      </a>
     </nav>
 
-    <div class="header-actions">
-      <button
-        class="theme-toggle"
-        type="button"
-        (click)="toggleTheme()"
-        [attr.aria-label]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'"
-        [attr.title]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'"
-      >
-        @if (isDarkTheme()) {
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" /></svg>
-        } @else {
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>
-        }
-      </button>
-    </div>
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="toggleTheme()"
+      [attr.aria-label]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'"
+      [attr.title]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'"
+    >
+      <span>{{ isDarkTheme() ? 'Light' : 'Dark' }}</span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></svg>
+    </button>
   </div>
 </header>

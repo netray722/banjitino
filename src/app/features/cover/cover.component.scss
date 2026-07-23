@@ -1,103 +1,186 @@
 :host {
   display: block;
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
+  padding: 28px;
 }
 
 .cover {
   position: relative;
-  height: 100dvh;
+  min-height: calc(100dvh - 167px);
   overflow: hidden;
   display: grid;
-  grid-template-rows: 1fr auto;
-  padding: 107px 24px 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .6fr);
+  grid-template-rows: auto 1fr auto;
+  gap: 28px;
+  padding: 26px 30px 30px;
+  border: 1px solid var(--ink);
   background-position: center;
   background-size: cover;
-  color: #fff;
+  color: #fff8ee;
 }
 
 .shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(2, 6, 23, .46), rgba(2, 6, 23, .08) 45%, rgba(2, 6, 23, .64)),
-    radial-gradient(circle at center, transparent 0 34%, rgba(2, 6, 23, .24));
+    linear-gradient(90deg, rgba(21, 16, 12, .88) 0%, rgba(21, 16, 12, .68) 48%, rgba(21, 16, 12, .24) 100%),
+    linear-gradient(0deg, rgba(21, 16, 12, .72), transparent 48%);
 }
 
-.weather,
+.issue-line,
+.cover-story,
 .clock,
 .quote {
   position: relative;
   z-index: 1;
 }
 
-.weather {
-  display: grid;
-  justify-items: center;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
+.issue-line {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 248, 238, .48);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
-.weather strong {
-  font-size: 1.2rem;
-  line-height: 1;
+.cover-story {
+  align-self: center;
+  max-width: 740px;
+  padding-block: 60px;
 }
 
-.weather span {
-  margin-top: 4px;
-  font-size: .78rem;
-  font-weight: 700;
+.kicker {
+  margin: 0 0 18px;
+  color: #ef8a69;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.cover-story h1 {
+  margin: 0;
+  font-family: var(--display-font);
+  font-size: clamp(4.5rem, 9vw, 9.5rem);
+  font-weight: 400;
+  letter-spacing: -.075em;
+  line-height: .73;
+}
+
+.cover-story h1 em {
+  color: #ef8a69;
+  font-weight: 400;
+}
+
+.deck {
+  max-width: 520px;
+  margin: 34px 0 0;
+  color: rgba(255, 248, 238, .82);
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  line-height: 1.55;
+}
+
+.cover-story a {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 13px 16px;
+  border: 1px solid rgba(255, 248, 238, .72);
+  background: #fff8ee;
+  color: #211e1a;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.cover-story a:hover {
+  background: #ef8a69;
 }
 
 .clock {
   align-self: center;
-  justify-self: center;
+  justify-self: end;
   display: grid;
-  justify-items: center;
-  gap: 14px;
-  text-shadow: 0 8px 34px rgba(0, 0, 0, .36);
+  justify-items: end;
 }
 
-.clock h1 {
-  margin: 0;
-  font-size: 9rem;
-  font-weight: 500;
-  letter-spacing: 0;
+.clock span {
+  margin-bottom: 4px;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.clock strong {
+  font-family: var(--display-font);
+  font-size: clamp(3rem, 6vw, 6.5rem);
+  font-weight: 400;
+  letter-spacing: -.06em;
+  line-height: 1;
 }
 
 .quote {
-  justify-self: center;
-  max-width: min(720px, calc(100vw - 40px));
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px;
   margin: 0;
-  padding-bottom: 12px;
-  text-align: center;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, .62);
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 248, 238, .48);
 }
 
 .quote blockquote {
+  max-width: 720px;
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-family: var(--display-font);
+  font-size: clamp(1.1rem, 2vw, 1.55rem);
+  font-style: italic;
 }
 
 .quote figcaption {
-  margin-top: 8px;
-  color: rgba(255, 255, 255, .82);
-  font-size: .85rem;
+  color: rgba(255, 248, 238, .74);
+  font-size: .68rem;
   font-weight: 800;
+  text-align: right;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
+  :host {
+    padding: 12px;
+  }
+
   .cover {
-    height: 100dvh;
-    padding: 89px 18px 18px;
+    min-height: calc(100dvh - 122px);
+    grid-template-columns: 1fr;
+    padding: 20px;
   }
 
-  .clock h1 {
-    font-size: 3.75rem;
+  .cover-story {
+    padding-block: 36px;
   }
 
-  .quote blockquote {
-    font-size: 1rem;
+  .cover-story h1 {
+    font-size: clamp(3.8rem, 19vw, 6rem);
+  }
+
+  .clock {
+    display: none;
+  }
+
+  .quote {
+    grid-template-columns: 1fr;
+  }
+
+  .quote figcaption {
+    text-align: left;
   }
 }
