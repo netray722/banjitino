@@ -22,10 +22,13 @@ export interface RawStatistics {
   minutes?: string;
   fieldGoalsMade?: number;
   fieldGoalsAttempted?: number;
+  fieldGoalsPercentage?: number;
   threePointersMade?: number;
   threePointersAttempted?: number;
+  threePointersPercentage?: number;
   freeThrowsMade?: number;
   freeThrowsAttempted?: number;
+  freeThrowsPercentage?: number;
 }
 
 export interface RawPlayer {

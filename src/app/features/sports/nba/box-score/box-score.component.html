@@ -24,8 +24,11 @@
               <th scope="col">REB</th>
               <th scope="col">AST</th>
               <th scope="col">FG</th>
+              <th scope="col">FG%</th>
               <th scope="col">3PT</th>
+              <th scope="col">3PT%</th>
               <th scope="col">FT</th>
+              <th scope="col">FT%</th>
               <th scope="col">STL</th>
               <th scope="col">BLK</th>
               <th scope="col">TO</th>
@@ -44,8 +47,11 @@
                 <td>{{ player.rebounds }}</td>
                 <td>{{ player.assists }}</td>
                 <td>{{ player.fieldGoals }}</td>
+                <td>{{ player.fieldGoalPercentage }}</td>
                 <td>{{ player.threePointers }}</td>
+                <td>{{ player.threePointPercentage }}</td>
                 <td>{{ player.freeThrows }}</td>
+                <td>{{ player.freeThrowPercentage }}</td>
                 <td>{{ player.steals }}</td>
                 <td>{{ player.blocks }}</td>
                 <td>{{ player.turnovers }}</td>
@@ -61,8 +67,11 @@
               <td>{{ team.totals.rebounds }}</td>
               <td>{{ team.totals.assists }}</td>
               <td>{{ team.totals.fieldGoals }}</td>
+              <td>{{ team.totals.fieldGoalPercentage }}</td>
               <td>{{ team.totals.threePointers }}</td>
+              <td>{{ team.totals.threePointPercentage }}</td>
               <td>{{ team.totals.freeThrows }}</td>
+              <td>{{ team.totals.freeThrowPercentage }}</td>
               <td colspan="4"></td>
             </tr>
           </tfoot>

@@ -13,6 +13,7 @@ describe('BoxScoreComponent', () => {
 
     expect(fixture.nativeElement.querySelectorAll('.team-box')).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('E. Player');
+    expect(fixture.nativeElement.textContent).toContain('55.6%');
     expect(fixture.nativeElement.textContent).toContain('+8');
   });
 });

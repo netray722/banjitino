@@ -335,8 +335,11 @@ function normalizeEspnBoxScoreTeam(
       rebounds: Number.parseInt(totalValue(playerStats, 'rebounds') || statDisplay(boxTeam, 'totalRebounds') || '0', 10) || 0,
       assists: Number.parseInt(totalValue(playerStats, 'assists') || statDisplay(boxTeam, 'assists') || '0', 10) || 0,
       fieldGoals: totalValue(playerStats, 'fieldGoalsMade-fieldGoalsAttempted') || statDisplay(boxTeam, 'fieldGoalsMade-fieldGoalsAttempted') || '0-0',
+      fieldGoalPercentage: shootingPercentage(totalValue(playerStats, 'fieldGoalPct') || statDisplay(boxTeam, 'fieldGoalPct'), totalValue(playerStats, 'fieldGoalsMade-fieldGoalsAttempted') || statDisplay(boxTeam, 'fieldGoalsMade-fieldGoalsAttempted') || '0-0'),
       threePointers: totalValue(playerStats, 'threePointFieldGoalsMade-threePointFieldGoalsAttempted') || statDisplay(boxTeam, 'threePointFieldGoalsMade-threePointFieldGoalsAttempted') || '0-0',
-      freeThrows: totalValue(playerStats, 'freeThrowsMade-freeThrowsAttempted') || statDisplay(boxTeam, 'freeThrowsMade-freeThrowsAttempted') || '0-0'
+      threePointPercentage: shootingPercentage(totalValue(playerStats, 'threePointFieldGoalPct') || statDisplay(boxTeam, 'threePointFieldGoalPct'), totalValue(playerStats, 'threePointFieldGoalsMade-threePointFieldGoalsAttempted') || statDisplay(boxTeam, 'threePointFieldGoalsMade-threePointFieldGoalsAttempted') || '0-0'),
+      freeThrows: totalValue(playerStats, 'freeThrowsMade-freeThrowsAttempted') || statDisplay(boxTeam, 'freeThrowsMade-freeThrowsAttempted') || '0-0',
+      freeThrowPercentage: shootingPercentage(totalValue(playerStats, 'freeThrowPct') || statDisplay(boxTeam, 'freeThrowPct'), totalValue(playerStats, 'freeThrowsMade-freeThrowsAttempted') || statDisplay(boxTeam, 'freeThrowsMade-freeThrowsAttempted') || '0-0')
     }
   };
 }
@@ -360,8 +363,11 @@ function normalizeEspnPlayer(athlete: RawEspnAthleteStats, keys: string[]): Play
     turnovers: Number.parseInt(value('turnovers'), 10) || 0,
     plusMinus: Number.parseInt(value('plusMinus'), 10) || 0,
     fieldGoals: value('fieldGoalsMade-fieldGoalsAttempted') || '0-0',
+    fieldGoalPercentage: shootingPercentage(value('fieldGoalPct'), value('fieldGoalsMade-fieldGoalsAttempted') || '0-0'),
     threePointers: value('threePointFieldGoalsMade-threePointFieldGoalsAttempted') || '0-0',
-    freeThrows: value('freeThrowsMade-freeThrowsAttempted') || '0-0'
+    threePointPercentage: shootingPercentage(value('threePointFieldGoalPct'), value('threePointFieldGoalsMade-threePointFieldGoalsAttempted') || '0-0'),
+    freeThrows: value('freeThrowsMade-freeThrowsAttempted') || '0-0',
+    freeThrowPercentage: shootingPercentage(value('freeThrowPct'), value('freeThrowsMade-freeThrowsAttempted') || '0-0')
   };
 }
 
@@ -507,8 +513,11 @@ function normalizeBoxScoreTeam(team?: RawTeam): BoxScoreTeam {
       rebounds: statistics.reboundsTotal ?? 0,
       assists: statistics.assists ?? 0,
       fieldGoals: shootingLine(statistics.fieldGoalsMade, statistics.fieldGoalsAttempted),
+      fieldGoalPercentage: shootingPercentage(statistics.fieldGoalsPercentage, shootingLine(statistics.fieldGoalsMade, statistics.fieldGoalsAttempted)),
       threePointers: shootingLine(statistics.threePointersMade, statistics.threePointersAttempted),
-      freeThrows: shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted)
+      threePointPercentage: shootingPercentage(statistics.threePointersPercentage, shootingLine(statistics.threePointersMade, statistics.threePointersAttempted)),
+      freeThrows: shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted),
+      freeThrowPercentage: shootingPercentage(statistics.freeThrowsPercentage, shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted))
     }
   };
 }
@@ -531,11 +540,24 @@ function normalizePlayer(player: RawPlayer): PlayerStats {
     turnovers: statistics.turnovers ?? 0,
     plusMinus: statistics.plusMinusPoints ?? 0,
     fieldGoals: shootingLine(statistics.fieldGoalsMade, statistics.fieldGoalsAttempted),
+    fieldGoalPercentage: shootingPercentage(statistics.fieldGoalsPercentage, shootingLine(statistics.fieldGoalsMade, statistics.fieldGoalsAttempted)),
     threePointers: shootingLine(statistics.threePointersMade, statistics.threePointersAttempted),
-    freeThrows: shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted)
+    threePointPercentage: shootingPercentage(statistics.threePointersPercentage, shootingLine(statistics.threePointersMade, statistics.threePointersAttempted)),
+    freeThrows: shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted),
+    freeThrowPercentage: shootingPercentage(statistics.freeThrowsPercentage, shootingLine(statistics.freeThrowsMade, statistics.freeThrowsAttempted))
   };
 }
 
 function shootingLine(made?: number, attempted?: number): string {
   return `${made ?? 0}-${attempted ?? 0}`;
+}
+
+function shootingPercentage(value: number | string | undefined, line: string): string {
+  const provided = Number.parseFloat(String(value ?? '').replace('%', ''));
+  if (Number.isFinite(provided)) {
+    return `${(provided <= 1 ? provided * 100 : provided).toFixed(1)}%`;
+  }
+
+  const [made, attempted] = line.split('-').map(Number);
+  return `${(attempted ? made / attempted * 100 : 0).toFixed(1)}%`;
 }

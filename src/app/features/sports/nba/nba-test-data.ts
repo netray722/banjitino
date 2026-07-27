@@ -96,16 +96,22 @@ export const boxScoreFixture: BoxScore = {
       turnovers: 3,
       plusMinus: 8,
       fieldGoals: '10-18',
+      fieldGoalPercentage: '55.6%',
       threePointers: '4-8',
-      freeThrows: '4-4'
+      threePointPercentage: '50.0%',
+      freeThrows: '4-4',
+      freeThrowPercentage: '100.0%'
     }],
     totals: {
       points: 108,
       rebounds: 44,
       assists: 27,
       fieldGoals: '40-82',
+      fieldGoalPercentage: '48.8%',
       threePointers: '14-35',
-      freeThrows: '14-17'
+      threePointPercentage: '40.0%',
+      freeThrows: '14-17',
+      freeThrowPercentage: '82.4%'
     }
   },
   homeTeam: {
@@ -121,8 +127,11 @@ export const boxScoreFixture: BoxScore = {
       rebounds: 41,
       assists: 24,
       fieldGoals: '39-84',
+      fieldGoalPercentage: '46.4%',
       threePointers: '12-34',
-      freeThrows: '14-19'
+      threePointPercentage: '35.3%',
+      freeThrows: '14-19',
+      freeThrowPercentage: '73.7%'
     }
   }
 };
