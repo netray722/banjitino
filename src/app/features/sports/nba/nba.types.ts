@@ -48,8 +48,11 @@ export interface PlayerStats {
   turnovers: number;
   plusMinus: number;
   fieldGoals: string;
+  fieldGoalPercentage: string;
   threePointers: string;
+  threePointPercentage: string;
   freeThrows: string;
+  freeThrowPercentage: string;
 }
 
 export interface BoxScoreTeam {
@@ -65,8 +68,11 @@ export interface BoxScoreTeam {
     rebounds: number;
     assists: number;
     fieldGoals: string;
+    fieldGoalPercentage: string;
     threePointers: string;
+    threePointPercentage: string;
     freeThrows: string;
+    freeThrowPercentage: string;
   };
 }
 

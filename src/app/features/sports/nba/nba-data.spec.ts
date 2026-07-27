@@ -88,7 +88,10 @@ describe('NBA data normalization', () => {
             reboundsTotal: 47,
             assists: 29,
             fieldGoalsMade: 42,
-            fieldGoalsAttempted: 86
+            fieldGoalsAttempted: 86,
+            fieldGoalsPercentage: .5,
+            threePointersMade: 14,
+            threePointersAttempted: 35
           },
           players: [
             {
@@ -107,6 +110,9 @@ describe('NBA data normalization', () => {
                 assists: 5,
                 fieldGoalsMade: 9,
                 fieldGoalsAttempted: 16,
+                fieldGoalsPercentage: .6,
+                threePointersMade: 4,
+                threePointersAttempted: 8,
                 plusMinusPoints: 6
               }
             },
@@ -129,13 +135,17 @@ describe('NBA data normalization', () => {
       minutes: '35:09',
       points: 25,
       fieldGoals: '9-16',
+      fieldGoalPercentage: '60.0%',
+      threePointPercentage: '50.0%',
       plusMinus: 6
     });
     expect(boxScore.awayTeam.totals).toMatchObject({
       points: 112,
       rebounds: 47,
       assists: 29,
-      fieldGoals: '42-86'
+      fieldGoals: '42-86',
+      fieldGoalPercentage: '50.0%',
+      threePointPercentage: '40.0%'
     });
   });
 
@@ -348,7 +358,9 @@ describe('NBA data normalization', () => {
           rebounds: 48,
           assists: 14,
           fieldGoals: '31-87',
+          fieldGoalPercentage: '35.6%',
           threePointers: '12-37',
+          threePointPercentage: '32.4%',
           freeThrows: '20-28'
         }
       },
@@ -358,6 +370,7 @@ describe('NBA data normalization', () => {
       shortName: 'J. Brunson',
       points: 45,
       fieldGoals: '14-27',
+      fieldGoalPercentage: '51.9%',
       plusMinus: 10
     });
   });
