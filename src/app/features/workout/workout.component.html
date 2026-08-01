@@ -1,0 +1,143 @@
+<main class="page-shell">
+  <header class="workout-intro">
+    <div>
+      <p>Movement directory / 1,324 exercises</p>
+      <h1>Find your<br><em>next move.</em></h1>
+    </div>
+    <p>Search by movement, muscle, or equipment. Open any exercise for a visual reference and step-by-step cues.</p>
+  </header>
+
+  @if (loading()) {
+    <section class="state-panel" aria-live="polite">
+      <span class="loader-mark" aria-hidden="true"></span>
+      <p>Loading the exercise library…</p>
+    </section>
+  } @else if (error()) {
+    <section class="state-panel">
+      <h2>The library did not load.</h2>
+      <p>Check your connection and try again.</p>
+      <button type="button" (click)="loadExercises()">Try again</button>
+    </section>
+  } @else {
+    <section class="library" aria-labelledby="library-title">
+      <h2 id="library-title" class="visually-hidden">Exercise library</h2>
+
+      <div class="filters">
+        <label class="search-field">
+          <span>Search</span>
+          <input
+            #search
+            type="search"
+            placeholder="Exercise, target, equipment…"
+            autocomplete="off"
+            [value]="query()"
+            (input)="updateQuery(search.value)"
+          >
+        </label>
+
+        <label>
+          <span>Body part</span>
+          <select #bodyPartSelect [value]="bodyPart()" (change)="updateBodyPart(bodyPartSelect.value)">
+            <option value="">All body parts</option>
+            @for (option of bodyParts(); track option) {
+              <option [value]="option">{{ option | titlecase }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Equipment</span>
+          <select #equipmentSelect [value]="equipment()" (change)="updateEquipment(equipmentSelect.value)">
+            <option value="">All equipment</option>
+            @for (option of equipmentOptions(); track option) {
+              <option [value]="option">{{ option | titlecase }}</option>
+            }
+          </select>
+        </label>
+
+        <button class="clear-button" type="button" (click)="clearFilters()" [disabled]="!query() && !bodyPart() && !equipment()">
+          Clear
+        </button>
+      </div>
+
+      <div class="result-line" aria-live="polite">
+        <strong>{{ filteredExercises().length }}</strong>
+        <span>{{ filteredExercises().length === 1 ? 'exercise' : 'exercises' }}</span>
+      </div>
+
+      @if (filteredExercises().length) {
+        <div class="exercise-grid">
+          @for (exercise of visibleExercises(); track exercise.id) {
+            <article class="exercise-card">
+              <button type="button" (click)="openExercise(exercise, exerciseDialog)" [attr.aria-label]="'View ' + exercise.name">
+                <span class="card-media">
+                  <img [src]="mediaUrl(exercise.image)" [alt]="exercise.name" width="180" height="180" loading="lazy">
+                </span>
+                <span class="card-copy">
+                  <small>{{ exercise.bodyPart }} / {{ exercise.equipment }}</small>
+                  <strong>{{ exercise.name }}</strong>
+                  <span>Targets {{ exercise.target }}</span>
+                </span>
+              </button>
+            </article>
+          }
+        </div>
+
+        @if (visibleExercises().length < filteredExercises().length) {
+          <button class="show-more" type="button" (click)="showMore()">
+            Show more <span>{{ visibleExercises().length }} / {{ filteredExercises().length }}</span>
+          </button>
+        }
+      } @else {
+        <section class="empty-state">
+          <h2>No exercises found.</h2>
+          <p>Try a broader search or clear the filters.</p>
+          <button type="button" (click)="clearFilters()">Clear filters</button>
+        </section>
+      }
+    </section>
+  }
+</main>
+
+<footer class="workout-footer">
+  <span>Technique reference only — train within your ability.</span>
+  <span>Exercise media © <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a></span>
+</footer>
+
+<dialog #exerciseDialog class="exercise-dialog" (close)="closeExercise()">
+  @if (selectedExercise(); as exercise) {
+    <form method="dialog" class="dialog-heading">
+      <div>
+        <small>{{ exercise.bodyPart }} / {{ exercise.equipment }}</small>
+        <h2>{{ exercise.name }}</h2>
+      </div>
+      <button type="submit" aria-label="Close exercise details">×</button>
+    </form>
+
+    <div class="dialog-content">
+      <figure>
+        <img [src]="mediaUrl(exercise.gif)" [alt]="exercise.name + ' animated exercise demonstration'" width="180" height="180">
+        <figcaption>© <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a></figcaption>
+      </figure>
+
+      <div class="exercise-details">
+        <dl>
+          <div><dt>Target</dt><dd>{{ exercise.target | titlecase }}</dd></div>
+          <div><dt>Muscle group</dt><dd>{{ exercise.muscleGroup | titlecase }}</dd></div>
+          @if (exercise.secondaryMuscles.length) {
+            <div><dt>Also works</dt><dd>{{ exercise.secondaryMuscles.join(', ') | titlecase }}</dd></div>
+          }
+        </dl>
+
+        <section>
+          <h3>How to perform it</h3>
+          <ol>
+            @for (step of exercise.steps; track $index) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+        </section>
+      </div>
+    </div>
+  }
+</dialog>
