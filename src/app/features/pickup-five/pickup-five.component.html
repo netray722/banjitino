@@ -187,7 +187,7 @@
           @for (savedSession of sessionHistory(); track savedSession.id) {
             <div class="history-row session-history-row" [class.selected]="selectedHistorySession()?.id === savedSession.id">
               <button class="history-select" type="button" [attr.aria-pressed]="selectedHistorySession()?.id === savedSession.id" (click)="selectHistorySession(savedSession.id)">
-                <strong>{{ sessionDisplayName(savedSession) }}</strong><span>{{ completedGameCount(savedSession) }} games · {{ savedSession.status }}</span><small>{{ savedSession.createdAt | date:'MM/dd/yyyy' }}</small>
+                <strong>{{ sessionDisplayName(savedSession) }}</strong><small class="session-history-meta">{{ completedGameCount(savedSession) }} games · {{ savedSession.status }} · {{ savedSession.createdAt | date:'MM/dd/yyyy' }}</small>
               </button>
               <details #sessionMenu class="session-menu">
                 <summary [attr.aria-label]="'Actions for ' + sessionDisplayName(savedSession)" [attr.title]="'Actions for ' + sessionDisplayName(savedSession)"><svg lucideEllipsis aria-hidden="true"></svg></summary>
@@ -273,7 +273,7 @@
     <div class="game-details-shell">
       <header class="dialog-header">
         <div><p class="eyebrow">{{ sessionDisplayName(selectedHistorySession()) }}</p><h2>Game {{ game.number }}</h2></div>
-        <button type="button" aria-label="Close game details" (click)="closeGameDetails(gameDetailsDialog)">×</button>
+        <button class="dialog-close" type="button" aria-label="Close game details" title="Close" (click)="closeGameDetails(gameDetailsDialog)"><svg lucideX aria-hidden="true"></svg></button>
       </header>
       <dl class="game-detail-meta">
         <div><dt>Started</dt><dd>{{ game.startedAt | date:'MM/dd/yyyy hh:mm a' }}</dd></div>
