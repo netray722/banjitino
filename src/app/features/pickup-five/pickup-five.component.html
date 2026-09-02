@@ -1,0 +1,286 @@
+<div class="pickup-theme">
+<main class="pickup-shell">
+  <header class="app-bar">
+    <div class="app-identity">
+      <span class="app-mark">5×5</span>
+      <div>
+        <p>Pickup Five</p>
+        <h1>{{ session()?.name ?? 'Start a run' }}</h1>
+      </div>
+    </div>
+    <div class="session-summary">
+      <span class="status-dot" [class.live]="session()?.status === 'ACTIVE'"></span>
+      <strong>{{ session()?.status ?? 'READY' }}</strong>
+      <span>{{ presentCount() }} here</span>
+      @if (courtGame(); as game) { <b>Game {{ game.number }} · {{ game.status }}</b> }
+    </div>
+  </header>
+
+  <nav class="command-bar" aria-label="Pickup Five controls">
+    <button type="button" [class.active]="activeTab() === 'court'" (click)="showTab('court')">
+      <span>01</span><strong>Court</strong><small>Teams & game controls</small>
+    </button>
+    <button type="button" class="check-in-command" (click)="openCheckIn(checkInDialog)">
+      <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
+    </button>
+    <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
+      <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
+    </button>
+  </nav>
+
+  @if (pickup.notice()) {
+    <aside class="toast page-toast" [attr.data-tone]="pickup.noticeTone()" [attr.role]="pickup.noticeTone() === 'error' ? 'alert' : 'status'" [attr.aria-live]="pickup.noticeTone() === 'error' ? 'assertive' : 'polite'">
+      <span><strong>{{ pickup.noticeTone() === 'error' ? 'Action needed' : 'Done' }}</strong>{{ pickup.notice() }}</span>
+      <button type="button" aria-label="Dismiss notification" title="Dismiss" (click)="pickup.clearNotice()"><svg lucideX aria-hidden="true"></svg></button>
+    </aside>
+  }
+
+  @if (activeTab() === 'court') {
+    <section class="court-view" aria-label="Court view">
+      @if (!session() || session()?.status === 'ENDED') {
+        <section class="quick-start">
+          <div>
+            <p class="eyebrow">No active session</p>
+            <h2>Set up the next run</h2>
+            <p>Create and start sessions in Organizer. Court stays focused on live games.</p>
+          </div>
+          <button class="primary-action" type="button" (click)="showTab('organizer')">Open Organizer</button>
+        </section>
+      } @else {
+        <div class="court-dashboard">
+          <section class="game-zone">
+            @if (courtGame(); as game) {
+              <article class="game-board" [attr.data-status]="game.status">
+                <header class="game-heading">
+                  <div>
+                    <p class="eyebrow">{{ game.status === 'PROPOSED' ? 'Up next' : 'On court now' }}</p>
+                    <h2>Game {{ game.number }}</h2>
+                  </div>
+                  <div class="game-state"><strong>{{ game.status }}</strong><small>{{ game.status === 'PROPOSED' ? 'Review and start' : 'Locked lineup' }}</small></div>
+                </header>
+
+                @if (game.status === 'PROPOSED') {
+                  <p class="swap-hint">To swap teams, tap one player on each side. Replace uses the first waiting player.</p>
+                }
+
+                <div class="teams-grid">
+                  <section class="team team-a">
+                    <h3><span>A</span> Team A</h3>
+                    @for (player of teamPlayers(game, 'A'); track player.id) {
+                      <div class="court-player" [class.selected]="selectedSwapPlayerId() === player.id">
+                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED'" (click)="selectSwapPlayer(player.id)">
+                          <strong>{{ player.playerNumber }}</strong>
+                          <span><b>{{ player.displayName }}</b><small>{{ primaryRole(player) }} @if (isPartialSub(game, player.id)) { · Partial sub }</small></span>
+                        </button>
+                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0" (click)="replacePlayer(player.id)">Replace</button>
+                      </div>
+                    }
+                  </section>
+                  <div class="versus">VS</div>
+                  <section class="team team-b">
+                    <h3><span>B</span> Team B</h3>
+                    @for (player of teamPlayers(game, 'B'); track player.id) {
+                      <div class="court-player" [class.selected]="selectedSwapPlayerId() === player.id">
+                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED'" (click)="selectSwapPlayer(player.id)">
+                          <strong>{{ player.playerNumber }}</strong>
+                          <span><b>{{ player.displayName }}</b><small>{{ primaryRole(player) }} @if (isPartialSub(game, player.id)) { · Partial sub }</small></span>
+                        </button>
+                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0" (click)="replacePlayer(player.id)">Replace</button>
+                      </div>
+                    }
+                  </section>
+                </div>
+
+                @if (game.status === 'PROPOSED') {
+                  <footer class="game-actions proposal-actions">
+                    <button type="button" (click)="pickup.rebalanceGame()">Rebalance same ten</button>
+                    <button class="danger-action" type="button" (click)="cancelGame()">Cancel</button>
+                    <button class="primary-action" type="button" (click)="pickup.startGame()">Start game</button>
+                  </footer>
+                } @else {
+                  <footer class="game-actions result-actions">
+                    <p><strong>Game finished?</strong><span>Record the winner to build the next matchup.</span></p>
+                    <button class="team-a-win" type="button" (click)="recordWinner('A')">Team A won</button>
+                    <button class="team-b-win" type="button" (click)="recordWinner('B')">Team B won</button>
+                  </footer>
+                }
+              </article>
+            } @else {
+              <article class="standby-card">
+                <span>🏀</span>
+                @if (session()?.status === 'DRAFT' || session()?.status === 'CHECK_IN') {
+                  <h2>{{ presentCount() < 10 ? 10 - presentCount() + ' more players needed' : 'Everyone’s here' }}</h2>
+                  <p>{{ presentCount() }} checked in. Start the session from Organizer when everyone is ready.</p>
+                  <button class="primary-action hero-action" type="button" (click)="showTab('organizer')">Open Organizer</button>
+                } @else {
+                  <h2>Ready for the next matchup</h2>
+                  <p>{{ waitingPlayers().length }} players are waiting.</p>
+                  <button class="primary-action hero-action" type="button" [disabled]="waitingPlayers().length < 10" (click)="pickup.generateGame()">Build next game</button>
+                }
+              </article>
+            }
+          </section>
+
+          <aside class="queue-panel">
+            <header>
+              <div><p class="eyebrow">Fair order</p><h2>Waiting</h2></div>
+              <strong class="count-pill">{{ waitingPlayers().length }}</strong>
+            </header>
+            @if (waitingPlayers().length) {
+              <ol class="waiting-list">
+                @for (player of waitingPlayers(); track player.id; let position = $index) {
+                  <li>
+                    <span class="queue-position">{{ position + 1 }}</span>
+                    <strong class="mini-number">{{ player.playerNumber }}</strong>
+                    <span class="player-copy">
+                      <b>{{ player.displayName }}</b>
+                      <small class="player-stats">{{ playerStatsLabel(player.id) }}</small>
+                    </span>
+                    <button type="button" (click)="checkOut(player.id)">Out</button>
+                  </li>
+                }
+              </ol>
+            } @else {
+              <p class="empty-queue">No one is waiting. Check in more players to create a bench.</p>
+            }
+            <button class="queue-check-in" type="button" (click)="openCheckIn(checkInDialog)">+ Check in players</button>
+          </aside>
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="organizer-view">
+      <header class="section-title">
+        <div><p class="eyebrow">Before & after the run</p><h2>Session control</h2></div>
+        <button class="secondary-action" type="button" (click)="showTab('court')">Back to court</button>
+      </header>
+
+      <section class="control-card session-admin">
+        <div><p class="eyebrow">Session</p><h3>{{ session()?.name ?? 'No active run' }}</h3><p>{{ session()?.status ?? 'Create a session below' }} · {{ presentCount() }} present</p></div>
+        <label><span>New session name</span><input #sessionName type="text" value="Today’s Pickup Run" autocomplete="off"></label>
+        <button type="button" (click)="createSession(sessionName.value)">Create new</button>
+        <button class="primary-action" type="button" [disabled]="!session() || session()?.status === 'ACTIVE' || session()?.status === 'ENDED' || presentCount() < 10" (click)="startSession()">Start session</button>
+        <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End current</button>
+      </section>
+
+      <section class="control-card player-management">
+        <header><div><p class="eyebrow">Persistent roster</p><h3>Players</h3></div><small>Roles guide team balance</small></header>
+        <div class="management-list">
+          @for (player of pickup.players(); track player.id) {
+            <article class="management-row">
+              <label class="number-field"><span>Number</span><input type="number" min="0" max="999" [value]="player.playerNumber" (change)="updateNumber(player.id, $any($event.target).value)"></label>
+              <label><span>Name</span><input type="text" [value]="player.displayName" (change)="updateName(player.id, $any($event.target).value)"></label>
+              <label><span>Role</span><select [value]="primaryRole(player)" (change)="pickup.setRole(player.id, $any($event.target).value)">@for (role of roles; track role) { <option [value]="role">{{ role }}</option> }</select></label>
+              <span class="career-rate"><small>Career win rate</small><strong>{{ careerWinRateLabel(player.id) }}</strong></span>
+              <span class="state-chip" [attr.data-state]="stateFor(player.id)">{{ statusLabel(stateFor(player.id)) }}</span>
+              @if (!isPresent(player.id)) { <button type="button" [disabled]="!checkInOpen()" (click)="pickup.checkIn(player.id)">Check in</button> } @else { <button type="button" (click)="checkOut(player.id)">Check out</button> }
+              <button class="icon-action danger-action" type="button" [attr.aria-label]="'Remove ' + player.displayName" [attr.title]="'Remove ' + player.displayName" (click)="removePlayer(player)"><svg lucideTrash2 aria-hidden="true"></svg></button>
+            </article>
+          } @empty { <p class="empty-queue">Use Check in to add the first player.</p> }
+        </div>
+      </section>
+
+      <div class="history-grid">
+        <section class="control-card history-panel">
+          <header><div><p class="eyebrow">{{ selectedHistorySession()?.name ?? 'Select a session' }}</p><h3>Games</h3></div><span class="count-pill">{{ historyGames().length }}</span></header>
+          @for (game of historyGames(); track game.id) {
+            <div class="history-row game-history-row">
+              <button class="history-select" type="button" [attr.aria-label]="'View details for Game ' + game.number" (click)="openGameDetails(game, gameDetailsDialog)">
+                <strong>Game {{ game.number }}</strong><span>Team {{ game.winner }} won</span><small>{{ gameTime(game) }}</small>
+              </button>
+              <button class="icon-action danger-action" type="button" [attr.aria-label]="'Delete Game ' + game.number" [attr.title]="'Delete Game ' + game.number" (click)="deleteGame(game)"><svg lucideTrash2 aria-hidden="true"></svg></button>
+            </div>
+          } @empty { <p class="empty-queue">No completed games in this session.</p> }
+        </section>
+        <section class="control-card history-panel">
+          <header><div><p class="eyebrow">History</p><h3>Sessions</h3></div><span class="count-pill">{{ sessionHistory().length }}</span></header>
+          @for (savedSession of sessionHistory(); track savedSession.id) {
+            <div class="history-row session-history-row" [class.selected]="selectedHistorySession()?.id === savedSession.id">
+              <button class="history-select" type="button" [attr.aria-pressed]="selectedHistorySession()?.id === savedSession.id" (click)="selectHistorySession(savedSession.id)">
+                <strong>{{ savedSession.name }}</strong><span>{{ completedGameCount(savedSession) }} games · {{ savedSession.status }}</span><small>{{ savedSession.createdAt | date:'mediumDate' }}</small>
+              </button>
+              <details #sessionMenu class="session-menu">
+                <summary [attr.aria-label]="'Actions for ' + savedSession.name" [attr.title]="'Actions for ' + savedSession.name"><svg lucideEllipsis aria-hidden="true"></svg></summary>
+                <div class="session-menu-popover">
+                  <button type="button" (click)="renameSession(savedSession, sessionMenu)"><svg lucidePencil aria-hidden="true"></svg><span>Rename</span></button>
+                  <button class="danger-action" type="button" (click)="deleteSession(savedSession, sessionMenu)"><svg lucideTrash2 aria-hidden="true"></svg><span>Delete</span></button>
+                </div>
+              </details>
+            </div>
+          } @empty { <p class="empty-queue">No saved sessions yet.</p> }
+        </section>
+      </div>
+
+      <section class="control-card data-management">
+        <div><p class="eyebrow">This browser only</p><h3>Clear Pickup Five data</h3><p>Remove every registered player, session, game, and queue record. Other website settings are not affected.</p></div>
+        <button class="danger-action" type="button" [disabled]="pickup.state().players.length === 0 && sessionHistory().length === 0" (click)="resetAllData()">Clear all data</button>
+      </section>
+    </section>
+  }
+</main>
+
+<dialog #checkInDialog class="check-in-dialog" (click)="$event.target === checkInDialog && closeCheckIn(checkInDialog)">
+  @if (pickup.notice()) {
+    <aside class="toast dialog-toast" [attr.data-tone]="pickup.noticeTone()" [attr.role]="pickup.noticeTone() === 'error' ? 'alert' : 'status'" [attr.aria-live]="pickup.noticeTone() === 'error' ? 'assertive' : 'polite'">
+      <span><strong>{{ pickup.noticeTone() === 'error' ? 'Action needed' : 'Done' }}</strong>{{ pickup.notice() }}</span>
+      <button type="button" aria-label="Dismiss notification" title="Dismiss" (click)="pickup.clearNotice()"><svg lucideX aria-hidden="true"></svg></button>
+    </aside>
+  }
+  <div class="dialog-shell">
+    <header class="dialog-header">
+      <div><p class="eyebrow">Fast court-side action</p><h2>Check in</h2><span>{{ presentCount() }} players here now</span></div>
+      <button type="button" aria-label="Close check-in" (click)="closeCheckIn(checkInDialog)">×</button>
+    </header>
+
+    <section class="add-player-panel">
+      <label><span>Number</span><input #newNumber type="number" min="0" max="999" inputmode="numeric" placeholder="24"></label>
+      <label><span>Name</span><input #newName type="text" autocomplete="off" placeholder="Player name"></label>
+      <label><span>Role</span><select #newRole><option value="Guard">Guard</option><option value="Wing" selected>Wing</option><option value="Big">Big</option></select></label>
+      <button class="primary-action" type="button" [disabled]="!checkInOpen()" (click)="addPlayer(newNumber, newName, newRole)">Add & check in</button>
+    </section>
+
+    <label class="search-field"><span>Find a player</span><input #search type="search" placeholder="Name or number" [value]="searchQuery()" (input)="updateSearch(search.value)"></label>
+
+    <div class="player-roster">
+      @for (player of filteredPlayers(); track player.id) {
+        <article class="roster-row">
+          <strong class="roster-number">{{ player.playerNumber }}</strong>
+          <div class="roster-name"><h3>{{ player.displayName }}</h3><p>{{ primaryRole(player) }}</p></div>
+          <span class="state-chip" [attr.data-state]="stateFor(player.id)">{{ statusLabel(stateFor(player.id)) }}</span>
+          @if (!isPresent(player.id)) {
+            <button class="primary-action" type="button" [disabled]="!checkInOpen()" (click)="pickup.checkIn(player.id)">Check in</button>
+          } @else {
+            <button type="button" (click)="checkOut(player.id)">{{ stateFor(player.id) === 'PLAYING' ? 'Check out + sub' : 'Check out' }}</button>
+          }
+        </article>
+      } @empty { <p class="empty-queue">No players match that search.</p> }
+    </div>
+  </div>
+</dialog>
+
+<dialog #gameDetailsDialog class="game-details-dialog" (click)="$event.target === gameDetailsDialog && closeGameDetails(gameDetailsDialog)">
+  @if (selectedGame(); as game) {
+    <div class="game-details-shell">
+      <header class="dialog-header">
+        <div><p class="eyebrow">{{ selectedHistorySession()?.name }}</p><h2>Game {{ game.number }}</h2><span>{{ game.winner ? 'Team ' + game.winner + ' won' : 'No winner recorded' }}</span></div>
+        <button type="button" aria-label="Close game details" (click)="closeGameDetails(gameDetailsDialog)">×</button>
+      </header>
+      <dl class="game-detail-meta">
+        <div><dt>Winner</dt><dd>{{ game.winner ? 'Team ' + game.winner : 'Not recorded' }}</dd></div>
+        <div><dt>Recorded</dt><dd>{{ game.completedAt | date:'medium' }}</dd></div>
+        <div><dt>Started</dt><dd>{{ game.startedAt | date:'medium' }}</dd></div>
+      </dl>
+      <div class="game-detail-teams">
+        <section [class.winner]="game.winner === 'A'">
+          <header><span class="team-tag team-a-tag">A</span><h3>Team A</h3>@if (game.winner === 'A') { <strong>Winner</strong> }</header>
+          @for (player of teamPlayers(game, 'A'); track player.id) { <div class="game-detail-player"><b>{{ player.playerNumber }}</b><span>{{ player.displayName }}</span><small>{{ primaryRole(player) }}</small></div> }
+        </section>
+        <section [class.winner]="game.winner === 'B'">
+          <header><span class="team-tag team-b-tag">B</span><h3>Team B</h3>@if (game.winner === 'B') { <strong>Winner</strong> }</header>
+          @for (player of teamPlayers(game, 'B'); track player.id) { <div class="game-detail-player"><b>{{ player.playerNumber }}</b><span>{{ player.displayName }}</span><small>{{ primaryRole(player) }}</small></div> }
+        </section>
+      </div>
+    </div>
+  }
+</dialog>
+</div>
