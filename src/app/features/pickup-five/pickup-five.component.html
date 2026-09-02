@@ -211,9 +211,10 @@
       </div>
 
       <section class="control-card data-management">
-        <div><p class="eyebrow">Local data</p><h3>Testing & data</h3><p>Add a realistic NBA roster and three completed games, or clear every locally saved Pickup Five record.</p></div>
+        <div><p class="eyebrow">Local data</p><h3>Testing & data</h3><p>Choose 10–{{ maximumTestPlayerCount }} NBA mock players and add three completed games, or clear every locally saved Pickup Five record.</p></div>
         <div class="data-management-actions">
-          <button type="button" (click)="loadTestData()">Load test data</button>
+          <label class="test-player-count"><span>Mock players</span><input #testPlayerCount type="number" min="10" [max]="maximumTestPlayerCount" value="12" inputmode="numeric"></label>
+          <button type="button" (click)="loadTestData(testPlayerCount.value)">Load test data</button>
           <button class="danger-action" type="button" [disabled]="pickup.state().players.length === 0 && sessionHistory().length === 0" (click)="resetAllData()">Clear all data</button>
         </div>
       </section>

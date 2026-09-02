@@ -304,7 +304,11 @@ export class PickupFiveStateService {
     this.commit(() => initialState(), 'All locally saved Pickup Five data was cleared.');
   }
 
-  loadTestData(): string | null {
+  loadTestData(playerCount = 12): string | null {
+    if (!Number.isInteger(playerCount) || playerCount < 10 || playerCount > NBA_TEST_PLAYERS.length) {
+      this.showError(`Enter a whole number from 10 to ${NBA_TEST_PLAYERS.length}.`);
+      return null;
+    }
     const sessionId = createId();
     const now = new Date();
     this.commit((state) => {
@@ -312,7 +316,7 @@ export class PickupFiveStateService {
       const testPlayerIds: string[] = [];
 
       for (const testPlayer of NBA_TEST_PLAYERS) {
-        if (testPlayerIds.length === 12) break;
+        if (testPlayerIds.length === playerCount) break;
         const existing = players.find((player) => !player.archivedAt
           && player.displayName.toLocaleLowerCase() === testPlayer.displayName.toLocaleLowerCase());
         if (existing) {
@@ -334,15 +338,13 @@ export class PickupFiveStateService {
         testPlayerIds.push(profile.id);
       }
 
-      for (const player of players) {
-        if (testPlayerIds.length === 12) break;
-        if (!player.archivedAt && !testPlayerIds.includes(player.id)) testPlayerIds.push(player.id);
+      if (testPlayerIds.length < playerCount) {
+        throw new Error(`Only ${testPlayerIds.length} NBA test players are available with unused jersey numbers.`);
       }
-      if (testPlayerIds.length < 10) throw new Error('Ten available roster spots are required to create test games.');
 
       const session = createTestSession(sessionId, testPlayerIds, now);
       return { ...state, players, sessions: [...state.sessions, session] };
-    }, 'NBA test roster and three completed games added.');
+    }, `${playerCount} NBA test players and three completed games added.`);
 
     return this.state().sessions.some((session) => session.id === sessionId) ? sessionId : null;
   }

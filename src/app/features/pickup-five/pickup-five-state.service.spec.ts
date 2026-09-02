@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { BrowserPickupFiveStorage, PickupFiveStorage } from './pickup-five-storage.service';
 import { PickupFiveStateService } from './pickup-five-state.service';
+import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
 import {
   GameStatus,
   PickupFiveState,
@@ -124,6 +125,29 @@ describe('PickupFiveStateService data management', () => {
     expect(testSession?.games.every((game) => game.status === 'COMPLETED'
       && Boolean(game.winner) && Boolean(game.startedAt) && Boolean(game.completedAt))).toBe(true);
     expect(testSession?.players.filter((player) => player.gamesPlayed > 0)).toHaveLength(10);
+  });
+
+  it('loads the requested number of NBA mock players', () => {
+    const service = createService(createState());
+
+    const sessionId = service.loadTestData(17);
+    const testSession = service.state().sessions.find((session) => session.id === sessionId);
+    const nbaPlayerNames = new Set(NBA_TEST_PLAYERS.map((player) => player.displayName));
+
+    expect(testSession?.players).toHaveLength(17);
+    expect(testSession?.players.every((player) =>
+      nbaPlayerNames.has(service.profile(player.playerId)?.displayName ?? ''))).toBe(true);
+    expect(service.notice()).toContain('17 NBA test players');
+  });
+
+  it('rejects test player counts outside the available range', () => {
+    const service = createService(createState());
+    const sessionCount = service.state().sessions.length;
+
+    expect(service.loadTestData(9)).toBeNull();
+    expect(service.state().sessions).toHaveLength(sessionCount);
+    expect(service.noticeTone()).toBe('error');
+    expect(service.notice()).toContain(`10 to ${NBA_TEST_PLAYERS.length}`);
   });
 
   it('records teammate history only when a proposed game officially starts', () => {
