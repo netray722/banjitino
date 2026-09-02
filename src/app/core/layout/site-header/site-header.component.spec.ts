@@ -17,7 +17,7 @@ describe('SiteHeaderComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Banjitino');
     expect(fixture.nativeElement.textContent).toContain('Field notes for curious people');
     const links = fixture.nativeElement.querySelectorAll('.primary-nav a') as NodeListOf<HTMLAnchorElement>;
-    expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/workout']);
+    expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/nba', '/workout', '/pickup-five']);
   });
 
   it('toggles and saves the site theme', async () => {
