@@ -1,12 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import {
-  balanceTeams,
+  buildTeams,
   checkInPlayer,
   checkOutPlayer,
   recordGameResult,
   selectNextPlayers,
-  substitutePlayer
+  selectPlayersForGame,
+  substitutePlayer,
+  updateTeammateHistory
 } from './pickup-five-scheduling';
 import { BrowserPickupFiveStorage } from './pickup-five-storage.service';
 import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
@@ -80,6 +82,7 @@ export class PickupFiveStateService {
         games: [],
         tieBreakCursor: 0,
         nextTieBreakOrder: activePlayers.length,
+        teammateHistory: {},
         createdAt: now,
         updatedAt: now
       };
@@ -100,7 +103,7 @@ export class PickupFiveStateService {
         throw new Error('This session has already started.');
       }
       const active = { ...session, status: 'ACTIVE' as const, updatedAt: now };
-      const proposed = proposeGameIfPossible(active, this.state().players, now);
+      const proposed = proposeGameIfPossible(active, this.state().players, this.state().sessions, now);
       if (proposed === active) throw new Error('Ten waiting players are required to start the first game.');
       return proposed;
     }, 'Session started and the first game is ready.');
@@ -350,7 +353,7 @@ export class PickupFiveStateService {
       if (session.games.some((game) => game.status === 'PROPOSED' || game.status === 'IN_PROGRESS')) {
         throw new Error('Finish or cancel the open game first.');
       }
-      const proposed = proposeGameIfPossible(session, this.state().players, now);
+      const proposed = proposeGameIfPossible(session, this.state().players, this.state().sessions, now);
       if (proposed === session) throw new Error('Ten waiting players are required.');
       return proposed;
     }, 'Proposed teams are ready for review.');
@@ -360,8 +363,15 @@ export class PickupFiveStateService {
     this.updateSession((session, now) => {
       const game = findLatest(session.games, (candidate) => candidate.status === 'PROPOSED');
       if (!game) throw new Error('There is no proposed game to rebalance.');
+      if (game.stayTeam) throw new Error('The one-win team must stay together unchanged.');
       const selected = [...game.teamA, ...game.teamB];
-      const balance = balanceTeams(selected, this.state().players, session.games, game.rebalanceCount + 1);
+      const balance = buildTeams(
+        selected,
+        this.state().players,
+        session,
+        this.state().sessions,
+        game.rebalanceCount + 1
+      );
       return {
         ...session,
         games: session.games.map((candidate) => candidate.id === game.id
@@ -381,6 +391,7 @@ export class PickupFiveStateService {
     this.updateSession((session, now) => {
       const game = findLatest(session.games, (candidate) => candidate.status === 'PROPOSED');
       if (!game) throw new Error('There is no proposed game to edit.');
+      if (game.stayTeam) throw new Error('The one-win team must stay together unchanged.');
       const firstTeam = game.teamA.includes(firstPlayerId) ? 'A' : game.teamB.includes(firstPlayerId) ? 'B' : null;
       const secondTeam = game.teamA.includes(secondPlayerId) ? 'A' : game.teamB.includes(secondPlayerId) ? 'B' : null;
       if (!firstTeam || !secondTeam || firstTeam === secondTeam) {
@@ -408,12 +419,13 @@ export class PickupFiveStateService {
         participants.has(player.playerId) && player.state !== 'WAITING');
       if (unavailable) throw new Error('A proposed player is no longer waiting. Regenerate the game.');
 
+      const sessionWithHistory = updateTeammateHistory(session, game.teamA, game.teamB);
       return {
-        ...session,
-        players: session.players.map((player) => participants.has(player.playerId)
+        ...sessionWithHistory,
+        players: sessionWithHistory.players.map((player) => participants.has(player.playerId)
           ? { ...player, state: 'PLAYING' as const }
           : player),
-        games: session.games.map((candidate) => candidate.id === game.id
+        games: sessionWithHistory.games.map((candidate) => candidate.id === game.id
           ? {
             ...candidate,
             status: 'IN_PROGRESS' as const,
@@ -434,7 +446,9 @@ export class PickupFiveStateService {
         candidate.status === 'IN_PROGRESS' || candidate.status === 'LOCKED');
       if (!game) throw new Error('There is no game in progress.');
       const result = recordGameResult(session, game.id, winner, now);
-      return result.applied ? proposeGameIfPossible(result.session, this.state().players, now) : session;
+      return result.applied
+        ? proposeGameIfPossible(result.session, this.state().players, this.state().sessions, now)
+        : session;
     }, `Team ${winner} recorded as the winner. The next game is ready when enough players are waiting.`);
   }
 
@@ -588,12 +602,26 @@ function formatSessionDate(date: Date): string {
     .replace(',', '');
 }
 
-function proposeGameIfPossible(session: PickupSession, profiles: PlayerProfile[], now: string): PickupSession {
+function proposeGameIfPossible(
+  session: PickupSession,
+  profiles: PlayerProfile[],
+  sessionHistory: PickupSession[],
+  now: string
+): PickupSession {
   if (session.status !== 'ACTIVE') return session;
   if (session.games.some((game) => game.status === 'PROPOSED' || game.status === 'IN_PROGRESS')) return session;
-  const selected = selectNextPlayers(session);
-  if (selected.length !== 10) return session;
-  const balance = balanceTeams(selected, profiles, session.games);
+  const selection = selectPlayersForGame(session);
+  if (selection.selectedPlayerIds.length !== 10) return session;
+  const stayPlayerIds = new Set(selection.stayTeam?.playerIds ?? []);
+  const challengers = selection.selectedPlayerIds.filter((playerId) => !stayPlayerIds.has(playerId));
+  const balance = selection.stayTeam
+    ? {
+      teamA: selection.stayTeam.side === 'A' ? selection.stayTeam.playerIds : challengers,
+      teamB: selection.stayTeam.side === 'B' ? selection.stayTeam.playerIds : challengers,
+      evaluatedSplits: 1,
+      score: 0
+    }
+    : buildTeams(selection.selectedPlayerIds, profiles, session, sessionHistory);
   const game: PickupGame = {
     id: createId(),
     number: session.games.reduce((highest, candidate) => Math.max(highest, candidate.number), 0) + 1,
@@ -603,6 +631,8 @@ function proposeGameIfPossible(session: PickupSession, profiles: PlayerProfile[]
     winner: null,
     fairnessApplied: false,
     rebalanceCount: 0,
+    stayTeam: selection.stayTeam?.side ?? null,
+    winnerStreak: 0,
     createdAt: now,
     startedAt: null,
     completedAt: null
