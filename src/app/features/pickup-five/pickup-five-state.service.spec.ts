@@ -105,6 +105,26 @@ describe('PickupFiveStateService data management', () => {
     expect(service.noticeTone()).toBe('error');
     expect(service.notice()).toContain('Replace or check out');
   });
+
+  it('adds NBA test players and completed game history without removing existing data', () => {
+    const service = createService(createState());
+
+    const sessionId = service.loadTestData();
+
+    expect(service.state().players.some((player) => player.displayName === 'Stephen Curry'
+      && player.playerNumber === 30 && player.roles[0] === 'Guard')).toBe(true);
+    expect(service.state().players.some((player) => player.displayName === 'Nikola Jokic'
+      && player.playerNumber === 15 && player.roles[0] === 'Big')).toBe(true);
+    expect(service.state().sessions.some((session) => session.id === 'session-1')).toBe(true);
+    expect(service.state().activeSessionId).toBe('session-1');
+
+    const testSession = service.state().sessions.find((session) => session.id === sessionId);
+    expect(testSession?.status).toBe('ENDED');
+    expect(testSession?.games).toHaveLength(3);
+    expect(testSession?.games.every((game) => game.status === 'COMPLETED'
+      && Boolean(game.winner) && Boolean(game.startedAt) && Boolean(game.completedAt))).toBe(true);
+    expect(testSession?.players.filter((player) => player.gamesPlayed > 0)).toHaveLength(10);
+  });
 });
 
 function createService(initialState: PickupFiveState): PickupFiveStateService {

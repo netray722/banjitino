@@ -33,6 +33,11 @@ export class PickupFiveComponent {
   protected readonly selectedHistorySessionId = signal<string | null>(this.pickup.state().activeSessionId);
   protected readonly selectedGame = signal<PickupGame | null>(null);
   protected readonly roles: PlayerRole[] = ['Guard', 'Wing', 'Big'];
+  protected readonly defaultSessionName = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric'
+  }).format(new Date()).replace(',', '');
   protected readonly session = this.pickup.currentSession;
   protected readonly proposedGame = this.pickup.proposedGame;
   protected readonly liveGame = computed(() => {
@@ -183,6 +188,11 @@ export class PickupFiveComponent {
     this.activeTab.set('organizer');
   }
 
+  protected loadTestData(): void {
+    const sessionId = this.pickup.loadTestData();
+    if (sessionId) this.selectedHistorySessionId.set(sessionId);
+  }
+
   protected selectHistorySession(sessionId: string): void {
     this.selectedHistorySessionId.set(sessionId);
   }
@@ -282,6 +292,16 @@ export class PickupFiveComponent {
   protected gameTime(game: PickupGame): string {
     const timestamp = game.completedAt ?? game.startedAt ?? game.createdAt;
     return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(timestamp));
+  }
+
+  protected gameDuration(game: PickupGame): string {
+    if (!game.startedAt || !game.completedAt) return '—';
+    const minutes = Math.max(1, Math.round(
+      (new Date(game.completedAt).getTime() - new Date(game.startedAt).getTime()) / 60_000
+    ));
+    if (minutes < 60) return `${minutes} min`;
+    const remainingMinutes = minutes % 60;
+    return `${Math.floor(minutes / 60)} hr${remainingMinutes ? ` ${remainingMinutes} min` : ''}`;
   }
 
   protected completedGameCount(session: PickupSession): number {

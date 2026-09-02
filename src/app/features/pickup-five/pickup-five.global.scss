@@ -176,7 +176,8 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .empty-queue { padding: 16px 0; color: var(--muted); }
 .queue-check-in { width: 100%; flex: 0 0 auto; margin-top: 10px; border-color: var(--accent); color: var(--accent-readable); }
 
-.organizer-view { display: grid; gap: 12px; }
+.organizer-view { min-width: 0; display: grid; gap: 12px; }
+.organizer-view > * { min-width: 0; }
 .section-title { padding: 8px 0; }
 .section-title h2 { margin-bottom: 0; }
 .control-card { padding: 18px; }
@@ -194,17 +195,24 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .career-rate { min-height: 48px; display: grid; align-content: center; padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); font-family: var(--display-font); font-size: 1.1rem; font-variant-numeric: tabular-nums; line-height: 1; }
 .management-row .state-chip { width: 100%; min-height: 48px; align-self: end; }
 .history-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
-.history-row { min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; border-top: 1px solid var(--border); }
+.history-row { min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; border: 0; border-radius: 4px; transition: background-color 140ms ease, box-shadow 140ms ease; }
+.history-row + .history-row { margin-top: 4px; }
+.history-row:hover, .history-row:focus-within { background: var(--surface-soft); }
 .history-row small { color: var(--muted); }
 .history-row button { min-height: 44px; padding-inline: 12px; }
 .pickup-shell .history-select { min-width: 0; min-height: 63px !important; display: grid; grid-template-columns: minmax(110px, 1fr) 1fr auto; align-items: center; gap: 10px; padding: 8px 10px 8px 2px !important; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; }
-.pickup-shell .history-select:hover:not(:disabled) { border: 0; background: var(--surface-soft); color: inherit; }
+.pickup-shell .history-select:hover:not(:disabled) { border: 0; background: transparent; color: inherit; }
+.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "session-name session-date" "session-meta session-date"; column-gap: 16px; row-gap: 2px; }
+.session-history-row .history-select strong { min-width: 0; grid-area: session-name; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-history-row .history-select span { grid-area: session-meta; }
+.session-history-row .history-select small { grid-area: session-date; white-space: nowrap; }
 .session-history-row.selected { box-shadow: inset 4px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
 .session-history-row.selected .history-select { padding-left: 10px !important; }
 .icon-action { width: 48px; min-height: 48px !important; display: grid; place-items: center; padding: 0 !important; }
+.history-row > .icon-action { border: 0; background: transparent; }
 .icon-action svg, .session-menu svg { width: 20px; height: 20px; }
 .session-menu { height: 100%; position: relative; justify-self: end; }
-.session-menu summary { width: 48px; min-height: 63px; display: grid; place-items: center; border: 0; border-left: 1px solid var(--border); cursor: pointer; list-style: none; }
+.session-menu summary { width: 48px; min-height: 63px; display: grid; place-items: center; border: 0; cursor: pointer; list-style: none; }
 .session-menu summary::-webkit-details-marker { display: none; }
 .session-menu[open] summary { border-color: var(--accent); color: var(--accent-readable); }
 .session-menu-popover { width: 160px; position: absolute; z-index: 10; top: calc(100% + 5px); right: 0; display: grid; padding: 0; border: 1px solid var(--border); background: var(--surface-raised); }
@@ -214,6 +222,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .data-management h3 { margin-bottom: 4px; font-size: 1.35rem; }
 .data-management p:last-child { margin-bottom: 0; color: var(--muted); }
 .data-management button { flex: 0 0 auto; }
+.data-management-actions { display: flex; gap: 10px; }
 
 .check-in-dialog { width: min(1120px, calc(100vw - 32px)); height: min(900px, calc(100dvh - 32px)); max-width: none; max-height: none; padding: 0; border: 2px solid var(--accent); border-radius: 8px; background: var(--surface-raised); color: var(--ink); }
 .check-in-dialog::backdrop, .game-details-dialog::backdrop { background: color-mix(in srgb, #000 72%, transparent); backdrop-filter: blur(3px); }
@@ -268,10 +277,12 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 }
 
 @media (max-width: 720px) {
+  .command-bar button { min-width: 0; padding-inline: 6px; }
   .app-bar { align-items: flex-start; }
   .session-summary { flex-wrap: wrap; justify-content: flex-end; }
   .command-bar button { grid-template-columns: auto; grid-template-rows: auto auto; text-align: center; }
   .command-bar button > span, .command-bar button small { display: none; }
+  .session-admin { grid-template-columns: 1fr; }
   .quick-start, .court-dashboard { grid-template-columns: 1fr; }
   .quick-start { min-height: auto; padding: 28px 20px; }
   .queue-panel { position: static; max-height: none; }
@@ -286,7 +297,8 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .roster-row .state-chip, .roster-row > button { grid-column: 2; }
   .management-row { grid-template-columns: 80px 1fr; }
   .management-row > label:nth-child(3), .management-row .career-field, .management-row .state-chip, .management-row > button { grid-column: 1 / -1; }
-  .history-select { grid-template-columns: 1fr; gap: 2px; }
+  .pickup-shell .history-select { grid-template-columns: 1fr; gap: 2px; }
+  .session-history-row .history-select { grid-template-columns: 1fr; grid-template-areas: "session-name" "session-meta" "session-date"; }
   .history-row > .history-select { grid-column: 1; grid-row: 1; }
   .history-row > .icon-action, .history-row > .session-menu { grid-column: 2; grid-row: 1; }
   .game-detail-meta, .game-detail-teams { grid-template-columns: 1fr; }

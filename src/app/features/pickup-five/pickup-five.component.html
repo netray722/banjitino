@@ -157,7 +157,7 @@
 
       <section class="control-card session-admin">
         <div><p class="eyebrow">Session</p><h3>{{ session()?.name ?? 'No active run' }}</h3><p>{{ session()?.status ?? 'Create a session below' }} · {{ presentCount() }} present</p></div>
-        <label><span>New session name</span><input #sessionName type="text" value="Today’s Pickup Run" autocomplete="off"></label>
+        <label><span>New session name</span><input #sessionName type="text" [value]="defaultSessionName" autocomplete="off"></label>
         <button type="button" (click)="createSession(sessionName.value)">Create new</button>
         <button class="primary-action" type="button" [disabled]="!session() || session()?.status === 'ACTIVE' || session()?.status === 'ENDED' || presentCount() < 10" (click)="startSession()">Start session</button>
         <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End session</button>
@@ -186,7 +186,7 @@
           @for (game of historyGames(); track game.id) {
             <div class="history-row game-history-row">
               <button class="history-select" type="button" [attr.aria-label]="'View details for Game ' + game.number" (click)="openGameDetails(game, gameDetailsDialog)">
-                <strong>Game {{ game.number }}</strong><span>Team {{ game.winner }} won</span><small>{{ gameTime(game) }}</small>
+                <strong>Game {{ game.number }}</strong><span>Team {{ game.winner }} won</span><small>{{ gameDuration(game) }} · {{ gameTime(game) }}</small>
               </button>
               <button class="icon-action danger-action" type="button" [attr.aria-label]="'Delete Game ' + game.number" [attr.title]="'Delete Game ' + game.number" (click)="deleteGame(game)"><svg lucideTrash2 aria-hidden="true"></svg></button>
             </div>
@@ -212,8 +212,11 @@
       </div>
 
       <section class="control-card data-management">
-        <div><p class="eyebrow">Local data</p><h3>Clear Pickup Five data</h3><p>Remove every locally saved player, session, game, and queue record. Other website settings are not affected.</p></div>
-        <button class="danger-action" type="button" [disabled]="pickup.state().players.length === 0 && sessionHistory().length === 0" (click)="resetAllData()">Clear all data</button>
+        <div><p class="eyebrow">Local data</p><h3>Testing & data</h3><p>Add a realistic NBA roster and three completed games, or clear every locally saved Pickup Five record.</p></div>
+        <div class="data-management-actions">
+          <button type="button" (click)="loadTestData()">Load test data</button>
+          <button class="danger-action" type="button" [disabled]="pickup.state().players.length === 0 && sessionHistory().length === 0" (click)="resetAllData()">Clear all data</button>
+        </div>
       </section>
     </section>
   }
@@ -262,13 +265,13 @@
   @if (selectedGame(); as game) {
     <div class="game-details-shell">
       <header class="dialog-header">
-        <div><p class="eyebrow">{{ selectedHistorySession()?.name }}</p><h2>Game {{ game.number }}</h2><span>{{ game.winner ? 'Team ' + game.winner + ' won' : 'No winner recorded' }}</span></div>
+        <div><p class="eyebrow">{{ selectedHistorySession()?.name }}</p><h2>Game {{ game.number }}</h2></div>
         <button type="button" aria-label="Close game details" (click)="closeGameDetails(gameDetailsDialog)">×</button>
       </header>
       <dl class="game-detail-meta">
-        <div><dt>Winner</dt><dd>{{ game.winner ? 'Team ' + game.winner : 'Not recorded' }}</dd></div>
-        <div><dt>Recorded</dt><dd>{{ game.completedAt | date:'medium' }}</dd></div>
         <div><dt>Started</dt><dd>{{ game.startedAt | date:'medium' }}</dd></div>
+        <div><dt>Recorded</dt><dd>{{ game.completedAt | date:'medium' }}</dd></div>
+        <div><dt>Duration</dt><dd>{{ gameDuration(game) }}</dd></div>
       </dl>
       <div class="game-detail-teams">
         <section [class.winner]="game.winner === 'A'">

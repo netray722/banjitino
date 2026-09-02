@@ -9,6 +9,7 @@ import {
   substitutePlayer
 } from './pickup-five-scheduling';
 import { BrowserPickupFiveStorage } from './pickup-five-storage.service';
+import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
 import {
   PickupFiveState,
   PickupGame,
@@ -300,6 +301,49 @@ export class PickupFiveStateService {
     this.commit(() => initialState(), 'All locally saved Pickup Five data was cleared.');
   }
 
+  loadTestData(): string | null {
+    const sessionId = createId();
+    const now = new Date();
+    this.commit((state) => {
+      const players = [...state.players];
+      const testPlayerIds: string[] = [];
+
+      for (const testPlayer of NBA_TEST_PLAYERS) {
+        if (testPlayerIds.length === 12) break;
+        const existing = players.find((player) => !player.archivedAt
+          && player.displayName.toLocaleLowerCase() === testPlayer.displayName.toLocaleLowerCase());
+        if (existing) {
+          testPlayerIds.push(existing.id);
+          continue;
+        }
+        if (players.some((player) => !player.archivedAt && player.playerNumber === testPlayer.playerNumber)) continue;
+
+        const timestamp = now.toISOString();
+        const profile: PlayerProfile = {
+          id: createId(),
+          playerNumber: testPlayer.playerNumber,
+          displayName: testPlayer.displayName,
+          roles: [testPlayer.role],
+          createdAt: timestamp,
+          updatedAt: timestamp
+        };
+        players.push(profile);
+        testPlayerIds.push(profile.id);
+      }
+
+      for (const player of players) {
+        if (testPlayerIds.length === 12) break;
+        if (!player.archivedAt && !testPlayerIds.includes(player.id)) testPlayerIds.push(player.id);
+      }
+      if (testPlayerIds.length < 10) throw new Error('Ten available roster spots are required to create test games.');
+
+      const session = createTestSession(sessionId, testPlayerIds, now);
+      return { ...state, players, sessions: [...state.sessions, session] };
+    }, 'NBA test roster and three completed games added.');
+
+    return this.state().sessions.some((session) => session.id === sessionId) ? sessionId : null;
+  }
+
   generateGame(): void {
     this.updateSession((session, now) => {
       if (session.status !== 'ACTIVE') throw new Error('Start the session before generating a game.');
@@ -485,6 +529,63 @@ function newSessionPlayer(playerId: string, tieBreakOrder: number) {
     tieBreakOrder,
     checkedInAt: null
   };
+}
+
+function createTestSession(sessionId: string, playerIds: string[], now: Date): PickupSession {
+  const timestamp = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000).toISOString();
+  const gameData: Array<{ teamA: number[]; teamB: number[]; winner: 'A' | 'B'; start: number; duration: number }> = [
+    { teamA: [0, 1, 2, 3, 4], teamB: [5, 6, 7, 8, 9], winner: 'A', start: 85, duration: 18 },
+    { teamA: [0, 2, 5, 7, 8], teamB: [1, 3, 4, 6, 9], winner: 'B', start: 60, duration: 16 },
+    { teamA: [1, 2, 4, 6, 8], teamB: [0, 3, 5, 7, 9], winner: 'A', start: 35, duration: 21 }
+  ];
+  const games: PickupGame[] = gameData.map((data, index) => ({
+    id: createId(),
+    number: index + 1,
+    status: 'COMPLETED',
+    teamA: data.teamA.map((playerIndex) => playerIds[playerIndex]),
+    teamB: data.teamB.map((playerIndex) => playerIds[playerIndex]),
+    winner: data.winner,
+    fairnessApplied: true,
+    rebalanceCount: 0,
+    creditedTeamA: data.teamA.map((playerIndex) => playerIds[playerIndex]),
+    creditedTeamB: data.teamB.map((playerIndex) => playerIds[playerIndex]),
+    replacements: [],
+    createdAt: timestamp(data.start + 2),
+    startedAt: timestamp(data.start),
+    completedAt: timestamp(data.start - data.duration)
+  }));
+
+  return {
+    id: sessionId,
+    name: `Test History — ${formatSessionDate(now)}`,
+    status: 'ENDED',
+    players: playerIds.map((playerId, tieBreakOrder) => {
+      const playerGames = games.filter((game) => [...game.teamA, ...game.teamB].includes(playerId));
+      const wins = playerGames.filter((game) => game.winner === (game.teamA.includes(playerId) ? 'A' : 'B')).length;
+      const lastGame = playerGames[playerGames.length - 1] ?? null;
+      return {
+        ...newSessionPlayer(playerId, tieBreakOrder),
+        state: 'CHECKED_OUT',
+        gamesPlayed: playerGames.length,
+        wins,
+        losses: playerGames.length - wins,
+        lastResult: lastGame ? (lastGame.winner === (lastGame.teamA.includes(playerId) ? 'A' : 'B') ? 'WIN' : 'LOSS') : null,
+        lastGameId: lastGame?.id ?? null,
+        checkedInAt: timestamp(90)
+      };
+    }),
+    games,
+    tieBreakCursor: 0,
+    nextTieBreakOrder: playerIds.length,
+    createdAt: timestamp(90),
+    updatedAt: now.toISOString()
+  };
+}
+
+function formatSessionDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
+    .format(date)
+    .replace(',', '');
 }
 
 function proposeGameIfPossible(session: PickupSession, profiles: PlayerProfile[], now: string): PickupSession {
