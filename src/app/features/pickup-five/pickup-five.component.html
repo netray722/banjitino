@@ -170,8 +170,8 @@
             <article class="management-row">
               <label class="number-field"><span>Number</span><input type="number" min="0" max="999" [value]="player.playerNumber" (change)="updateNumber(player.id, $any($event.target).value)"></label>
               <label><span>Name</span><input type="text" [value]="player.displayName" (change)="updateName(player.id, $any($event.target).value)"></label>
-              <label><span>Role</span><select [value]="primaryRole(player)" (change)="pickup.setRole(player.id, $any($event.target).value)">@for (role of roles; track role) { <option [value]="role">{{ role }}</option> }</select></label>
-              <span class="career-rate"><small>Career win rate</small><strong>{{ careerWinRateLabel(player.id) }}</strong></span>
+              <label><span>Role</span><select [value]="primaryRole(player)" (change)="pickup.setRole(player.id, $any($event.target).value)">@for (role of roles; track role) { <option [value]="role" [selected]="role === primaryRole(player)">{{ role }}</option> }</select></label>
+              <div class="career-field"><span>Career win rate</span><output class="career-rate">{{ careerWinRateLabel(player.id) }}</output></div>
               <span class="state-chip" [attr.data-state]="stateFor(player.id)">{{ statusLabel(stateFor(player.id)) }}</span>
               @if (!isPresent(player.id)) { <button type="button" [disabled]="!checkInOpen()" (click)="pickup.checkIn(player.id)">Check in</button> } @else { <button type="button" (click)="checkOut(player.id)">Check out</button> }
               <button class="icon-action danger-action" type="button" [attr.aria-label]="'Remove ' + player.displayName" [attr.title]="'Remove ' + player.displayName" (click)="removePlayer(player)"><svg lucideTrash2 aria-hidden="true"></svg></button>
