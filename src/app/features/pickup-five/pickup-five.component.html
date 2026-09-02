@@ -16,7 +16,7 @@
         <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
       </button>
       <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
-        <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
+        <span>03</span><strong>Admin</strong><small>Start, end & history</small>
       </button>
     </nav>
     <div class="session-summary">
@@ -41,9 +41,9 @@
           <div>
             <p class="eyebrow">No active session</p>
             <h2>Set up the next run</h2>
-            <p>Create and start sessions in Organizer. Court stays focused on live games.</p>
+            <p>Create and start sessions in Admin. Court stays focused on live games.</p>
           </div>
-          <button class="primary-action" type="button" (click)="showTab('organizer')">Open Organizer</button>
+          <button class="primary-action" type="button" (click)="showTab('organizer')">Open Admin</button>
         </section>
       } @else {
         <div class="court-dashboard">
@@ -109,8 +109,8 @@
                 <span>🏀</span>
                 @if (session()?.status === 'DRAFT' || session()?.status === 'CHECK_IN') {
                   <h2>{{ presentCount() < 10 ? 10 - presentCount() + ' more players needed' : 'Everyone’s here' }}</h2>
-                  <p>{{ presentCount() }} checked in. Start the session from Organizer when everyone is ready.</p>
-                  <button class="primary-action hero-action" type="button" (click)="showTab('organizer')">Open Organizer</button>
+                  <p>{{ presentCount() }} checked in. Start the session from Admin when everyone is ready.</p>
+                  <button class="primary-action hero-action" type="button" (click)="showTab('organizer')">Open Admin</button>
                 } @else {
                   <h2>Ready for the next matchup</h2>
                   <p>{{ waitingPlayers().length }} players are waiting.</p>
@@ -155,11 +155,13 @@
       </header>
 
       <section class="control-card session-admin">
-        <div><p class="eyebrow">Session</p><h3>{{ session()?.name ?? 'No active run' }}</h3><p>{{ session()?.status ?? 'Create a session below' }} · {{ presentCount() }} present</p></div>
-        <label><span>New session name</span><input #sessionName type="text" [value]="defaultSessionName" autocomplete="off"></label>
-        <button type="button" (click)="createSession(sessionName.value)">Create new</button>
-        <button class="primary-action" type="button" [disabled]="!session() || session()?.status === 'ACTIVE' || session()?.status === 'ENDED' || presentCount() < 10" (click)="startSession()">Start session</button>
-        <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End session</button>
+        <div class="session-admin-summary"><p class="eyebrow">Session</p><h3>{{ session()?.name ?? 'No active run' }}</h3><p>{{ session()?.status ?? 'Create a session below' }} · {{ presentCount() }} present</p></div>
+        <div class="session-admin-actions">
+          <label><span>New session name</span><input #sessionName type="text" [value]="defaultSessionName" autocomplete="off"></label>
+          <button type="button" (click)="createSession(sessionName.value)">Create new</button>
+          <button class="primary-action" type="button" [disabled]="!session() || session()?.status === 'ACTIVE' || session()?.status === 'ENDED' || presentCount() < 10" (click)="startSession()">Start session</button>
+          <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End session</button>
+        </div>
       </section>
 
       <section class="control-card player-management">
@@ -173,15 +175,37 @@
               <div class="career-field"><span>Career win rate</span><output class="career-rate">{{ careerWinRateLabel(player.id) }}</output></div>
               <span class="state-chip" [attr.data-state]="stateFor(player.id)">{{ statusLabel(stateFor(player.id)) }}</span>
               @if (!isPresent(player.id)) { <button type="button" [disabled]="!checkInOpen()" (click)="pickup.checkIn(player.id)">Check in</button> } @else { <button type="button" (click)="checkOut(player.id)">Check out</button> }
-              <button class="icon-action danger-action" type="button" [attr.aria-label]="'Remove ' + player.displayName" [attr.title]="'Remove ' + player.displayName" (click)="removePlayer(player)"><svg lucideTrash2 aria-hidden="true"></svg></button>
+              <details #playerMenu class="session-menu player-menu">
+                <summary [attr.aria-label]="'Actions for ' + player.displayName" [attr.title]="'Actions for ' + player.displayName"><svg lucideEllipsis aria-hidden="true"></svg></summary>
+                <div class="session-menu-popover player-menu-popover">
+                  <button class="danger-action" type="button" (click)="removePlayer(player, playerMenu)"><svg lucideTrash2 aria-hidden="true"></svg><span>Delete player</span></button>
+                </div>
+              </details>
             </article>
           } @empty { <p class="empty-queue">Use Check in to add the first player.</p> }
         </div>
       </section>
 
       <div class="history-grid">
+        <section class="control-card history-panel session-history-panel">
+          <header><div><p class="eyebrow">History</p><h3>Sessions</h3></div><span class="count-pill">{{ sessionHistory().length }}</span></header>
+          @for (savedSession of sessionHistory(); track savedSession.id) {
+            <div class="history-row session-history-row" [class.selected]="selectedHistorySession()?.id === savedSession.id">
+              <button class="history-select" type="button" [attr.aria-pressed]="selectedHistorySession()?.id === savedSession.id" (click)="selectHistorySession(savedSession.id)">
+                <strong>{{ historySessionName(savedSession) }}</strong><span>{{ completedGameCount(savedSession) }} games · {{ savedSession.status }}</span><small>{{ savedSession.createdAt | date:'EEE, MMM d, y, h:mm a' }}</small>
+              </button>
+              <details #sessionMenu class="session-menu">
+                <summary [attr.aria-label]="'Actions for ' + historySessionName(savedSession)" [attr.title]="'Actions for ' + historySessionName(savedSession)"><svg lucideEllipsis aria-hidden="true"></svg></summary>
+                <div class="session-menu-popover">
+                  <button type="button" (click)="renameSession(savedSession, sessionMenu)"><svg lucidePencil aria-hidden="true"></svg><span>Rename</span></button>
+                  <button class="danger-action" type="button" (click)="deleteSession(savedSession, sessionMenu)"><svg lucideTrash2 aria-hidden="true"></svg><span>Delete</span></button>
+                </div>
+              </details>
+            </div>
+          } @empty { <p class="empty-queue">No saved sessions yet.</p> }
+        </section>
         <section class="control-card history-panel">
-          <header><div><p class="eyebrow">{{ selectedHistorySession()?.name ?? 'Select a session' }}</p><h3>Games</h3></div><span class="count-pill">{{ historyGames().length }}</span></header>
+          <header><div><p class="eyebrow">{{ historySessionName(selectedHistorySession()) }}</p><h3>Games</h3></div><span class="count-pill">{{ historyGames().length }}</span></header>
           @for (game of historyGames(); track game.id) {
             <div class="history-row game-history-row">
               <button class="history-select" type="button" [attr.aria-label]="'View details for Game ' + game.number" (click)="openGameDetails(game, gameDetailsDialog)">
@@ -190,23 +214,6 @@
               <button class="icon-action danger-action" type="button" [attr.aria-label]="'Delete Game ' + game.number" [attr.title]="'Delete Game ' + game.number" (click)="deleteGame(game)"><svg lucideTrash2 aria-hidden="true"></svg></button>
             </div>
           } @empty { <p class="empty-queue">No completed games in this session.</p> }
-        </section>
-        <section class="control-card history-panel">
-          <header><div><p class="eyebrow">History</p><h3>Sessions</h3></div><span class="count-pill">{{ sessionHistory().length }}</span></header>
-          @for (savedSession of sessionHistory(); track savedSession.id) {
-            <div class="history-row session-history-row" [class.selected]="selectedHistorySession()?.id === savedSession.id">
-              <button class="history-select" type="button" [attr.aria-pressed]="selectedHistorySession()?.id === savedSession.id" (click)="selectHistorySession(savedSession.id)">
-                <strong>{{ savedSession.name }}</strong><span>{{ completedGameCount(savedSession) }} games · {{ savedSession.status }}</span><small>{{ savedSession.createdAt | date:'mediumDate' }}</small>
-              </button>
-              <details #sessionMenu class="session-menu">
-                <summary [attr.aria-label]="'Actions for ' + savedSession.name" [attr.title]="'Actions for ' + savedSession.name"><svg lucideEllipsis aria-hidden="true"></svg></summary>
-                <div class="session-menu-popover">
-                  <button type="button" (click)="renameSession(savedSession, sessionMenu)"><svg lucidePencil aria-hidden="true"></svg><span>Rename</span></button>
-                  <button class="danger-action" type="button" (click)="deleteSession(savedSession, sessionMenu)"><svg lucideTrash2 aria-hidden="true"></svg><span>Delete</span></button>
-                </div>
-              </details>
-            </div>
-          } @empty { <p class="empty-queue">No saved sessions yet.</p> }
         </section>
       </div>
 
@@ -265,7 +272,7 @@
   @if (selectedGame(); as game) {
     <div class="game-details-shell">
       <header class="dialog-header">
-        <div><p class="eyebrow">{{ selectedHistorySession()?.name }}</p><h2>Game {{ game.number }}</h2></div>
+        <div><p class="eyebrow">{{ historySessionName(selectedHistorySession()) }}</p><h2>Game {{ game.number }}</h2></div>
         <button type="button" aria-label="Close game details" (click)="closeGameDetails(gameDetailsDialog)">×</button>
       </header>
       <dl class="game-detail-meta">

@@ -120,6 +120,7 @@ describe('PickupFiveStateService data management', () => {
     expect(service.state().activeSessionId).toBe('session-1');
 
     const testSession = service.state().sessions.find((session) => session.id === sessionId);
+    expect(testSession?.name).toBe('Test History');
     expect(testSession?.status).toBe('ENDED');
     expect(testSession?.games).toHaveLength(3);
     expect(testSession?.games.every((game) => game.status === 'COMPLETED'
