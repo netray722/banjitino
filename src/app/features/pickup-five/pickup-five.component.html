@@ -185,7 +185,7 @@
           @for (game of historyGames(); track game.id) {
             <div class="history-row game-history-row">
               <button class="history-select" type="button" [attr.aria-label]="'View details for Game ' + game.number" (click)="openGameDetails(game, gameDetailsDialog)">
-                <strong>Game {{ game.number }}</strong><span>Team {{ game.winner }} won</span><small>{{ gameDuration(game) }} · {{ gameTime(game) }}</small>
+                <strong class="game-history-number">Game {{ game.number }}</strong><span class="game-history-result">Team {{ game.winner }} won</span><small class="game-history-meta">{{ gameDuration(game) }} · {{ gameTime(game) }}</small>
               </button>
               <button class="icon-action danger-action" type="button" [attr.aria-label]="'Delete Game ' + game.number" [attr.title]="'Delete Game ' + game.number" (click)="deleteGame(game)"><svg lucideTrash2 aria-hidden="true"></svg></button>
             </div>
