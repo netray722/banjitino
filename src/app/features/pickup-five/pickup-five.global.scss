@@ -12,6 +12,10 @@ body:has(app-pickup-five) {
   --accent-readable: color-mix(in srgb, var(--accent) 58%, white);
   --team-b: #39a7ff;
   --team-b-ink: #071521;
+  --team-white: #f7f9fc;
+  --team-white-ink: #071521;
+  --team-black: #05090d;
+  --team-black-ink: #f7f9fc;
   --border: color-mix(in srgb, var(--accent) 18%, #35516a);
   --card-border: color-mix(in srgb, var(--accent) 24%, #2d4b64);
   --live: #43db8a;
@@ -75,7 +79,6 @@ body:has(app-pickup-five) {
   align-items: center;
   gap: 14px;
   padding: 6px 0 8px;
-  border-bottom: 1px solid var(--border);
   background: var(--page-bg);
 }
 
@@ -129,9 +132,9 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .game-zone, .queue-panel, .control-card { border: 1px solid var(--card-border); border-radius: 6px; background: var(--surface-raised); }
 .game-board { border-top: 6px solid var(--accent); }
 .game-board[data-status="IN_PROGRESS"] { border-top-color: var(--live); }
-.game-heading, .queue-panel > header, .control-card > header, .section-title { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.game-heading, .queue-panel > header, .control-card > header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .game-heading { padding: 18px 22px 12px; }
-.game-heading h2, .queue-panel h2, .section-title h2 { margin-bottom: 0; font-size: clamp(1.7rem, 3vw, 2.8rem); }
+.game-heading h2, .queue-panel h2 { margin-bottom: 0; font-size: clamp(1.7rem, 3vw, 2.8rem); }
 .game-state { display: grid; justify-items: end; }
 .game-state strong { font-size: .75rem; letter-spacing: .08em; }
 .game-state small { color: var(--muted); }
@@ -139,8 +142,8 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 
 .teams-grid { display: grid; grid-template-columns: 1fr 42px 1fr; align-items: center; padding: 4px 22px 12px; }
 .team h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-.team h3 span { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-family: sans-serif; font-size: .8rem; }
-.team-b h3 span { background: var(--team-b); color: var(--team-b-ink); }
+.team h3 span { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--team-white); background: var(--team-white); color: var(--team-white-ink); font-family: sans-serif; font-size: .8rem; }
+.team-b h3 span { border-color: var(--team-black-ink); background: var(--team-black); color: var(--team-black-ink); }
 .versus { color: var(--muted); font-family: var(--display-font); font-style: italic; text-align: center; }
 .court-player { min-height: 62px; display: grid; grid-template-columns: minmax(0, 1fr) 96px; border-top: 1px solid var(--border); border-inline: 1px solid var(--border); }
 .team .court-player:last-child { border-bottom: 1px solid var(--border); }
@@ -158,10 +161,12 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .result-actions { grid-template-columns: 1fr minmax(150px, .35fr) minmax(150px, .35fr); align-items: center; }
 .result-actions p { margin-bottom: 0; }
 .result-actions p span { display: block; margin-top: 3px; color: var(--muted); font-size: .78rem; }
-.pickup-shell .result-actions .team-a-win { min-height: 68px; border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
-.pickup-shell .result-actions .team-b-win { min-height: 68px; border-color: var(--team-b); background: var(--team-b); color: var(--team-b-ink); }
-.pickup-shell .result-actions .team-a-win:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 86%, white); color: var(--accent-ink); }
-.pickup-shell .result-actions .team-b-win:hover:not(:disabled) { background: color-mix(in srgb, var(--team-b) 86%, white); color: var(--team-b-ink); }
+.pickup-shell .result-actions .team-a-win,
+.pickup-shell .result-actions .team-b-win { min-height: 68px; display: flex; align-items: center; justify-content: center; padding: 0 14px; line-height: 1.15; text-align: center; }
+.pickup-shell .result-actions .team-a-win { border-color: var(--team-white); background: var(--team-white); color: var(--team-white-ink); }
+.pickup-shell .result-actions .team-b-win { border-color: var(--team-black-ink); background: var(--team-black); color: var(--team-black-ink); }
+.pickup-shell .result-actions .team-a-win:hover:not(:disabled) { background: color-mix(in srgb, var(--team-white) 88%, var(--surface)); color: var(--team-white-ink); }
+.pickup-shell .result-actions .team-b-win:hover:not(:disabled) { background: color-mix(in srgb, var(--team-black) 82%, white); color: var(--team-black-ink); }
 
 .standby-card { min-height: calc(100dvh - 210px); display: grid; place-items: center; align-content: center; padding: 36px; text-align: center; }
 .standby-card > span { font-size: 4rem; }
@@ -186,8 +191,6 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 
 .organizer-view { min-width: 0; display: grid; gap: 12px; }
 .organizer-view > * { min-width: 0; }
-.section-title { padding: 8px 0; }
-.section-title h2 { margin-bottom: 0; }
 .control-card { padding: 18px; }
 .session-admin { display: grid; gap: 14px; }
 .session-admin-actions { display: grid; grid-template-columns: minmax(240px, 1fr) repeat(3, auto); align-items: end; gap: 12px; }
