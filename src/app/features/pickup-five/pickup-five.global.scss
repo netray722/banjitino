@@ -223,12 +223,12 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .game-history-row .history-select { grid-template-columns: 84px minmax(0, 1fr) 154px; grid-template-areas: "game-number game-result game-meta"; column-gap: 10px; }
 .game-history-number { grid-area: game-number; white-space: nowrap; }
 .game-history-result { grid-area: game-result; white-space: nowrap; }
-.game-history-meta { grid-area: game-meta; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.game-history-meta { grid-area: game-meta; }
+.game-history-meta, .session-history-meta { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .session-history-row { min-height: 72px; border-left: 3px solid transparent; border-radius: 0; }
-.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "session-name session-meta session-date"; column-gap: 12px; }
+.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "session-name session-meta"; column-gap: 12px; }
 .session-history-row .history-select strong { min-width: 0; grid-area: session-name; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.session-history-row .history-select span { grid-area: session-meta; white-space: nowrap; }
-.session-history-row .history-select small { grid-area: session-date; font-size: .6rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.session-history-row .session-history-meta { grid-area: session-meta; }
 .session-history-row.selected { border-left-color: var(--accent); background: transparent; box-shadow: none; }
 .session-history-row.selected .history-select { padding-left: 12px !important; }
 .session-history-row.selected .history-select strong { color: var(--accent-readable); }
@@ -240,7 +240,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .session-menu summary::-webkit-details-marker { display: none; }
 .session-menu[open] summary { border-color: var(--accent); color: var(--accent-readable); }
 .session-menu-popover { width: 180px; position: absolute; z-index: 10; top: calc(100% + 5px); right: 0; display: grid; padding: 0; border: 1px solid var(--border); background: var(--surface-raised); }
-.session-menu-popover button { width: 100%; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 10px; justify-content: flex-start; border: 0; border-radius: 0; background: transparent; }
+.pickup-shell .session-menu-popover button { width: 100%; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 10px; justify-content: flex-start; padding: 0 12px; border: 0; border-radius: 0; background: transparent; }
 .session-menu-popover button + button { border-top: 1px solid var(--border); }
 .player-menu[open] { z-index: 12; }
 .data-management { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-color: var(--danger); }
@@ -257,6 +257,10 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .dialog-header h2 { display: inline; margin: 0 10px 0 0; font-size: 2.4rem; }
 .dialog-header span { color: var(--muted); font-weight: 750; }
 .dialog-header > button { width: 62px; min-height: 62px; border-color: var(--ink); font-size: 2rem; }
+.game-details-dialog .dialog-header > .dialog-close { width: 48px; height: 48px; min-height: 48px; display: grid; place-items: center; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; }
+.game-details-dialog .dialog-close:hover { border-color: var(--accent); background: var(--surface-soft); color: var(--ink); }
+.game-details-dialog .dialog-close:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 70%, white); outline-offset: 2px; }
+.game-details-dialog .dialog-close svg { width: 20px; height: 20px; }
 .add-player-panel { display: grid; grid-template-columns: 110px 1fr 170px auto; align-items: end; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--border); }
 .search-field { width: min(100%, 420px); padding: 14px 0; }
 .player-roster { min-height: 0; overflow: auto; border: 1px solid var(--border); }
