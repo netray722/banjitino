@@ -451,7 +451,7 @@ export class PickupFiveStateService {
       return result.applied
         ? proposeGameIfPossible(result.session, this.state().players, this.state().sessions, now)
         : session;
-    }, `Team ${winner} recorded as the winner. The next game is ready when enough players are waiting.`);
+    }, `Team ${winner === 'A' ? 'White' : 'Black'} recorded as the winner. The next game is ready when enough players are waiting.`);
   }
 
   cancelProposedGame(): void {

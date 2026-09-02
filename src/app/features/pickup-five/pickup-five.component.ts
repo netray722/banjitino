@@ -36,10 +36,10 @@ export class PickupFiveComponent {
   protected readonly roles: PlayerRole[] = ['Guard', 'Wing', 'Big'];
   protected readonly maximumTestPlayerCount = NBA_TEST_PLAYERS.length;
   protected readonly defaultSessionName = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
+    month: '2-digit',
     day: '2-digit',
     year: 'numeric'
-  }).format(new Date()).replace(',', '');
+  }).format(new Date());
   protected readonly session = this.pickup.currentSession;
   protected readonly proposedGame = this.pickup.proposedGame;
   protected readonly liveGame = computed(() => {
@@ -157,7 +157,8 @@ export class PickupFiveComponent {
     this.pickup.removePlayer(player.id);
   }
 
-  protected deleteGame(game: PickupGame): void {
+  protected deleteGame(game: PickupGame, menu?: HTMLDetailsElement): void {
+    if (menu) menu.open = false;
     const session = this.selectedHistorySession();
     if (!session || !this.view?.confirm(
       `Delete Game ${game.number} from this session? This will not rewind queue fairness or player totals.`
@@ -219,7 +220,7 @@ export class PickupFiveComponent {
   }
 
   protected recordWinner(winner: 'A' | 'B'): void {
-    if (!this.view?.confirm(`Record Team ${winner} as the winner?`)) return;
+    if (!this.view?.confirm(`Record Team ${this.teamName(winner)} as the winner?`)) return;
     this.pickup.recordWinner(winner);
   }
 
@@ -295,9 +296,8 @@ export class PickupFiveComponent {
     this.pickup.updatePlayer(playerId, { displayName: value });
   }
 
-  protected gameTime(game: PickupGame): string {
-    const timestamp = game.completedAt ?? game.startedAt ?? game.createdAt;
-    return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(timestamp));
+  protected teamName(team: 'A' | 'B'): 'White' | 'Black' {
+    return team === 'A' ? 'White' : 'Black';
   }
 
   protected gameDuration(game: PickupGame): string {
@@ -314,8 +314,16 @@ export class PickupFiveComponent {
     return session.games.filter((game) => game.status === 'COMPLETED').length;
   }
 
-  protected historySessionName(session: PickupSession | null): string {
-    if (!session) return 'Select a session';
-    return session.name.startsWith('Test History — ') ? 'Test History' : session.name;
+  protected sessionDisplayName(session: PickupSession | null, fallback = 'Select a session'): string {
+    if (!session) return fallback;
+    if (session.name.startsWith('Test History — ')) return 'Test History';
+    if (/^[A-Z][a-z]+ \d{2} \d{4}$/.test(session.name)) {
+      return new Intl.DateTimeFormat('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+      }).format(new Date(session.createdAt));
+    }
+    return session.name;
   }
 }
