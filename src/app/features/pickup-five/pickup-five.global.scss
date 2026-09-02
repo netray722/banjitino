@@ -48,9 +48,13 @@ body:has(app-pickup-five) {
   .danger-action { border-color: var(--danger); color: var(--danger); }
   .status-dot { width: 10px; height: 10px; display: inline-block; border-radius: 50%; background: var(--muted); }
   .status-dot.live { background: var(--live); outline: 2px solid color-mix(in srgb, var(--live) 32%, transparent); outline-offset: 2px; }
-  .count-pill, .state-chip { display: inline-grid; min-height: 32px; place-items: center; padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-soft); font-size: .65rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+  .count-pill, .state-chip { display: inline-grid; min-height: 32px; place-items: center; padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-soft); font-size: .65rem; font-weight: 900; letter-spacing: .05em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+  .state-chip[data-state="REGISTERED"] { border-color: var(--team-b); color: var(--team-b); }
   .state-chip[data-state="PLAYING"] { border-color: var(--live); color: var(--live); }
   .state-chip[data-state="WAITING"] { border-color: var(--accent); color: var(--accent-readable); }
+  .state-chip[data-state="LEAVING_AFTER_GAME"] { border-color: var(--accent); color: var(--accent-readable); }
+  .state-chip[data-state="CHECKED_OUT"] { border-color: var(--muted); background: transparent; color: var(--muted); }
+  .state-chip[data-state="NO_SHOW"] { border-color: var(--danger); background: transparent; color: var(--danger); }
 }
 
 .pickup-shell {
@@ -185,13 +189,14 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .section-title { padding: 8px 0; }
 .section-title h2 { margin-bottom: 0; }
 .control-card { padding: 18px; }
-.session-admin { display: grid; grid-template-columns: 1fr minmax(250px, .7fr) repeat(3, auto); align-items: end; gap: 12px; }
+.session-admin { display: grid; gap: 14px; }
+.session-admin-actions { display: grid; grid-template-columns: minmax(240px, 1fr) repeat(3, auto); align-items: end; gap: 12px; }
 .session-admin h3 { margin-bottom: 4px; font-size: 1.5rem; }
 .session-admin p:last-child { margin-bottom: 0; color: var(--muted); }
 .player-management > header h3, .history-panel h3 { margin-bottom: 0; font-size: 1.45rem; }
 .player-management > header small { color: var(--muted); }
-.management-list { margin-top: 12px; border-top: 1px solid var(--border); }
-.management-row { min-height: 72px; display: grid; grid-template-columns: 92px minmax(180px, 1fr) 150px 116px 100px 110px 48px; align-items: end; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.management-list { margin-top: 12px; overflow-x: auto; border-top: 1px solid var(--border); }
+.management-row { min-height: 72px; display: grid; grid-template-columns: 76px minmax(180px, 1fr) 124px 112px 104px 106px 48px; align-items: end; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .management-row > label, .management-row > .career-field { display: grid; grid-template-rows: 14px 48px; align-self: end; gap: 6px; }
 .management-row > label > span, .management-row > .career-field > span { margin: 0; line-height: 14px; }
 .management-row input, .management-row select, .management-row button, .management-row .career-rate { height: 48px; min-height: 48px; }
@@ -201,7 +206,10 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .career-field > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
 .career-rate { min-height: 48px; display: grid; align-content: center; padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); font-family: var(--display-font); font-size: 1.1rem; font-variant-numeric: tabular-nums; line-height: 1; }
 .management-row .state-chip { width: 100%; min-height: 48px; align-self: end; }
-.history-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
+.management-row .player-menu { width: 48px; height: 48px; align-self: end; }
+.player-menu-popover { top: calc(100% + 5px); }
+.history-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; gap: 12px; }
+.history-panel { height: 100%; }
 .history-row { min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; border: 0; border-radius: 4px; transition: background-color 140ms ease, box-shadow 140ms ease; }
 .history-row + .history-row { margin-top: 4px; }
 .history-row:hover, .history-row:focus-within { background: var(--surface-soft); }
@@ -214,23 +222,24 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .game-history-result { grid-area: game-result; white-space: nowrap; }
 .game-history-meta { grid-area: game-meta; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .session-history-row { min-height: 72px; border-left: 3px solid transparent; border-radius: 0; }
-.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "session-name session-name" "session-meta session-date"; column-gap: 16px; row-gap: 3px; }
+.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "session-name session-meta session-date"; column-gap: 12px; }
 .session-history-row .history-select strong { min-width: 0; grid-area: session-name; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.session-history-row .history-select span { grid-area: session-meta; }
-.session-history-row .history-select small { grid-area: session-date; white-space: nowrap; }
+.session-history-row .history-select span { grid-area: session-meta; white-space: nowrap; }
+.session-history-row .history-select small { grid-area: session-date; font-size: .6rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .session-history-row.selected { border-left-color: var(--accent); background: transparent; box-shadow: none; }
 .session-history-row.selected .history-select { padding-left: 12px !important; }
 .session-history-row.selected .history-select strong { color: var(--accent-readable); }
 .icon-action { width: 48px; min-height: 48px !important; display: grid; place-items: center; padding: 0 !important; }
 .history-row > .icon-action { border: 0; background: transparent; }
 .icon-action svg, .session-menu svg { width: 20px; height: 20px; }
-.session-menu { height: 100%; position: relative; justify-self: end; }
-.session-menu summary { width: 48px; min-height: 63px; display: grid; place-items: center; border: 0; cursor: pointer; list-style: none; }
+.session-menu { position: relative; align-self: center; justify-self: end; }
+.session-menu summary { width: 48px; min-height: 48px; display: grid; place-items: center; border: 0; cursor: pointer; list-style: none; }
 .session-menu summary::-webkit-details-marker { display: none; }
 .session-menu[open] summary { border-color: var(--accent); color: var(--accent-readable); }
-.session-menu-popover { width: 160px; position: absolute; z-index: 10; top: calc(100% + 5px); right: 0; display: grid; padding: 0; border: 1px solid var(--border); background: var(--surface-raised); }
-.session-menu-popover button { min-height: 48px; display: flex; align-items: center; gap: 10px; justify-content: flex-start; border: 0; border-radius: 0; background: transparent; }
+.session-menu-popover { width: 180px; position: absolute; z-index: 10; top: calc(100% + 5px); right: 0; display: grid; padding: 0; border: 1px solid var(--border); background: var(--surface-raised); }
+.session-menu-popover button { width: 100%; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 10px; justify-content: flex-start; border: 0; border-radius: 0; background: transparent; }
 .session-menu-popover button + button { border-top: 1px solid var(--border); }
+.player-menu[open] { z-index: 12; }
 .data-management { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-color: var(--danger); }
 .data-management h3 { margin-bottom: 4px; font-size: 1.35rem; }
 .data-management p:last-child { margin-bottom: 0; color: var(--muted); }
@@ -273,8 +282,9 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 
 @media (max-width: 900px) {
   .pickup-shell { padding-inline: 10px; }
-  .app-bar { min-height: 64px; grid-template-columns: minmax(150px, auto) minmax(300px, 1fr) auto; gap: 10px; }
+  .app-bar { min-height: 64px; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; }
   .app-mark { width: 44px; height: 44px; }
+  .command-bar { width: 100%; max-width: none; grid-column: 1 / -1; grid-row: 2; }
   .session-summary > span:not(.status-dot) { display: none; }
   .command-bar button { min-height: 44px; }
   .command-bar button small { display: none; }
@@ -283,22 +293,22 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .game-heading, .game-actions { padding-inline: 12px; }
   .court-player { grid-template-columns: minmax(0, 1fr) 96px; }
   .player-main { grid-template-columns: 42px 1fr; }
-  .session-admin { grid-template-columns: 1fr 1fr; }
+  .session-admin-actions { grid-template-columns: minmax(220px, 1fr) repeat(3, auto); gap: 8px; }
   .history-grid { grid-template-columns: 1fr; }
-  .management-row { grid-template-columns: 82px minmax(0, 1fr) 130px 116px; }
-  .management-row .state-chip { grid-column: 2; }
-  .management-row > button:not(.icon-action) { grid-column: 3; }
-  .management-row > .icon-action { grid-column: 4; }
+  .management-row { min-width: 700px; grid-template-columns: 64px minmax(152px, 1fr) 104px 104px 94px 96px 44px; gap: 8px; }
+  .management-row > label > span, .management-row > .career-field > span { font-size: .6rem; letter-spacing: .06em; }
+  .management-row .player-menu, .player-menu summary { width: 44px; }
 }
 
 @media (max-width: 720px) {
   .app-bar { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-  .command-bar { grid-column: 1 / -1; grid-row: 2; }
-  .command-bar button { min-width: 0; min-height: 52px; padding-inline: 6px; }
+  .command-bar button { min-width: 0; min-height: 48px; padding-inline: 6px; }
   .session-summary { flex-wrap: wrap; justify-content: flex-end; }
   .command-bar button { grid-template-columns: auto; grid-template-rows: auto auto; text-align: center; }
   .command-bar button > span, .command-bar button small { display: none; }
-  .session-admin { grid-template-columns: 1fr; }
+  .session-admin-actions { grid-template-columns: 1fr 1fr; }
+  .session-admin-actions label { grid-column: 1 / -1; }
+  .session-admin-actions .danger-action { grid-column: 1 / -1; }
   .quick-start, .court-dashboard { grid-template-columns: 1fr; }
   .quick-start { min-height: auto; padding: 28px 20px; }
   .queue-panel { position: static; max-height: none; }
@@ -311,12 +321,12 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .add-player-panel .primary-action { grid-column: 1 / -1; }
   .roster-row { grid-template-columns: 58px 1fr; }
   .roster-row .state-chip, .roster-row > button { grid-column: 2; }
-  .management-row { grid-template-columns: 80px 1fr; }
-  .management-row > label:nth-child(3), .management-row .career-field, .management-row .state-chip, .management-row > button { grid-column: 1 / -1; }
   .pickup-shell .history-select { grid-template-columns: 1fr; gap: 2px; }
   .game-history-row .history-select { grid-template-areas: "game-number" "game-result" "game-meta"; }
   .game-history-meta { text-align: left; }
-  .session-history-row .history-select { grid-template-columns: 1fr; grid-template-areas: "session-name" "session-meta" "session-date"; }
+  .session-history-panel { overflow-x: auto; }
+  .session-history-row { min-width: 570px; }
+  .session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "session-name session-meta session-date"; gap: 10px; }
   .history-row > .history-select { grid-column: 1; grid-row: 1; }
   .history-row > .icon-action, .history-row > .session-menu { grid-column: 2; grid-row: 1; }
   .game-detail-meta, .game-detail-teams { grid-template-columns: 1fr; }

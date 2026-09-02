@@ -573,7 +573,7 @@ function createTestSession(sessionId: string, playerIds: string[], now: Date): P
 
   return {
     id: sessionId,
-    name: `Test History — ${formatSessionDate(now)}`,
+    name: 'Test History',
     status: 'ENDED',
     players: playerIds.map((playerId, tieBreakOrder) => {
       const playerGames = games.filter((game) => [...game.teamA, ...game.teamB].includes(playerId));
@@ -596,12 +596,6 @@ function createTestSession(sessionId: string, playerIds: string[], now: Date): P
     createdAt: timestamp(90),
     updatedAt: now.toISOString()
   };
-}
-
-function formatSessionDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', { month: 'long', day: '2-digit', year: 'numeric' })
-    .format(date)
-    .replace(',', '');
 }
 
 function proposeGameIfPossible(

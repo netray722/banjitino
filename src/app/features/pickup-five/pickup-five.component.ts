@@ -64,16 +64,19 @@ export class PickupFiveComponent {
     player.state === 'WAITING' || player.state === 'PLAYING' || player.state === 'LEAVING_AFTER_GAME').length ?? 0);
   protected readonly checkInOpen = computed(() =>
     this.session()?.status !== 'ENDED' && Boolean(this.session()));
-  protected readonly sessionHistory = computed(() => [...this.pickup.state().sessions].reverse());
-  protected readonly selectedHistorySession = computed(() => {
+  protected readonly sessionHistory = computed(() => [...this.pickup.state().sessions]
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()));
+  protected readonly selectedHistorySession = computed<PickupSession | null>(() => {
     const sessions = this.pickup.state().sessions;
     return sessions.find((session) => session.id === this.selectedHistorySessionId())
       ?? this.session()
-      ?? (sessions.length > 0 ? sessions[sessions.length - 1] : null);
+      ?? this.sessionHistory().at(0)
+      ?? null;
   });
   protected readonly historyGames = computed(() => [...(this.selectedHistorySession()?.games ?? [])]
     .filter((game) => game.status === 'COMPLETED')
-    .reverse());
+    .sort((left, right) => new Date(right.completedAt ?? right.createdAt).getTime()
+      - new Date(left.completedAt ?? left.createdAt).getTime()));
 
   protected showTab(tab: PickupTab): void {
     this.activeTab.set(tab);
@@ -146,7 +149,8 @@ export class PickupFiveComponent {
     this.activeTab.set('organizer');
   }
 
-  protected removePlayer(player: PlayerProfile): void {
+  protected removePlayer(player: PlayerProfile, menu?: HTMLDetailsElement): void {
+    if (menu) menu.open = false;
     if (!this.view?.confirm(
       `Remove ${player.displayName} from the roster? Past game history will keep their name.`
     )) return;
@@ -308,5 +312,10 @@ export class PickupFiveComponent {
 
   protected completedGameCount(session: PickupSession): number {
     return session.games.filter((game) => game.status === 'COMPLETED').length;
+  }
+
+  protected historySessionName(session: PickupSession | null): string {
+    if (!session) return 'Select a session';
+    return session.name.startsWith('Test History — ') ? 'Test History' : session.name;
   }
 }
