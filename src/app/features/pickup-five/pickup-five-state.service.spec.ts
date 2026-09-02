@@ -125,6 +125,21 @@ describe('PickupFiveStateService data management', () => {
       && Boolean(game.winner) && Boolean(game.startedAt) && Boolean(game.completedAt))).toBe(true);
     expect(testSession?.players.filter((player) => player.gamesPlayed > 0)).toHaveLength(10);
   });
+
+  it('records teammate history only when a proposed game officially starts', () => {
+    const service = createService(createReadyState());
+
+    service.generateGame();
+    service.rebalanceGame();
+
+    expect(service.currentSession()?.teammateHistory ?? {}).toEqual({});
+
+    service.startGame();
+
+    const teammateHistory = service.currentSession()?.teammateHistory ?? {};
+    expect(Object.keys(teammateHistory)).toHaveLength(20);
+    expect(Object.values(teammateHistory).reduce((total, count) => total + count, 0)).toBe(20);
+  });
 });
 
 function createService(initialState: PickupFiveState): PickupFiveStateService {
@@ -151,6 +166,37 @@ function createState(): PickupFiveState {
     activeSessionId: 'session-1',
     players: [createProfile('player-1', 1, 'Player One'), createProfile('player-2', 2, 'Player Two')],
     sessions: [createSession()],
+    organizerPinHash: 'test'
+  };
+}
+
+function createReadyState(): PickupFiveState {
+  const players = Array.from({ length: 10 }, (_, index) =>
+    createProfile(`ready-${index + 1}`, index + 1, `Ready Player ${index + 1}`));
+  return {
+    schemaVersion: 1,
+    revision: 0,
+    activeSessionId: 'ready-session',
+    players,
+    sessions: [{
+      id: 'ready-session',
+      name: 'Ready session',
+      status: 'ACTIVE',
+      players: players.map((player, index) => ({
+        ...createSessionPlayer(player.id, 0),
+        gamesPlayed: 0,
+        wins: 0,
+        losses: 0,
+        lastResult: null,
+        lastGameId: null,
+        tieBreakOrder: index
+      })),
+      games: [],
+      tieBreakCursor: 0,
+      nextTieBreakOrder: 10,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    }],
     organizerPinHash: 'test'
   };
 }

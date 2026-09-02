@@ -2,22 +2,26 @@ import {
   PickupGame,
   PickupSession,
   PlayerProfile,
-  PlayerRole,
   SessionPlayer,
-  TeamBalanceResult
+  StayTeam,
+  TeamBalanceResult,
+  TeamSelectionResult
 } from './pickup-five.types';
 
-export const TEAM_BALANCING_WEIGHTS = {
-  guardDifference: 40,
-  wingDifference: 40,
-  bigDifference: 40,
-  recentTeammateRepeat: 0.8,
-  recentOpponentRepeat: 0.35
+export const TEAM_BUILDING_WEIGHTS = {
+  strengthImbalance: 1000,
+  dominantFive: 5000,
+  dominantFour: 1200,
+  highWinRateStack: 150,
+  teammateRepeat: 6,
+  recentTeammate: [18, 8, 3]
 } as const;
 
 export const WINNER_BONUS = 0.15;
 
 const PRESENT_STATES = new Set(['WAITING', 'PLAYING', 'LEAVING_AFTER_GAME']);
+const SESSION_STRENGTH_MAX_WEIGHT = 0.45;
+const SESSION_STRENGTH_FULL_WEIGHT_GAMES = 8;
 
 export function isPresent(player: SessionPlayer): boolean {
   return PRESENT_STATES.has(player.state);
@@ -102,6 +106,7 @@ export function substitutePlayer(
         ...candidate,
         teamA: replace(candidate.teamA),
         teamB: replace(candidate.teamB),
+        stayTeam: candidate.stayTeam === team ? null : candidate.stayTeam,
         replacements
       }
       : candidate),
@@ -109,35 +114,93 @@ export function substitutePlayer(
   };
 }
 
-export function selectNextPlayers(session: PickupSession, limit = 10): string[] {
-  const waiting = session.players.filter((player) => player.state === 'WAITING');
+export function rankWaitingPlayers(session: PickupSession, excludedPlayerIds: string[] = []): SessionPlayer[] {
+  const excluded = new Set(excludedPlayerIds);
   const rotationSize = Math.max(session.nextTieBreakOrder, 1);
 
-  return waiting
+  return session.players
+    .filter((player) => player.state === 'WAITING' && !excluded.has(player.playerId))
     .sort((left, right) =>
       right.consecutiveGamesSat - left.consecutiveGamesSat
       || right.fairnessCredit - left.fairnessCredit
       || winnerScore(right) - winnerScore(left)
       || rotatingRank(left, session.tieBreakCursor, rotationSize)
         - rotatingRank(right, session.tieBreakCursor, rotationSize)
-      || left.playerId.localeCompare(right.playerId))
-    .slice(0, limit)
-    .map((player) => player.playerId);
+      || left.playerId.localeCompare(right.playerId));
 }
 
-export function balanceTeams(
+export function selectNextPlayers(session: PickupSession, limit = 10): string[] {
+  return rankWaitingPlayers(session).slice(0, limit).map((player) => player.playerId);
+}
+
+export function selectPlayersForGame(session: PickupSession): TeamSelectionResult {
+  const stayTeam = getStayTeam(session.games);
+  if (stayTeam && stayTeam.playerIds.every((playerId) =>
+    session.players.some((player) => player.playerId === playerId && player.state === 'WAITING'))) {
+    const challengers = rankWaitingPlayers(session, stayTeam.playerIds).slice(0, 5);
+    if (challengers.length === 5) {
+      return {
+        selectedPlayerIds: [...stayTeam.playerIds, ...challengers.map((player) => player.playerId)],
+        stayTeam
+      };
+    }
+  }
+
+  return { selectedPlayerIds: selectNextPlayers(session), stayTeam: null };
+}
+
+export function getStayTeam(gameHistory: PickupGame[]): StayTeam | null {
+  const run = latestWinningRun(gameHistory);
+  return run?.consecutiveWins === 1 ? run : null;
+}
+
+export function estimatePlayerStrength(
+  playerId: string,
+  currentSession: PickupSession,
+  sessionHistory: PickupSession[]
+): number {
+  let careerGames = 0;
+  let careerWins = 0;
+  for (const session of sessionHistory) {
+    if (session.id === currentSession.id) continue;
+    const player = session.players.find((candidate) => candidate.playerId === playerId);
+    if (!player) continue;
+    careerGames += player.gamesPlayed;
+    careerWins += player.wins;
+  }
+
+  const current = currentSession.players.find((player) => player.playerId === playerId);
+  const currentGames = current?.gamesPlayed ?? 0;
+  const currentWins = current?.wins ?? 0;
+  const careerRate = careerGames > 0 ? careerWins / careerGames : 0.5;
+  const currentRate = (currentWins + 2) / (currentGames + 4);
+  const currentWeight = Math.min(currentGames / SESSION_STRENGTH_FULL_WEIGHT_GAMES, 1)
+    * SESSION_STRENGTH_MAX_WEIGHT;
+
+  return careerRate * (1 - currentWeight) + currentRate * currentWeight;
+}
+
+export function buildTeams(
   selectedPlayerIds: string[],
   profiles: PlayerProfile[],
-  gameHistory: PickupGame[] = [],
+  currentSession: PickupSession,
+  sessionHistory: PickupSession[] = [currentSession],
   variant = 0
 ): TeamBalanceResult {
   const uniqueIds = [...new Set(selectedPlayerIds)];
   if (uniqueIds.length !== 10) throw new Error('Exactly ten distinct players are required.');
 
-  const profileMap = new Map(profiles.map((player) => [player.id, player]));
-  if (uniqueIds.some((id) => !profileMap.has(id))) throw new Error('Every selected player needs a profile.');
+  const profileIds = new Set(profiles.map((player) => player.id));
+  if (uniqueIds.some((id) => !profileIds.has(id))) throw new Error('Every selected player needs a profile.');
 
-  const recentGames = gameHistory.filter((game) => game.status === 'COMPLETED').slice(-5);
+  const strengths = new Map(uniqueIds.map((playerId) => [
+    playerId,
+    estimatePlayerStrength(playerId, currentSession, sessionHistory)
+  ]));
+  const teammateHistory = currentSession.teammateHistory ?? buildTeammateHistory(currentSession.games);
+  const recentGames = currentSession.games.filter((game) => Boolean(game.startedAt)).slice(-3);
+  const winningRun = latestWinningRun(currentSession.games);
+  const dominantTeam = winningRun && winningRun.consecutiveWins >= 2 ? winningRun.playerIds : null;
   const candidates: TeamBalanceResult[] = [];
 
   for (const remainingFour of combinations(uniqueIds.slice(1), 4)) {
@@ -148,13 +211,119 @@ export function balanceTeams(
       teamA,
       teamB,
       evaluatedSplits: 126,
-      score: teamScore(teamA, teamB, profileMap, recentGames)
+      score: scoreTeamSplit(teamA, teamB, strengths, teammateHistory, recentGames, dominantTeam)
     });
   }
 
   candidates.sort((left, right) => left.score - right.score || teamKey(left).localeCompare(teamKey(right)));
-  const alternativeCount = Math.min(6, candidates.length);
-  return candidates[variant % alternativeCount];
+  return candidates[variant % Math.min(6, candidates.length)];
+}
+
+export function scoreTeamSplit(
+  teamA: string[],
+  teamB: string[],
+  strengths: ReadonlyMap<string, number>,
+  teammateHistory: Readonly<Record<string, number>>,
+  recentGames: PickupGame[],
+  dominantTeam: string[] | null
+): number {
+  const strength = (team: string[]) => team.reduce((sum, playerId) => sum + (strengths.get(playerId) ?? 0.5), 0);
+  const strengthImbalance = Math.abs(strength(teamA) - strength(teamB));
+  const strongest = [...teamA, ...teamB]
+    .sort((left, right) => (strengths.get(right) ?? 0.5) - (strengths.get(left) ?? 0.5))
+    .slice(0, 4);
+  const strongestOnA = strongest.filter((playerId) => teamA.includes(playerId)).length;
+  const highWinRateStack = Math.abs(strongestOnA - (strongest.length - strongestOnA));
+  const pairs = [...teammatePairs(teamA), ...teammatePairs(teamB)];
+  const teammateRepeats = pairs.reduce((sum, [left, right]) => sum + (teammateHistory[pairKey(left, right)] ?? 0), 0);
+  const recentTeammates = [...recentGames].reverse().reduce((total, game, index) => {
+    const previousPairs = new Set([
+      ...teammatePairs(startedTeam(game, 'A')),
+      ...teammatePairs(startedTeam(game, 'B'))
+    ].map(([left, right]) => pairKey(left, right)));
+    return total + pairs.filter(([left, right]) => previousPairs.has(pairKey(left, right))).length
+      * TEAM_BUILDING_WEIGHTS.recentTeammate[index];
+  }, 0);
+  const dominantOverlap = dominantTeam
+    ? Math.max(
+      dominantTeam.filter((playerId) => teamA.includes(playerId)).length,
+      dominantTeam.filter((playerId) => teamB.includes(playerId)).length
+    )
+    : 0;
+  const dominantPenalty = dominantOverlap === 5 ? TEAM_BUILDING_WEIGHTS.dominantFive
+    : dominantOverlap === 4 ? TEAM_BUILDING_WEIGHTS.dominantFour
+    : 0;
+
+  return strengthImbalance * TEAM_BUILDING_WEIGHTS.strengthImbalance
+    + dominantPenalty
+    + highWinRateStack * TEAM_BUILDING_WEIGHTS.highWinRateStack
+    + teammateRepeats * TEAM_BUILDING_WEIGHTS.teammateRepeat
+    + recentTeammates;
+}
+
+export function updateTeammateHistory(
+  session: PickupSession,
+  teamA: string[],
+  teamB: string[]
+): PickupSession {
+  const teammateHistory = { ...(session.teammateHistory ?? buildTeammateHistory(session.games)) };
+  for (const [left, right] of [...teammatePairs(teamA), ...teammatePairs(teamB)]) {
+    const key = pairKey(left, right);
+    teammateHistory[key] = (teammateHistory[key] ?? 0) + 1;
+  }
+  return { ...session, teammateHistory };
+}
+
+export function updateFairnessCredits(
+  session: PickupSession,
+  game: PickupGame,
+  winner: 'A' | 'B'
+): SessionPlayer[] {
+  const currentParticipants = new Set([...game.teamA, ...game.teamB]);
+  const creditedTeamA = game.creditedTeamA ?? game.teamA;
+  const creditedTeamB = game.creditedTeamB ?? game.teamB;
+  const creditedParticipants = new Set([...creditedTeamA, ...creditedTeamB]);
+  const partialParticipants = new Set([...currentParticipants]
+    .filter((playerId) => !creditedParticipants.has(playerId)));
+  const presentCount = session.players.filter(isPresent).length;
+  if (presentCount < 10) throw new Error('A completed 5v5 game requires ten present players.');
+  const creditShare = 10 / presentCount;
+
+  return session.players.map((player) => {
+    const playedFullGame = creditedParticipants.has(player.playerId);
+    const playedPartialGame = partialParticipants.has(player.playerId);
+    if (!isPresent(player) && !playedFullGame) return player;
+    if (playedPartialGame) {
+      const won = (winner === 'A' ? game.teamA : game.teamB).includes(player.playerId);
+      return {
+        ...player,
+        state: 'WAITING',
+        fairnessCredit: player.fairnessCredit + creditShare,
+        lastResult: won ? 'WIN' : 'LOSS',
+        lastGameId: game.id
+      };
+    }
+    if (!playedFullGame) {
+      return {
+        ...player,
+        fairnessCredit: player.fairnessCredit + creditShare,
+        consecutiveGamesSat: player.consecutiveGamesSat + 1
+      };
+    }
+
+    const won = (winner === 'A' ? creditedTeamA : creditedTeamB).includes(player.playerId);
+    return {
+      ...player,
+      state: player.state === 'CHECKED_OUT' ? 'CHECKED_OUT' : 'WAITING',
+      fairnessCredit: player.fairnessCredit + creditShare - 1,
+      consecutiveGamesSat: 0,
+      gamesPlayed: player.gamesPlayed + 1,
+      wins: player.wins + (won ? 1 : 0),
+      losses: player.losses + (won ? 0 : 1),
+      lastResult: won ? 'WIN' : 'LOSS',
+      lastGameId: game.id
+    };
+  });
 }
 
 export function recordGameResult(
@@ -170,56 +339,25 @@ export function recordGameResult(
   if (game.status !== 'IN_PROGRESS' && game.status !== 'LOCKED') {
     throw new Error('Only a started game can receive a result.');
   }
+  if (new Set([...game.teamA, ...game.teamB]).size !== 10) {
+    throw new Error('A result requires ten distinct players.');
+  }
 
-  const currentParticipants = new Set([...game.teamA, ...game.teamB]);
-  if (currentParticipants.size !== 10) throw new Error('A result requires ten distinct players.');
-  const creditedTeamA = game.creditedTeamA ?? game.teamA;
-  const creditedTeamB = game.creditedTeamB ?? game.teamB;
-  const creditedParticipants = new Set([...creditedTeamA, ...creditedTeamB]);
-  const partialParticipants = new Set([...currentParticipants]
-    .filter((playerId) => !creditedParticipants.has(playerId)));
-  const activeCount = session.players.filter(isPresent).length;
-  if (activeCount < 10) throw new Error('A completed 5v5 game requires ten present players.');
-  const creditShare = 10 / activeCount;
-
-  const players = session.players.map((player) => {
-    const playedFullGame = creditedParticipants.has(player.playerId);
-    const playedPartialGame = partialParticipants.has(player.playerId);
-    if (!isPresent(player) && !playedFullGame) return player;
-    if (playedPartialGame) {
-      const won = (winner === 'A' ? game.teamA : game.teamB).includes(player.playerId);
-      return {
-        ...player,
-        state: 'WAITING' as const,
-        fairnessCredit: player.fairnessCredit + creditShare,
-        lastResult: won ? 'WIN' as const : 'LOSS' as const,
-        lastGameId: game.id
-      };
-    }
-    if (!playedFullGame) {
-      return {
-        ...player,
-        fairnessCredit: player.fairnessCredit + creditShare,
-        consecutiveGamesSat: player.consecutiveGamesSat + 1
-      };
-    }
-
-    const won = (winner === 'A' ? creditedTeamA : creditedTeamB).includes(player.playerId);
-    return {
-      ...player,
-      state: player.state === 'CHECKED_OUT' ? 'CHECKED_OUT' as const : 'WAITING' as const,
-      fairnessCredit: player.fairnessCredit + creditShare - 1,
-      consecutiveGamesSat: 0,
-      gamesPlayed: player.gamesPlayed + 1,
-      wins: player.wins + (won ? 1 : 0),
-      losses: player.losses + (won ? 0 : 1),
-      lastResult: won ? 'WIN' as const : 'LOSS' as const,
-      lastGameId: game.id
-    };
-  });
-
+  const priorRun = latestWinningRun(session.games.filter((candidate) => candidate.id !== gameId));
+  const winningPlayers = winner === 'A' ? game.teamA : game.teamB;
+  const winnerStreak = priorRun && lineupKey(priorRun.playerIds) === lineupKey(winningPlayers)
+    ? priorRun.consecutiveWins + 1
+    : 1;
+  const players = updateFairnessCredits(session, game, winner);
   const games = session.games.map((candidate) => candidate.id === gameId
-    ? { ...candidate, status: 'COMPLETED' as const, winner, fairnessApplied: true, completedAt: now }
+    ? {
+      ...candidate,
+      status: 'COMPLETED' as const,
+      winner,
+      winnerStreak,
+      fairnessApplied: true,
+      completedAt: now
+    }
     : candidate);
 
   return {
@@ -232,6 +370,61 @@ export function recordGameResult(
       updatedAt: now
     }
   };
+}
+
+function latestWinningRun(gameHistory: PickupGame[]): StayTeam | null {
+  const completed = gameHistory.filter((game) => game.status === 'COMPLETED' && game.winner);
+  const latest = completed[completed.length - 1];
+  if (!latest?.winner) return null;
+
+  const playerIds = latest.winner === 'A' ? latest.teamA : latest.teamB;
+  const key = lineupKey(playerIds);
+  let consecutiveWins = 0;
+  for (let index = completed.length - 1; index >= 0; index -= 1) {
+    const game = completed[index];
+    const winningPlayers = game.winner === 'A' ? game.teamA : game.teamB;
+    if (lineupKey(winningPlayers) !== key) break;
+    consecutiveWins += 1;
+  }
+
+  return { playerIds: [...playerIds], side: latest.winner, consecutiveWins };
+}
+
+function buildTeammateHistory(games: PickupGame[]): Record<string, number> {
+  const history: Record<string, number> = {};
+  for (const game of games.filter((candidate) => Boolean(candidate.startedAt))) {
+    for (const [left, right] of [
+      ...teammatePairs(startedTeam(game, 'A')),
+      ...teammatePairs(startedTeam(game, 'B'))
+    ]) {
+      const key = pairKey(left, right);
+      history[key] = (history[key] ?? 0) + 1;
+    }
+  }
+  return history;
+}
+
+function startedTeam(game: PickupGame, team: 'A' | 'B'): string[] {
+  if (team === 'A') return game.creditedTeamA ?? game.teamA;
+  return game.creditedTeamB ?? game.teamB;
+}
+
+function teammatePairs(team: string[]): Array<[string, string]> {
+  const pairs: Array<[string, string]> = [];
+  for (let left = 0; left < team.length; left += 1) {
+    for (let right = left + 1; right < team.length; right += 1) {
+      pairs.push([team[left], team[right]]);
+    }
+  }
+  return pairs;
+}
+
+function pairKey(left: string, right: string): string {
+  return left < right ? `${left}|${right}` : `${right}|${left}`;
+}
+
+function lineupKey(playerIds: string[]): string {
+  return [...playerIds].sort().join('|');
 }
 
 function winnerScore(player: SessionPlayer): number {
@@ -255,54 +448,6 @@ function combinations<T>(values: T[], size: number): T[][] {
   };
   visit(0, []);
   return result;
-}
-
-function teamScore(
-  teamA: string[],
-  teamB: string[],
-  profiles: Map<string, PlayerProfile>,
-  recentGames: PickupGame[]
-): number {
-  const guardDifference = Math.abs(roleCount(teamA, profiles, 'Guard') - roleCount(teamB, profiles, 'Guard'));
-  const wingDifference = Math.abs(roleCount(teamA, profiles, 'Wing') - roleCount(teamB, profiles, 'Wing'));
-  const bigDifference = Math.abs(roleCount(teamA, profiles, 'Big') - roleCount(teamB, profiles, 'Big'));
-  const repeats = repeatScore(teamA, teamB, recentGames);
-
-  return guardDifference * TEAM_BALANCING_WEIGHTS.guardDifference
-    + wingDifference * TEAM_BALANCING_WEIGHTS.wingDifference
-    + bigDifference * TEAM_BALANCING_WEIGHTS.bigDifference
-    + repeats.teammates * TEAM_BALANCING_WEIGHTS.recentTeammateRepeat
-    + repeats.opponents * TEAM_BALANCING_WEIGHTS.recentOpponentRepeat;
-}
-
-function roleCount(team: string[], profiles: Map<string, PlayerProfile>, role: PlayerRole): number {
-  return team.filter((id) => profiles.get(id)!.roles.includes(role)).length;
-}
-
-function repeatScore(teamA: string[], teamB: string[], games: PickupGame[]): { teammates: number; opponents: number } {
-  let teammates = 0;
-  let opponents = 0;
-  const teamASet = new Set(teamA);
-
-  for (const game of games) {
-    const previousA = new Set(game.teamA);
-    const previousB = new Set(game.teamB);
-    for (let leftIndex = 0; leftIndex < teamA.length + teamB.length; leftIndex += 1) {
-      const all = [...teamA, ...teamB];
-      for (let rightIndex = leftIndex + 1; rightIndex < all.length; rightIndex += 1) {
-        const left = all[leftIndex];
-        const right = all[rightIndex];
-        const togetherNow = teamASet.has(left) === teamASet.has(right);
-        const togetherBefore = previousA.has(left) && previousA.has(right)
-          || previousB.has(left) && previousB.has(right);
-        const opposedBefore = previousA.has(left) && previousB.has(right)
-          || previousB.has(left) && previousA.has(right);
-        if (togetherNow && togetherBefore) teammates += 1;
-        if (!togetherNow && opposedBefore) opponents += 1;
-      }
-    }
-  }
-  return { teammates, opponents };
 }
 
 function teamKey(result: TeamBalanceResult): string {

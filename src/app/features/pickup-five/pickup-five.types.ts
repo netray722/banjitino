@@ -48,6 +48,8 @@ export interface PickupGame {
   creditedTeamA?: string[];
   creditedTeamB?: string[];
   replacements?: GameReplacement[];
+  stayTeam?: 'A' | 'B' | null;
+  winnerStreak?: number;
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;
@@ -68,6 +70,7 @@ export interface PickupSession {
   games: PickupGame[];
   tieBreakCursor: number;
   nextTieBreakOrder: number;
+  teammateHistory?: Record<string, number>;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,4 +89,15 @@ export interface TeamBalanceResult {
   teamB: string[];
   evaluatedSplits: number;
   score: number;
+}
+
+export interface StayTeam {
+  playerIds: string[];
+  side: 'A' | 'B';
+  consecutiveWins: number;
+}
+
+export interface TeamSelectionResult {
+  selectedPlayerIds: string[];
+  stayTeam: StayTeam | null;
 }

@@ -8,6 +8,17 @@
         <h1>{{ session()?.name ?? 'Start a run' }}</h1>
       </div>
     </div>
+    <nav class="command-bar" aria-label="Pickup Five controls">
+      <button type="button" [class.active]="activeTab() === 'court'" (click)="showTab('court')">
+        <span>01</span><strong>Court</strong><small>Teams & game controls</small>
+      </button>
+      <button type="button" class="check-in-command" (click)="openCheckIn(checkInDialog)">
+        <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
+      </button>
+      <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
+        <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
+      </button>
+    </nav>
     <div class="session-summary">
       <span class="status-dot" [class.live]="session()?.status === 'ACTIVE'"></span>
       <strong>{{ session()?.status ?? 'READY' }}</strong>
@@ -15,18 +26,6 @@
       @if (courtGame(); as game) { <b>Game {{ game.number }} · {{ game.status }}</b> }
     </div>
   </header>
-
-  <nav class="command-bar" aria-label="Pickup Five controls">
-    <button type="button" [class.active]="activeTab() === 'court'" (click)="showTab('court')">
-      <span>01</span><strong>Court</strong><small>Teams & game controls</small>
-    </button>
-    <button type="button" class="check-in-command" (click)="openCheckIn(checkInDialog)">
-      <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
-    </button>
-    <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
-      <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
-    </button>
-  </nav>
 
   @if (pickup.notice()) {
     <aside class="toast page-toast" [attr.data-tone]="pickup.noticeTone()" [attr.role]="pickup.noticeTone() === 'error' ? 'alert' : 'status'" [attr.aria-live]="pickup.noticeTone() === 'error' ? 'assertive' : 'polite'">
@@ -60,7 +59,7 @@
                 </header>
 
                 @if (game.status === 'PROPOSED') {
-                  <p class="swap-hint">To swap teams, tap one player on each side. Replace uses the first waiting player.</p>
+                  <p class="swap-hint">{{ game.stayTeam ? 'The one-win team stays together. Five challengers were selected by fair queue order.' : 'To swap teams, tap one player on each side. Replace uses the first waiting player.' }}</p>
                 }
 
                 <div class="teams-grid">
@@ -68,11 +67,11 @@
                     <h3><span>A</span> Team A</h3>
                     @for (player of teamPlayers(game, 'A'); track player.id) {
                       <div class="court-player" [class.selected]="selectedSwapPlayerId() === player.id">
-                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED'" (click)="selectSwapPlayer(player.id)">
+                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED' || !!game.stayTeam" (click)="selectSwapPlayer(player.id)">
                           <strong>{{ player.playerNumber }}</strong>
                           <span><b>{{ player.displayName }}</b><small>{{ primaryRole(player) }} @if (isPartialSub(game, player.id)) { · Partial sub }</small></span>
                         </button>
-                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0" (click)="replacePlayer(player.id)">Replace</button>
+                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0 || (game.status === 'PROPOSED' && !!game.stayTeam)" (click)="replacePlayer(player.id)">Replace</button>
                       </div>
                     }
                   </section>
@@ -81,11 +80,11 @@
                     <h3><span>B</span> Team B</h3>
                     @for (player of teamPlayers(game, 'B'); track player.id) {
                       <div class="court-player" [class.selected]="selectedSwapPlayerId() === player.id">
-                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED'" (click)="selectSwapPlayer(player.id)">
+                        <button class="player-main" type="button" [disabled]="game.status !== 'PROPOSED' || !!game.stayTeam" (click)="selectSwapPlayer(player.id)">
                           <strong>{{ player.playerNumber }}</strong>
                           <span><b>{{ player.displayName }}</b><small>{{ primaryRole(player) }} @if (isPartialSub(game, player.id)) { · Partial sub }</small></span>
                         </button>
-                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0" (click)="replacePlayer(player.id)">Replace</button>
+                        <button class="replace-action" type="button" [disabled]="waitingPlayers().length === 0 || (game.status === 'PROPOSED' && !!game.stayTeam)" (click)="replacePlayer(player.id)">Replace</button>
                       </div>
                     }
                   </section>
@@ -93,7 +92,7 @@
 
                 @if (game.status === 'PROPOSED') {
                   <footer class="game-actions proposal-actions">
-                    <button type="button" (click)="pickup.rebalanceGame()">Rebalance same ten</button>
+                    <button type="button" [disabled]="!!game.stayTeam" (click)="pickup.rebalanceGame()">Rebalance same ten</button>
                     <button class="danger-action" type="button" (click)="cancelGame()">Cancel</button>
                     <button class="primary-action" type="button" (click)="pickup.startGame()">Start game</button>
                   </footer>
