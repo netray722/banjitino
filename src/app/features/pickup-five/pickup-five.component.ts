@@ -4,6 +4,7 @@ import { LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/ang
 
 import { selectNextPlayers } from './pickup-five-scheduling';
 import { PickupFiveStateService } from './pickup-five-state.service';
+import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
 import { PickupGame, PickupSession, PlayerProfile, PlayerRole, SessionPlayerState } from './pickup-five.types';
 
 type PickupTab = 'court' | 'organizer';
@@ -33,6 +34,7 @@ export class PickupFiveComponent {
   protected readonly selectedHistorySessionId = signal<string | null>(this.pickup.state().activeSessionId);
   protected readonly selectedGame = signal<PickupGame | null>(null);
   protected readonly roles: PlayerRole[] = ['Guard', 'Wing', 'Big'];
+  protected readonly maximumTestPlayerCount = NBA_TEST_PLAYERS.length;
   protected readonly defaultSessionName = new Intl.DateTimeFormat('en-US', {
     month: 'long',
     day: '2-digit',
@@ -188,8 +190,8 @@ export class PickupFiveComponent {
     this.activeTab.set('organizer');
   }
 
-  protected loadTestData(): void {
-    const sessionId = this.pickup.loadTestData();
+  protected loadTestData(playerCount: string): void {
+    const sessionId = this.pickup.loadTestData(Number(playerCount));
     if (sessionId) this.selectedHistorySessionId.set(sessionId);
   }
 
