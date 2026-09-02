@@ -189,22 +189,22 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .management-row { min-height: 72px; display: grid; grid-template-columns: 92px minmax(180px, 1fr) 150px 116px 100px 110px 48px; align-items: end; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .management-row input, .management-row select, .management-row button { min-height: 48px; }
 .management-row > button:not(.icon-action) { padding-inline: 10px; }
-.career-rate { min-height: 48px; display: grid; align-content: center; gap: 3px; padding: 5px 10px; border: 1px solid var(--border); background: var(--surface-soft); font-variant-numeric: tabular-nums; }
-.career-rate small { color: var(--muted); font-size: .58rem; font-weight: 900; letter-spacing: .05em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
-.career-rate strong { font-family: var(--display-font); font-size: 1.1rem; line-height: 1; }
+.career-field { min-width: 0; }
+.career-field > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.career-rate { min-height: 48px; display: grid; align-content: center; padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); font-family: var(--display-font); font-size: 1.1rem; font-variant-numeric: tabular-nums; line-height: 1; }
 .management-row .state-chip { width: 100%; min-height: 48px; align-self: end; }
-.history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.history-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
 .history-row { min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; border-top: 1px solid var(--border); }
 .history-row small { color: var(--muted); }
 .history-row button { min-height: 44px; padding-inline: 12px; }
-.history-select { min-width: 0; min-height: 63px !important; display: grid; grid-template-columns: minmax(110px, 1fr) 1fr auto; align-items: center; gap: 10px; padding: 8px 10px 8px 2px !important; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; }
-.history-select:hover { background: var(--surface-soft); color: inherit; }
+.pickup-shell .history-select { min-width: 0; min-height: 63px !important; display: grid; grid-template-columns: minmax(110px, 1fr) 1fr auto; align-items: center; gap: 10px; padding: 8px 10px 8px 2px !important; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; }
+.pickup-shell .history-select:hover:not(:disabled) { border: 0; background: var(--surface-soft); color: inherit; }
 .session-history-row.selected { box-shadow: inset 4px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
 .session-history-row.selected .history-select { padding-left: 10px !important; }
 .icon-action { width: 48px; min-height: 48px !important; display: grid; place-items: center; padding: 0 !important; }
 .icon-action svg, .session-menu svg { width: 20px; height: 20px; }
-.session-menu { position: relative; justify-self: end; }
-.session-menu summary { width: 48px; min-height: 48px; display: grid; place-items: center; border: 1px solid var(--border); cursor: pointer; list-style: none; }
+.session-menu { height: 100%; position: relative; justify-self: end; }
+.session-menu summary { width: 48px; min-height: 63px; display: grid; place-items: center; border: 0; border-left: 1px solid var(--border); cursor: pointer; list-style: none; }
 .session-menu summary::-webkit-details-marker { display: none; }
 .session-menu[open] summary { border-color: var(--accent); color: var(--accent-readable); }
 .session-menu-popover { width: 160px; position: absolute; z-index: 10; top: calc(100% + 5px); right: 0; display: grid; padding: 0; border: 1px solid var(--border); background: var(--surface-raised); }
@@ -285,7 +285,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .roster-row { grid-template-columns: 58px 1fr; }
   .roster-row .state-chip, .roster-row > button { grid-column: 2; }
   .management-row { grid-template-columns: 80px 1fr; }
-  .management-row > label:nth-child(3), .management-row .career-rate, .management-row .state-chip, .management-row > button { grid-column: 1 / -1; }
+  .management-row > label:nth-child(3), .management-row .career-field, .management-row .state-chip, .management-row > button { grid-column: 1 / -1; }
   .history-select { grid-template-columns: 1fr; gap: 2px; }
   .history-row > .history-select { grid-column: 1; grid-row: 1; }
   .history-row > .icon-action, .history-row > .session-menu { grid-column: 2; grid-row: 1; }
