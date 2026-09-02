@@ -175,7 +175,7 @@ export class PickupFiveComponent {
 
   protected resetAllData(): void {
     if (!this.view?.confirm(
-      'Clear all Pickup Five data from this browser? Every player, session, and game will be permanently removed.'
+      'Clear all locally saved Pickup Five data? Every player, session, and game will be permanently removed.'
     )) return;
     this.pickup.resetAllData();
     this.selectedHistorySessionId.set(null);

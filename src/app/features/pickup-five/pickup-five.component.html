@@ -160,7 +160,7 @@
         <label><span>New session name</span><input #sessionName type="text" value="Today’s Pickup Run" autocomplete="off"></label>
         <button type="button" (click)="createSession(sessionName.value)">Create new</button>
         <button class="primary-action" type="button" [disabled]="!session() || session()?.status === 'ACTIVE' || session()?.status === 'ENDED' || presentCount() < 10" (click)="startSession()">Start session</button>
-        <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End current</button>
+        <button class="danger-action" type="button" [disabled]="!session() || session()?.status === 'ENDED'" (click)="endSession()">End session</button>
       </section>
 
       <section class="control-card player-management">
@@ -212,7 +212,7 @@
       </div>
 
       <section class="control-card data-management">
-        <div><p class="eyebrow">This browser only</p><h3>Clear Pickup Five data</h3><p>Remove every registered player, session, game, and queue record. Other website settings are not affected.</p></div>
+        <div><p class="eyebrow">Local data</p><h3>Clear Pickup Five data</h3><p>Remove every locally saved player, session, game, and queue record. Other website settings are not affected.</p></div>
         <button class="danger-action" type="button" [disabled]="pickup.state().players.length === 0 && sessionHistory().length === 0" (click)="resetAllData()">Clear all data</button>
       </section>
     </section>
