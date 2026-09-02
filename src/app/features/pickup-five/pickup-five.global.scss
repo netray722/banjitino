@@ -62,30 +62,31 @@ body:has(app-pickup-five) {
 }
 
 .app-bar {
-  min-height: 76px;
+  min-height: 68px;
   position: sticky;
   z-index: 20;
   top: 0;
   display: grid;
   grid-template-columns: minmax(190px, auto) minmax(420px, 1fr) auto;
   align-items: center;
-  gap: 18px;
-  padding: 8px 0 10px;
+  gap: 14px;
+  padding: 6px 0 8px;
   border-bottom: 1px solid var(--border);
   background: var(--page-bg);
 }
 
 .app-identity, .app-identity > div { min-width: 0; }
 .app-identity { display: flex; align-items: center; gap: 12px; }
-.app-mark { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--display-font); font-size: 1.05rem; font-weight: 800; }
+.app-mark { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--display-font); font-size: 1rem; font-weight: 800; }
 .app-identity p { margin-bottom: 1px; color: var(--accent-readable); font-size: .62rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .app-identity h1 { margin-bottom: 0; overflow: hidden; font-size: clamp(1.5rem, 2.6vw, 2.5rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
 .session-summary { display: flex; align-items: center; justify-content: flex-end; gap: 12px; color: var(--muted); font-size: .72rem; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
 .session-summary b { padding: 10px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-soft); color: var(--ink); }
 
 .command-bar {
-  width: 100%;
+  width: min(100%, 540px);
   min-width: 0;
+  justify-self: center;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border: 1px solid var(--border);
@@ -93,11 +94,11 @@ body:has(app-pickup-five) {
   overflow: hidden;
 }
 
-.command-bar button { min-width: 0; min-height: 58px; display: grid; grid-template-columns: 26px auto; grid-template-rows: auto auto; align-content: center; justify-content: center; column-gap: 8px; padding: 6px 10px; border: 0; border-right: 1px solid var(--border); border-radius: 0; background: var(--surface-raised); text-align: left; }
+.command-bar button { min-width: 0; min-height: 46px; display: grid; grid-template-columns: 22px auto; grid-template-rows: auto auto; align-content: center; justify-content: center; column-gap: 6px; padding: 4px 8px; border: 0; border-right: 1px solid var(--border); border-radius: 0; background: var(--surface-raised); text-align: left; }
 .command-bar button:last-child { border-right: 0; }
-.command-bar button > span { grid-row: 1 / 3; align-self: center; color: var(--accent-readable); font-family: var(--display-font); font-size: 1rem; }
-.command-bar button strong { overflow: hidden; font-size: .86rem; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; }
-.command-bar button small { overflow: hidden; color: var(--muted); font-size: .6rem; text-overflow: ellipsis; }
+.command-bar button > span { grid-row: 1 / 3; align-self: center; color: var(--accent-readable); font-family: var(--display-font); font-size: .9rem; }
+.command-bar button strong { overflow: hidden; font-size: .78rem; letter-spacing: .05em; text-overflow: ellipsis; text-transform: uppercase; }
+.command-bar button small { overflow: hidden; color: var(--muted); font-size: .55rem; text-overflow: ellipsis; }
 .command-bar button.active { background: var(--accent); color: var(--accent-ink); }
 .command-bar button.active small { color: color-mix(in srgb, var(--accent-ink) 76%, transparent); }
 .command-bar button.active > span { color: var(--accent-ink); }
@@ -208,12 +209,18 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .history-row button { min-height: 44px; padding-inline: 12px; }
 .pickup-shell .history-select { min-width: 0; min-height: 63px !important; display: grid; grid-template-columns: minmax(110px, 1fr) 1fr auto; align-items: center; gap: 10px; padding: 8px 10px 8px 2px !important; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; }
 .pickup-shell .history-select:hover:not(:disabled) { border: 0; background: transparent; color: inherit; }
-.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "session-name session-date" "session-meta session-date"; column-gap: 16px; row-gap: 2px; }
+.game-history-row .history-select { grid-template-columns: 84px minmax(0, 1fr) 154px; grid-template-areas: "game-number game-result game-meta"; column-gap: 10px; }
+.game-history-number { grid-area: game-number; white-space: nowrap; }
+.game-history-result { grid-area: game-result; white-space: nowrap; }
+.game-history-meta { grid-area: game-meta; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.session-history-row { min-height: 72px; border-left: 3px solid transparent; border-radius: 0; }
+.session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "session-name session-name" "session-meta session-date"; column-gap: 16px; row-gap: 3px; }
 .session-history-row .history-select strong { min-width: 0; grid-area: session-name; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .session-history-row .history-select span { grid-area: session-meta; }
 .session-history-row .history-select small { grid-area: session-date; white-space: nowrap; }
-.session-history-row.selected { box-shadow: inset 4px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-.session-history-row.selected .history-select { padding-left: 10px !important; }
+.session-history-row.selected { border-left-color: var(--accent); background: transparent; box-shadow: none; }
+.session-history-row.selected .history-select { padding-left: 12px !important; }
+.session-history-row.selected .history-select strong { color: var(--accent-readable); }
 .icon-action { width: 48px; min-height: 48px !important; display: grid; place-items: center; padding: 0 !important; }
 .history-row > .icon-action { border: 0; background: transparent; }
 .icon-action svg, .session-menu svg { width: 20px; height: 20px; }
@@ -268,7 +275,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .app-bar { min-height: 64px; grid-template-columns: minmax(150px, auto) minmax(300px, 1fr) auto; gap: 10px; }
   .app-mark { width: 44px; height: 44px; }
   .session-summary > span:not(.status-dot) { display: none; }
-  .command-bar button { min-height: 54px; }
+  .command-bar button { min-height: 44px; }
   .command-bar button small { display: none; }
   .court-dashboard { grid-template-columns: minmax(0, 1fr) 300px; }
   .teams-grid { padding-inline: 12px; }
@@ -306,6 +313,8 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .management-row { grid-template-columns: 80px 1fr; }
   .management-row > label:nth-child(3), .management-row .career-field, .management-row .state-chip, .management-row > button { grid-column: 1 / -1; }
   .pickup-shell .history-select { grid-template-columns: 1fr; gap: 2px; }
+  .game-history-row .history-select { grid-template-areas: "game-number" "game-result" "game-meta"; }
+  .game-history-meta { text-align: left; }
   .session-history-row .history-select { grid-template-columns: 1fr; grid-template-areas: "session-name" "session-meta" "session-date"; }
   .history-row > .history-select { grid-column: 1; grid-row: 1; }
   .history-row > .icon-action, .history-row > .session-menu { grid-column: 2; grid-row: 1; }
