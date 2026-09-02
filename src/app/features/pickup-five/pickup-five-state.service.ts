@@ -116,7 +116,7 @@ export class PickupFiveStateService {
         ? { ...game, status: 'CANCELLED' as const }
         : game),
       updatedAt: now
-    }), 'Session ended. History remains on this device.');
+    }), 'Session ended. History was saved.');
   }
 
   addPlayerAndCheckIn(playerNumberValue: string, displayName: string, role: PlayerRole): void {
@@ -297,7 +297,7 @@ export class PickupFiveStateService {
   }
 
   resetAllData(): void {
-    this.commit(() => initialState(), 'All Pickup Five data cleared from this browser.');
+    this.commit(() => initialState(), 'All locally saved Pickup Five data was cleared.');
   }
 
   generateGame(): void {

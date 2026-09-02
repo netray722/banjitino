@@ -150,8 +150,10 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
 .result-actions { grid-template-columns: 1fr minmax(150px, .35fr) minmax(150px, .35fr); align-items: center; }
 .result-actions p { margin-bottom: 0; }
 .result-actions p span { display: block; margin-top: 3px; color: var(--muted); font-size: .78rem; }
-.team-a-win, .team-b-win { min-height: 68px; border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
-.team-b-win { border-color: var(--team-b); background: var(--team-b); color: var(--team-b-ink); }
+.pickup-shell .result-actions .team-a-win { min-height: 68px; border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.pickup-shell .result-actions .team-b-win { min-height: 68px; border-color: var(--team-b); background: var(--team-b); color: var(--team-b-ink); }
+.pickup-shell .result-actions .team-a-win:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 86%, white); color: var(--accent-ink); }
+.pickup-shell .result-actions .team-b-win:hover:not(:disabled) { background: color-mix(in srgb, var(--team-b) 86%, white); color: var(--team-b-ink); }
 
 .standby-card { min-height: calc(100dvh - 210px); display: grid; place-items: center; align-content: center; padding: 36px; text-align: center; }
 .standby-card > span { font-size: 4rem; }
@@ -258,6 +260,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .court-player { grid-template-columns: minmax(0, 1fr) 96px; }
   .player-main { grid-template-columns: 42px 1fr; }
   .session-admin { grid-template-columns: 1fr 1fr; }
+  .history-grid { grid-template-columns: 1fr; }
   .management-row { grid-template-columns: 82px minmax(0, 1fr) 130px 116px; }
   .management-row .state-chip { grid-column: 2; }
   .management-row > button:not(.icon-action) { grid-column: 3; }
@@ -269,7 +272,7 @@ body:has(.check-in-dialog[open]) .page-toast { display: none; }
   .session-summary { flex-wrap: wrap; justify-content: flex-end; }
   .command-bar button { grid-template-columns: auto; grid-template-rows: auto auto; text-align: center; }
   .command-bar button > span, .command-bar button small { display: none; }
-  .quick-start, .court-dashboard, .history-grid { grid-template-columns: 1fr; }
+  .quick-start, .court-dashboard { grid-template-columns: 1fr; }
   .quick-start { min-height: auto; padding: 28px 20px; }
   .queue-panel { position: static; max-height: none; }
   .teams-grid { grid-template-columns: 1fr; }
