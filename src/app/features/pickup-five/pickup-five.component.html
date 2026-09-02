@@ -8,6 +8,17 @@
         <h1>{{ session()?.name ?? 'Start a run' }}</h1>
       </div>
     </div>
+    <nav class="command-bar" aria-label="Pickup Five controls">
+      <button type="button" [class.active]="activeTab() === 'court'" (click)="showTab('court')">
+        <span>01</span><strong>Court</strong><small>Teams & game controls</small>
+      </button>
+      <button type="button" class="check-in-command" (click)="openCheckIn(checkInDialog)">
+        <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
+      </button>
+      <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
+        <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
+      </button>
+    </nav>
     <div class="session-summary">
       <span class="status-dot" [class.live]="session()?.status === 'ACTIVE'"></span>
       <strong>{{ session()?.status ?? 'READY' }}</strong>
@@ -15,18 +26,6 @@
       @if (courtGame(); as game) { <b>Game {{ game.number }} · {{ game.status }}</b> }
     </div>
   </header>
-
-  <nav class="command-bar" aria-label="Pickup Five controls">
-    <button type="button" [class.active]="activeTab() === 'court'" (click)="showTab('court')">
-      <span>01</span><strong>Court</strong><small>Teams & game controls</small>
-    </button>
-    <button type="button" class="check-in-command" (click)="openCheckIn(checkInDialog)">
-      <span>02</span><strong>Check in</strong><small>Add or leave quickly</small>
-    </button>
-    <button type="button" [class.active]="activeTab() === 'organizer'" (click)="showTab('organizer')">
-      <span>03</span><strong>Organizer</strong><small>Start, end & history</small>
-    </button>
-  </nav>
 
   @if (pickup.notice()) {
     <aside class="toast page-toast" [attr.data-tone]="pickup.noticeTone()" [attr.role]="pickup.noticeTone() === 'error' ? 'alert' : 'status'" [attr.aria-live]="pickup.noticeTone() === 'error' ? 'assertive' : 'polite'">
