@@ -33,3 +33,17 @@
 - Keep lifecycle hooks small by delegating work to well-named methods, and implement the corresponding lifecycle interfaces.
 - Keep components focused on presentation; move reusable transformations and independent business logic into descriptive feature files.
 - Keep template expressions straightforward. Move complex derived presentation logic into `computed()` values or focused component methods.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in GitHub Issues for `netray722/banjitino`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default five-role triage vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repository uses the single-context layout. See `docs/agents/domain.md`.
