@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { BrowserPickupFiveStorage, PickupFiveStorage } from './pickup-five-storage.service';
+import { BrowserPickupFiveStorage } from './pickup-five-storage.service';
 import { PickupFiveStateService } from './pickup-five-state.service';
 import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
 import {
   GameStatus,
   PickupFiveState,
+  PickupFiveStorage,
   PickupGame,
   PickupSession,
   PlayerProfile,

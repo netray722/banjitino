@@ -1,11 +1,11 @@
 import { isPresent } from './pickup-five-queue';
 import { lineupKey, latestWinningRun } from './pickup-five-winning-run';
-import { PickupGame, PickupSession, SessionPlayer } from './pickup-five.types';
+import { PickupGame, PickupSession, SessionPlayer, TeamSide } from './pickup-five.types';
 
 export function updateFairnessCredits(
   session: PickupSession,
   game: PickupGame,
-  winner: 'A' | 'B'
+  winner: TeamSide
 ): SessionPlayer[] {
   const currentParticipants = new Set([...game.teamA, ...game.teamB]);
   const creditedTeamA = game.creditedTeamA ?? game.teamA;
@@ -57,7 +57,7 @@ export function updateFairnessCredits(
 export function recordGameResult(
   session: PickupSession,
   gameId: string,
-  winner: 'A' | 'B',
+  winner: TeamSide,
   now: string
 ): { session: PickupSession; applied: boolean } {
   const game = session.games.find((candidate) => candidate.id === gameId);

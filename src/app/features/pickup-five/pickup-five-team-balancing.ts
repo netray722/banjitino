@@ -1,17 +1,12 @@
-import { PickupGame, PickupSession, PlayerProfile, TeamBalanceResult } from './pickup-five.types';
+import {
+  SESSION_STRENGTH_FULL_WEIGHT_GAMES,
+  SESSION_STRENGTH_MAX_WEIGHT,
+  TEAM_BUILDING_WEIGHTS
+} from './pickup-five.constants';
+import { PickupGame, PickupSession, PlayerProfile, TeamBalanceResult, TeamSide } from './pickup-five.types';
 import { latestWinningRun } from './pickup-five-winning-run';
 
-export const TEAM_BUILDING_WEIGHTS = {
-  strengthImbalance: 1000,
-  dominantFive: 5000,
-  dominantFour: 1200,
-  highWinRateStack: 150,
-  teammateRepeat: 6,
-  recentTeammate: [18, 8, 3]
-} as const;
-
-const SESSION_STRENGTH_MAX_WEIGHT = 0.45;
-const SESSION_STRENGTH_FULL_WEIGHT_GAMES = 8;
+export { TEAM_BUILDING_WEIGHTS } from './pickup-five.constants';
 
 export function estimatePlayerStrength(
   playerId: string,
@@ -147,7 +142,7 @@ function buildTeammateHistory(games: PickupGame[]): Record<string, number> {
   return history;
 }
 
-function startedTeam(game: PickupGame, team: 'A' | 'B'): string[] {
+function startedTeam(game: PickupGame, team: TeamSide): string[] {
   return team === 'A' ? game.creditedTeamA ?? game.teamA : game.creditedTeamB ?? game.teamB;
 }
 

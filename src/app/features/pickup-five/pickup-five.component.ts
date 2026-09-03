@@ -14,9 +14,7 @@ import {
 import { selectNextPlayers } from './pickup-five-scheduling';
 import { PickupFiveStateService } from './pickup-five-state.service';
 import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
-import { PickupGame, PickupSession, PlayerProfile, PlayerRole, SessionPlayerState } from './pickup-five.types';
-
-type PickupTab = 'court' | 'organizer';
+import type { PickupGame, PickupSession, PickupTab, PlayerProfile, PlayerRole, SessionPlayerState, TeamSide } from './pickup-five.types';
 
 @Component({
   selector: 'app-pickup-five',
@@ -235,7 +233,7 @@ export class PickupFiveComponent {
     this.pickup.cancelProposedGame();
   }
 
-  protected recordWinner(winner: 'A' | 'B'): void {
+  protected recordWinner(winner: TeamSide): void {
     if (!this.view?.confirm(`Record Team ${this.teamName(winner)} as the winner?`)) return;
     this.pickup.recordWinner(winner);
   }
@@ -254,7 +252,7 @@ export class PickupFiveComponent {
     this.selectedSwapPlayerId.set(null);
   }
 
-  protected teamPlayers(game: PickupGame, team: 'A' | 'B'): PlayerProfile[] {
+  protected teamPlayers(game: PickupGame, team: TeamSide): PlayerProfile[] {
     return (team === 'A' ? game.teamA : game.teamB)
       .map((id) => this.pickup.profile(id))
       .filter((player): player is PlayerProfile => Boolean(player));

@@ -1,6 +1,5 @@
-import { PickupFiveState, PickupGame, PickupSession, SessionPlayer } from './pickup-five.types';
-
-const DEFAULT_PIN = '2468';
+import { DEFAULT_ORGANIZER_PIN } from './pickup-five.constants';
+import { PickupFiveState, PickupGame, PickupSession, SessionPlayer, TeamSide } from './pickup-five.types';
 
 export function createInitialState(): PickupFiveState {
   return {
@@ -9,7 +8,7 @@ export function createInitialState(): PickupFiveState {
     activeSessionId: null,
     players: [],
     sessions: [],
-    organizerPinHash: hashPin(DEFAULT_PIN)
+    organizerPinHash: hashPin(DEFAULT_ORGANIZER_PIN)
   };
 }
 
@@ -31,7 +30,7 @@ export function createSessionPlayer(playerId: string, tieBreakOrder: number): Se
 
 export function createTestSession(sessionId: string, playerIds: string[], now: Date): PickupSession {
   const timestamp = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000).toISOString();
-  const gameData: Array<{ teamA: number[]; teamB: number[]; winner: 'A' | 'B'; start: number; duration: number }> = [
+  const gameData: Array<{ teamA: number[]; teamB: number[]; winner: TeamSide; start: number; duration: number }> = [
     { teamA: [0, 1, 2, 3, 4], teamB: [5, 6, 7, 8, 9], winner: 'A', start: 85, duration: 18 },
     { teamA: [0, 2, 5, 7, 8], teamB: [1, 3, 4, 6, 9], winner: 'B', start: 60, duration: 16 },
     { teamA: [1, 2, 4, 6, 8], teamB: [0, 3, 5, 7, 9], winner: 'A', start: 35, duration: 21 }
