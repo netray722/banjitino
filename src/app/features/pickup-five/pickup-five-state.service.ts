@@ -28,16 +28,21 @@ import {
 import { createId, createInitialState } from './pickup-five-state.factory';
 import { BrowserPickupFiveStorage } from './pickup-five-storage.service';
 import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
-import { PickupFiveState, PickupSession, PlayerProfile, PlayerRole } from './pickup-five.types';
+import { PickupFiveState, PickupSession, PlayerProfile, PlayerRole, TeamSide } from './pickup-five.types';
 
 @Injectable({ providedIn: 'root' })
 export class PickupFiveStateService {
   private readonly storage = inject(BrowserPickupFiveStorage);
 
-  readonly state = signal(this.storage.load() ?? createInitialState());
-  readonly notice = signal('');
-  readonly noticeTone = signal<'info' | 'error'>('info');
-  readonly noticeSequence = signal(0);
+  private readonly stateSource = signal(this.storage.load() ?? createInitialState());
+  private readonly noticeSource = signal('');
+  private readonly noticeToneSource = signal<'info' | 'error'>('info');
+  private readonly noticeSequenceSource = signal(0);
+
+  readonly state = this.stateSource.asReadonly();
+  readonly notice = this.noticeSource.asReadonly();
+  readonly noticeTone = this.noticeToneSource.asReadonly();
+  readonly noticeSequence = this.noticeSequenceSource.asReadonly();
   readonly players = computed(() => this.state().players
     .filter((player) => !player.archivedAt)
     .slice()
@@ -207,7 +212,7 @@ export class PickupFiveStateService {
     this.updateSession(startPickupGame, 'Game started and locked.');
   }
 
-  recordWinner(winner: 'A' | 'B'): void {
+  recordWinner(winner: TeamSide): void {
     this.updateSession(
       (session, now) => recordPickupWinner(session, winner, this.state().players, this.state().sessions, now),
       `Team ${winner === 'A' ? 'White' : 'Black'} recorded as the winner. The next game is ready when enough players are waiting.`
@@ -227,7 +232,7 @@ export class PickupFiveStateService {
   }
 
   clearNotice(): void {
-    this.notice.set('');
+    this.noticeSource.set('');
   }
 
   private updateSession(
@@ -250,7 +255,7 @@ export class PickupFiveStateService {
     const visibleState = this.state();
     const storedState = this.storage.load() ?? visibleState;
     if (storedState.revision !== visibleState.revision) {
-      this.state.set(storedState);
+      this.stateSource.set(storedState);
       this.showError('Newer session data was found and reloaded. Try the action again.');
       return;
     }
@@ -258,20 +263,20 @@ export class PickupFiveStateService {
     try {
       const next = { ...update(visibleState), revision: visibleState.revision + 1 };
       this.storage.save(next, visibleState.revision);
-      this.state.set(next);
-      this.notice.set(successMessage);
-      this.noticeTone.set('info');
-      this.noticeSequence.update((sequence) => sequence + 1);
+      this.stateSource.set(next);
+      this.noticeSource.set(successMessage);
+      this.noticeToneSource.set('info');
+      this.noticeSequenceSource.update((sequence) => sequence + 1);
     } catch (error) {
       const latest = this.storage.load();
-      if (latest) this.state.set(latest);
+      if (latest) this.stateSource.set(latest);
       this.showError(error instanceof Error ? error.message : 'The action could not be completed.');
     }
   }
 
   private showError(message: string): void {
-    this.notice.set(message);
-    this.noticeTone.set('error');
-    this.noticeSequence.update((sequence) => sequence + 1);
+    this.noticeSource.set(message);
+    this.noticeToneSource.set('error');
+    this.noticeSequenceSource.update((sequence) => sequence + 1);
   }
 }

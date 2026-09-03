@@ -1,21 +1,15 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 
-import { PickupFiveState } from './pickup-five.types';
-
-const STORAGE_KEY = 'banjitino.pickup-five.v1';
-
-export interface PickupFiveStorage {
-  load(): PickupFiveState | null;
-  save(state: PickupFiveState, expectedRevision: number): void;
-}
+import { PICKUP_FIVE_STORAGE_KEY } from './pickup-five.constants';
+import { PickupFiveState, PickupFiveStorage } from './pickup-five.types';
 
 @Injectable({ providedIn: 'root' })
 export class BrowserPickupFiveStorage implements PickupFiveStorage {
   private readonly view = inject(DOCUMENT).defaultView;
 
   load(): PickupFiveState | null {
-    const raw = this.view?.localStorage.getItem(STORAGE_KEY);
+    const raw = this.view?.localStorage.getItem(PICKUP_FIVE_STORAGE_KEY);
     if (!raw) return null;
 
     try {
@@ -32,7 +26,7 @@ export class BrowserPickupFiveStorage implements PickupFiveStorage {
     if (current && current.revision !== expectedRevision) {
       throw new Error('This session changed in another tab. The latest data has been reloaded.');
     }
-    this.view.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    this.view.localStorage.setItem(PICKUP_FIVE_STORAGE_KEY, JSON.stringify(state));
   }
 }
 

@@ -1,16 +1,8 @@
-import { PickupGame, PickupSession, PlayerProfile, PlayerRole, SessionPlayerState } from './pickup-five.types';
-
-const STATUS_LABELS: Record<SessionPlayerState, string> = {
-  REGISTERED: 'Registered',
-  WAITING: 'Waiting',
-  PLAYING: 'Playing',
-  LEAVING_AFTER_GAME: 'Leaving after game',
-  CHECKED_OUT: 'Checked out',
-  NO_SHOW: 'No-show'
-};
+import { PLAYER_STATUS_LABELS } from './pickup-five.constants';
+import { PickupGame, PickupSession, PlayerProfile, PlayerRole, SessionPlayerState, TeamSide } from './pickup-five.types';
 
 export function statusLabel(state: SessionPlayerState): string {
-  return STATUS_LABELS[state];
+  return PLAYER_STATUS_LABELS[state];
 }
 
 export function primaryRole(player: PlayerProfile): PlayerRole {
@@ -22,7 +14,7 @@ export function isPartialSub(game: PickupGame, playerId: string): boolean {
     && (game.replacements ?? []).some((replacement) => replacement.incomingPlayerId === playerId);
 }
 
-export function teamName(team: 'A' | 'B'): 'White' | 'Black' {
+export function teamName(team: TeamSide): 'White' | 'Black' {
   return team === 'A' ? 'White' : 'Black';
 }
 

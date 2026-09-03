@@ -3,16 +3,16 @@ import {
   PickupSession,
   SessionPlayer,
   StayTeam,
+  TeamSide,
   TeamSelectionResult
 } from './pickup-five.types';
+import { PRESENT_PLAYER_STATES, WINNER_BONUS } from './pickup-five.constants';
 import { latestWinningRun } from './pickup-five-winning-run';
 
-export const WINNER_BONUS = 0.15;
-
-const PRESENT_STATES = new Set(['WAITING', 'PLAYING', 'LEAVING_AFTER_GAME']);
+export { WINNER_BONUS } from './pickup-five.constants';
 
 export function isPresent(player: SessionPlayer): boolean {
-  return PRESENT_STATES.has(player.state);
+  return PRESENT_PLAYER_STATES.has(player.state);
 }
 
 export function checkInPlayer(session: PickupSession, playerId: string, now: string): PickupSession {
@@ -64,7 +64,7 @@ export function substitutePlayer(
   if (!game || game.status !== 'PROPOSED' && game.status !== 'IN_PROGRESS') {
     throw new Error('Only a proposed or active game can replace a player.');
   }
-  const team: 'A' | 'B' | null = game.teamA.includes(outgoingPlayerId) ? 'A'
+  const team: TeamSide | null = game.teamA.includes(outgoingPlayerId) ? 'A'
     : game.teamB.includes(outgoingPlayerId) ? 'B'
     : null;
   if (!team) throw new Error('That player is not in the current game.');

@@ -1,5 +1,9 @@
 export type PlayerRole = 'Guard' | 'Wing' | 'Big';
 
+export type PickupTab = 'court' | 'organizer';
+
+export type TeamSide = 'A' | 'B';
+
 export type SessionStatus = 'DRAFT' | 'CHECK_IN' | 'ACTIVE' | 'ENDED';
 
 export type SessionPlayerState =
@@ -42,13 +46,13 @@ export interface PickupGame {
   status: GameStatus;
   teamA: string[];
   teamB: string[];
-  winner: 'A' | 'B' | null;
+  winner: TeamSide | null;
   fairnessApplied: boolean;
   rebalanceCount: number;
   creditedTeamA?: string[];
   creditedTeamB?: string[];
   replacements?: GameReplacement[];
-  stayTeam?: 'A' | 'B' | null;
+  stayTeam?: TeamSide | null;
   winnerStreak?: number;
   createdAt: string;
   startedAt: string | null;
@@ -58,7 +62,7 @@ export interface PickupGame {
 export interface GameReplacement {
   outgoingPlayerId: string;
   incomingPlayerId: string;
-  team: 'A' | 'B';
+  team: TeamSide;
   createdAt: string;
 }
 
@@ -84,6 +88,11 @@ export interface PickupFiveState {
   organizerPinHash: string;
 }
 
+export interface PickupFiveStorage {
+  load(): PickupFiveState | null;
+  save(state: PickupFiveState, expectedRevision: number): void;
+}
+
 export interface TeamBalanceResult {
   teamA: string[];
   teamB: string[];
@@ -93,7 +102,7 @@ export interface TeamBalanceResult {
 
 export interface StayTeam {
   playerIds: string[];
-  side: 'A' | 'B';
+  side: TeamSide;
   consecutiveWins: number;
 }
 

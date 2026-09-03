@@ -9,7 +9,7 @@ import {
   updateTeammateHistory
 } from './pickup-five-scheduling';
 import { createId } from './pickup-five-state.factory';
-import { PickupGame, PickupSession, PlayerProfile } from './pickup-five.types';
+import { PickupGame, PickupSession, PlayerProfile, TeamSide } from './pickup-five.types';
 
 export function startPickupSession(
   session: PickupSession,
@@ -48,24 +48,15 @@ export function checkPlayerIn(session: PickupSession, playerId: string, now: str
 }
 
 export function checkPlayerOut(session: PickupSession, playerId: string, now: string): PickupSession {
-  const game = findLatestGame(session.games, (candidate) =>
-    (candidate.status === 'PROPOSED' || candidate.status === 'IN_PROGRESS')
-    && [...candidate.teamA, ...candidate.teamB].includes(playerId));
+  const game = findOpenGameForPlayer(session, playerId);
   if (!game) return checkOutPlayer(session, playerId, now);
-
-  const incomingPlayerId = replacementCandidate(session, game);
-  if (!incomingPlayerId) throw new Error('No waiting player is available to substitute in.');
-  return substitutePlayer(session, game.id, playerId, incomingPlayerId, 'CHECKED_OUT', now);
+  return substituteNextWaitingPlayer(session, game, playerId, 'CHECKED_OUT', now);
 }
 
 export function replacePlayerInGame(session: PickupSession, playerId: string, now: string): PickupSession {
-  const game = findLatestGame(session.games, (candidate) =>
-    (candidate.status === 'PROPOSED' || candidate.status === 'IN_PROGRESS')
-    && [...candidate.teamA, ...candidate.teamB].includes(playerId));
+  const game = findOpenGameForPlayer(session, playerId);
   if (!game) throw new Error('That player is not in the current game.');
-  const incomingPlayerId = replacementCandidate(session, game);
-  if (!incomingPlayerId) throw new Error('No waiting player is available to substitute in.');
-  return substitutePlayer(session, game.id, playerId, incomingPlayerId, 'WAITING', now);
+  return substituteNextWaitingPlayer(session, game, playerId, 'WAITING', now);
 }
 
 export function generatePickupGame(
@@ -170,7 +161,7 @@ export function startPickupGame(session: PickupSession, now: string): PickupSess
 
 export function recordPickupWinner(
   session: PickupSession,
-  winner: 'A' | 'B',
+  winner: TeamSide,
   profiles: PlayerProfile[],
   sessionHistory: PickupSession[],
   now: string
@@ -253,4 +244,22 @@ function replacementCandidate(session: PickupSession, game: PickupGame): string 
   ]);
   return selectNextPlayers(session, session.players.length)
     .find((playerId) => !currentPlayers.has(playerId)) ?? null;
+}
+
+function findOpenGameForPlayer(session: PickupSession, playerId: string): PickupGame | null {
+  return findLatestGame(session.games, (game) =>
+    (game.status === 'PROPOSED' || game.status === 'IN_PROGRESS')
+    && [...game.teamA, ...game.teamB].includes(playerId));
+}
+
+function substituteNextWaitingPlayer(
+  session: PickupSession,
+  game: PickupGame,
+  outgoingPlayerId: string,
+  outgoingState: 'WAITING' | 'CHECKED_OUT',
+  now: string
+): PickupSession {
+  const incomingPlayerId = replacementCandidate(session, game);
+  if (!incomingPlayerId) throw new Error('No waiting player is available to substitute in.');
+  return substitutePlayer(session, game.id, outgoingPlayerId, incomingPlayerId, outgoingState, now);
 }
