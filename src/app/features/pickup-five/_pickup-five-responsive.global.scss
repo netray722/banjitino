@@ -1,0 +1,61 @@
+@mixin styles {
+@media (max-width: 900px) {
+  .pickup-shell { padding-inline: 10px; }
+  .app-bar { min-height: 64px; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; }
+  .app-mark { width: 44px; height: 44px; }
+  .command-bar { width: 100%; max-width: none; grid-column: 1 / -1; grid-row: 2; }
+  .session-summary > span:not(.status-dot) { display: none; }
+  .command-bar button { min-height: 44px; }
+  .command-bar button small { display: none; }
+  .court-dashboard { grid-template-columns: minmax(0, 1fr) 300px; }
+  .teams-grid { padding-inline: 12px; }
+  .game-heading, .game-actions { padding-inline: 12px; }
+  .court-player { grid-template-columns: minmax(0, 1fr) 96px; }
+  .player-main { grid-template-columns: 42px 1fr; }
+  .session-admin-actions { grid-template-columns: minmax(220px, 1fr) repeat(3, auto); gap: 8px; }
+  .history-grid { grid-template-columns: 1fr; }
+  .management-row { min-width: 700px; grid-template-columns: 64px minmax(152px, 1fr) 104px 104px 94px 96px 44px; gap: 8px; }
+  .management-row > label > span, .management-row > .career-field > span { font-size: .6rem; letter-spacing: .06em; }
+  .management-row .player-menu, .player-menu summary { width: 44px; }
+}
+
+@media (max-width: 720px) {
+  .app-bar { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .command-bar button { min-width: 0; min-height: 48px; padding-inline: 6px; }
+  .session-summary { flex-wrap: wrap; justify-content: flex-end; }
+  .command-bar button { grid-template-columns: auto; grid-template-rows: auto auto; text-align: center; }
+  .command-bar button > span, .command-bar button small { display: none; }
+  .session-admin-actions { grid-template-columns: 1fr 1fr; }
+  .session-admin-actions label { grid-column: 1 / -1; }
+  .session-admin-actions .danger-action { grid-column: 1 / -1; }
+  .quick-start, .court-dashboard { grid-template-columns: 1fr; }
+  .quick-start { min-height: auto; padding: 28px 20px; }
+  .queue-panel { position: static; max-height: none; }
+  .teams-grid { grid-template-columns: 1fr; }
+  .versus { display: none; }
+  .team-b { margin-top: 16px; }
+  .proposal-actions, .result-actions { grid-template-columns: 1fr; }
+  .standby-card { min-height: 420px; }
+  .add-player-panel { grid-template-columns: 1fr 1fr; }
+  .add-player-panel .primary-action { grid-column: 1 / -1; }
+  .roster-row { grid-template-columns: 58px 1fr; }
+  .roster-row .state-chip, .roster-row > button { grid-column: 2; }
+  .pickup-shell .history-select { grid-template-columns: 1fr; gap: 2px; }
+  .game-history-row .history-select { grid-template-areas: "game-number" "game-result" "game-meta"; }
+  .game-history-meta { text-align: left; }
+  .session-history-panel { overflow-x: auto; }
+  .session-history-row { min-width: 570px; }
+  .session-history-row .history-select { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "session-name session-meta session-date"; gap: 10px; }
+  .history-row > .history-select { grid-column: 1; grid-row: 1; }
+  .history-row > .icon-action, .history-row > .session-menu { grid-column: 2; grid-row: 1; }
+  .game-detail-meta, .game-detail-teams { grid-template-columns: 1fr; }
+  .game-detail-meta > div + div { border-top: 1px solid var(--border); border-left: 0; }
+  .data-management { align-items: stretch; flex-direction: column; }
+  .data-management-actions { display: grid; grid-template-columns: minmax(96px, .45fr) 1fr; }
+  .data-management-actions .danger-action { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+}

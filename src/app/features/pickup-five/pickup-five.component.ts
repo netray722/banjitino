@@ -2,6 +2,15 @@ import { DOCUMENT, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
 
+import {
+  completedGameCount,
+  gameDuration,
+  isPartialSub,
+  primaryRole,
+  sessionDisplayName,
+  statusLabel,
+  teamName
+} from './pickup-five-presentation';
 import { selectNextPlayers } from './pickup-five-scheduling';
 import { PickupFiveStateService } from './pickup-five-state.service';
 import { NBA_TEST_PLAYERS } from './pickup-five-test-data.constants';
@@ -34,6 +43,13 @@ export class PickupFiveComponent {
   protected readonly selectedHistorySessionId = signal<string | null>(this.pickup.state().activeSessionId);
   protected readonly selectedGame = signal<PickupGame | null>(null);
   protected readonly roles: PlayerRole[] = ['Guard', 'Wing', 'Big'];
+  protected readonly completedGameCount = completedGameCount;
+  protected readonly gameDuration = gameDuration;
+  protected readonly isPartialSub = isPartialSub;
+  protected readonly primaryRole = primaryRole;
+  protected readonly sessionDisplayName = sessionDisplayName;
+  protected readonly statusLabel = statusLabel;
+  protected readonly teamName = teamName;
   protected readonly maximumTestPlayerCount = NBA_TEST_PLAYERS.length;
   protected readonly defaultSessionName = new Intl.DateTimeFormat('en-US', {
     month: '2-digit',
@@ -253,18 +269,6 @@ export class PickupFiveComponent {
     return state === 'WAITING' || state === 'PLAYING' || state === 'LEAVING_AFTER_GAME';
   }
 
-  protected statusLabel(state: SessionPlayerState): string {
-    const labels: Record<SessionPlayerState, string> = {
-      REGISTERED: 'Registered',
-      WAITING: 'Waiting',
-      PLAYING: 'Playing',
-      LEAVING_AFTER_GAME: 'Leaving after game',
-      CHECKED_OUT: 'Checked out',
-      NO_SHOW: 'No-show'
-    };
-    return labels[state];
-  }
-
   protected playerStatsLabel(playerId: string): string {
     const player = this.pickup.sessionPlayer(playerId);
     if (!player) return '';
@@ -277,15 +281,6 @@ export class PickupFiveComponent {
     return winRate === undefined ? '—' : `${winRate}%`;
   }
 
-  protected primaryRole(player: PlayerProfile): PlayerRole {
-    return player.roles[0] ?? 'Wing';
-  }
-
-  protected isPartialSub(game: PickupGame, playerId: string): boolean {
-    return game.status === 'IN_PROGRESS'
-      && (game.replacements ?? []).some((replacement) => replacement.incomingPlayerId === playerId);
-  }
-
   protected updateNumber(playerId: string, value: string): void {
     const playerNumber = Number(value);
     if (!Number.isInteger(playerNumber)) return;
@@ -296,34 +291,4 @@ export class PickupFiveComponent {
     this.pickup.updatePlayer(playerId, { displayName: value });
   }
 
-  protected teamName(team: 'A' | 'B'): 'White' | 'Black' {
-    return team === 'A' ? 'White' : 'Black';
-  }
-
-  protected gameDuration(game: PickupGame): string {
-    if (!game.startedAt || !game.completedAt) return '—';
-    const minutes = Math.max(1, Math.round(
-      (new Date(game.completedAt).getTime() - new Date(game.startedAt).getTime()) / 60_000
-    ));
-    if (minutes < 60) return `${minutes} min`;
-    const remainingMinutes = minutes % 60;
-    return `${Math.floor(minutes / 60)} hr${remainingMinutes ? ` ${remainingMinutes} min` : ''}`;
-  }
-
-  protected completedGameCount(session: PickupSession): number {
-    return session.games.filter((game) => game.status === 'COMPLETED').length;
-  }
-
-  protected sessionDisplayName(session: PickupSession | null, fallback = 'Select a session'): string {
-    if (!session) return fallback;
-    if (session.name.startsWith('Test History — ')) return 'Test History';
-    if (/^[A-Z][a-z]+ \d{2} \d{4}$/.test(session.name)) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-      }).format(new Date(session.createdAt));
-    }
-    return session.name;
-  }
 }
