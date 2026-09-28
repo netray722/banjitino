@@ -108,13 +108,23 @@ export function rankWaitingPlayers(session: PickupSession, excludedPlayerIds: st
 
   return session.players
     .filter((player) => player.state === 'WAITING' && !excluded.has(player.playerId))
-    .sort((left, right) =>
-      right.consecutiveGamesSat - left.consecutiveGamesSat
-      || right.fairnessCredit - left.fairnessCredit
-      || winnerScore(right) - winnerScore(left)
-      || rotatingRank(left, session.tieBreakCursor, rotationSize)
-        - rotatingRank(right, session.tieBreakCursor, rotationSize)
-      || left.playerId.localeCompare(right.playerId));
+    .sort((left, right) => {
+      const leftIsNewcomer = left.gamesPlayed === 0;
+      const rightIsNewcomer = right.gamesPlayed === 0;
+      if (leftIsNewcomer !== rightIsNewcomer) return leftIsNewcomer ? -1 : 1;
+      if (leftIsNewcomer) {
+        return (left.checkedInAt ?? session.createdAt).localeCompare(right.checkedInAt ?? session.createdAt)
+          || left.tieBreakOrder - right.tieBreakOrder
+          || left.playerId.localeCompare(right.playerId);
+      }
+
+      return right.consecutiveGamesSat - left.consecutiveGamesSat
+        || right.fairnessCredit - left.fairnessCredit
+        || winnerScore(right) - winnerScore(left)
+        || rotatingRank(left, session.tieBreakCursor, rotationSize)
+          - rotatingRank(right, session.tieBreakCursor, rotationSize)
+        || left.playerId.localeCompare(right.playerId);
+    });
 }
 
 export function selectNextPlayers(session: PickupSession, limit = 10): string[] {
