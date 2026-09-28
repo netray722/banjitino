@@ -14,6 +14,7 @@ import {
   updateTeammateHistory
 } from './pickup-five-scheduling';
 import { PickupGame, PickupSession, PlayerProfile, SessionPlayer, StayTeam } from './pickup-five.types';
+import { recordPickupWinner, replacePlayerInGame, startPickupGame } from './pickup-five-session.actions';
 
 describe('Pickup Five scheduling', () => {
   it('applies the 13-player fairness example exactly', () => {
@@ -99,6 +100,51 @@ describe('Pickup Five scheduling', () => {
     expect(lateArrival.gamesPlayed).toBe(0);
   });
 
+  it('selects the eighteenth newcomer next and returns them to normal rotation after their first game', () => {
+    const profiles = createProfiles(18);
+    const initial = createSession(17);
+    initial.players.forEach((player) => { player.gamesPlayed = 2; });
+    const started = startNextGame(initial, profiles, 0);
+    const joined = checkInPlayer(started, 'p17', '2026-01-01T00:01:00.000Z');
+
+    expect(rankWaitingPlayers(joined)[0].playerId).toBe('p17');
+    const proposed = recordPickupWinner(joined, 'A', profiles, [], '2026-01-01T00:02:00.000Z');
+    const nextGame = proposed.games.at(-1)!;
+    expect([...nextGame.teamA, ...nextGame.teamB]).toContain('p17');
+    expect(nextGame.stayTeam).toBe('A');
+    expect(nextGame.teamA).toEqual(started.games[0].teamA);
+
+    const nextStarted = startPickupGame(proposed, '2026-01-01T00:03:00.000Z');
+    const newcomerBefore = nextStarted.players.find((player) => player.playerId === 'p17')!;
+    const winner = nextGame.teamA.includes('p17') ? 'B' : 'A';
+    const completed = recordGameResult(nextStarted, nextGame.id, winner, '2026-01-01T00:04:00.000Z').session;
+    const newcomerAfter = completed.players.find((player) => player.playerId === 'p17')!;
+    const waiting = rankWaitingPlayers(completed);
+
+    expect(newcomerAfter.gamesPlayed).toBe(1);
+    expect(newcomerAfter.consecutiveGamesSat).toBe(0);
+    expect(newcomerAfter.fairnessCredit).toBeCloseTo(newcomerBefore.fairnessCredit + 10 / 18 - 1);
+    expect(waiting.slice(0, 8).every((player) => player.consecutiveGamesSat > 0)).toBe(true);
+    expect(waiting.findIndex((player) => player.playerId === 'p17')).toBeGreaterThanOrEqual(8);
+  });
+
+  it('uses newcomer priority for automatic substitution and retains it after a partial game', () => {
+    const profiles = createProfiles(18);
+    const initial = createSession(17);
+    initial.players.forEach((player) => { player.gamesPlayed = 2; });
+    const started = startNextGame(initial, profiles, 0);
+    const joined = checkInPlayer(started, 'p17', '2026-01-01T00:01:00.000Z');
+    const outgoing = started.games[0].teamA[0];
+    const replaced = replacePlayerInGame(joined, outgoing, '2026-01-01T00:02:00.000Z');
+
+    expect(replaced.games[0].teamA).toContain('p17');
+    expect(replaced.games[0].teamA).not.toContain(outgoing);
+    const completed = recordGameResult(replaced, replaced.games[0].id, 'B', '2026-01-01T00:03:00.000Z').session;
+    expect(completed.players.find((player) => player.playerId === 'p17')?.gamesPlayed).toBe(0);
+    expect(rankWaitingPlayers(completed)[0].playerId).toBe('p17');
+    expect(selectPlayersForGame(completed).selectedPlayerIds).toContain('p17');
+  });
+
   it('preserves fairness credit across checkout and rejoin without earning credit while absent', () => {
     let session = createSession(11);
     const before = session.players.find((player) => player.playerId === 'p10')!;
@@ -128,6 +174,7 @@ describe('Pickup Five scheduling', () => {
 
   it('keeps the winner bonus subordinate to meaningful wait time', () => {
     const session = createSession(11);
+    session.players.forEach((player) => { player.gamesPlayed = 1; });
     session.players[0].lastResult = 'WIN';
     session.players[0].fairnessCredit = WINNER_BONUS;
     session.players[10].consecutiveGamesSat = 1;
