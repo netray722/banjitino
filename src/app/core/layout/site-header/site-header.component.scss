@@ -26,7 +26,7 @@
 .header-inner {
   min-height: 82px;
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto minmax(240px, 1fr);
+  grid-template-columns: minmax(240px, 1fr) auto auto;
   align-items: stretch;
   gap: 24px;
 }
@@ -136,7 +136,7 @@
   height: 20px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .site-header {
     width: min(100% - 24px, 1240px);
   }
@@ -149,7 +149,7 @@
 
   .header-inner {
     min-height: 68px;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto;
     gap: 8px;
   }
 
@@ -167,6 +167,22 @@
     min-width: auto;
     padding: 0 12px;
     font-size: .64rem;
+  }
+
+  .primary-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 44px;
+    border-top: 1px solid var(--border);
+  }
+
+  .primary-nav a {
+    flex: 1;
+  }
+
+  .theme-toggle {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .theme-toggle {

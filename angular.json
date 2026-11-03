@@ -28,7 +28,8 @@
             "styles": [
               "src/styles.scss",
               "src/app/features/pickup-five/pickup-five.global.scss"
-            ]
+            ],
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
             "production": {
