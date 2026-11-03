@@ -1,0 +1,90 @@
+<main class="chess-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">The games room / No. 01</p>
+      <h1>A little <em>strategy.</em></h1>
+      <p>One board. A worthy opponent. Your next move.</p>
+    </div>
+    <span class="edition">CHESS<br><small>Single player · Untimed</small></span>
+  </header>
+  <div class="game-layout">
+    <section class="board-section" aria-label="Chess game">
+      <div class="player-line"><span><span class="player-token" aria-hidden="true">♚</span> Computer <small>/ {{ level().label }}</small></span><span class="side-label">BLACK</span></div>
+      <div class="board" role="group" aria-label="Chessboard, White at the bottom" aria-describedby="board-help">
+        @for (cell of game.squares(); track cell.square; let index = $index) {
+          <button type="button" class="square"
+            [class.dark]="cell.dark" [class.white-piece]="cell.color === 'w'"
+            [class.selected]="game.selected() === cell.square"
+            [class.last-move]="lastMove()?.from === cell.square || lastMove()?.to === cell.square"
+            [class.in-check]="game.checkedKing() === cell.square"
+            [class.legal]="game.legalTargets().includes(cell.square)" [class.occupied]="!!cell.glyph"
+            [attr.aria-label]="cell.label + (game.legalTargets().includes(cell.square) ? ', legal move' : '')"
+            [attr.aria-pressed]="game.selected() === cell.square"
+            [attr.aria-disabled]="!game.playerTurn() || !!game.promotion()"
+            [attr.tabindex]="focusedSquare() === cell.square ? 0 : -1" [attr.data-square]="cell.square"
+            (click)="selectSquare(cell.square)" (keydown)="moveFocus($event, index)">
+            @if (index % 8 === 0) { <span class="rank" aria-hidden="true">{{ cell.square[1] }}</span> }
+            <span class="piece" aria-hidden="true">{{ cell.glyph }}</span>
+            @if (index >= 56) { <span class="file" aria-hidden="true">{{ cell.square[0] }}</span> }
+          </button>
+        }
+      </div>
+      <div class="player-line"><span><span class="player-token" aria-hidden="true">♔</span> You <small>/ Make your move</small></span><span class="side-label">WHITE</span></div>
+      <p id="board-help" class="board-help">Select a piece, then a highlighted square. Use arrow keys to explore the board and Enter or Space to select.</p>
+    </section>
+    <aside class="game-panel" aria-label="Game controls">
+      <section class="status-panel">
+        <p class="eyebrow">{{ game.over() ? 'The result' : 'At the board' }}</p>
+        <h2 role="status" aria-live="polite">{{ engineError() ? 'Computer paused.' : game.status() }}</h2>
+        @if (engineError()) {
+          <p>The opponent could not finish its move.</p>
+          <button type="button" (click)="requestComputerMove()">Retry computer move ↗</button>
+        } @else if (!game.over()) {
+          <p>{{ game.playerTurn() ? 'You’re playing White. Take your time.' : 'Looking for a good reply. You can still take back your move.' }}</p>
+        }
+      </section>
+      @if (game.promotion()) {
+        <section class="promotion" aria-label="Pawn promotion">
+          <h3>Promote your pawn</h3>
+          <div class="promotion-options">
+            @for (choice of promotions; track choice.piece) {
+              <button type="button" (click)="promote(choice.piece)">{{ choice.label }}</button>
+            }
+          </div>
+        </section>
+      }
+      <section class="settings-panel">
+        <label class="eyebrow" for="difficulty">Your opponent</label>
+        <select id="difficulty" #difficultySelect [value]="difficulty()" (change)="changeDifficulty(difficultySelect.value)">
+          @for (option of levels; track option.value) { <option [value]="option.value" [selected]="option.value === difficulty()">{{ option.label }}</option> }
+        </select>
+        <p class="level-description">{{ level().description }}</p>
+        <div class="actions">
+          <button type="button" class="primary-button" (click)="game.history().length ? restartRequested.set(true) : startNewGame()">New game <span aria-hidden="true">↗</span></button>
+          <button type="button" (click)="undoTurn()" [disabled]="!game.history().length && !game.promotion()">Take back</button>
+        </div>
+        @if (restartRequested()) {
+          <div class="restart-prompt" role="group" aria-label="Confirm new game">
+            <p>Start over? This game will be cleared.</p>
+            <button type="button" (click)="startNewGame()">Start over</button>
+            <button type="button" (click)="restartRequested.set(false)">Keep playing</button>
+          </div>
+        }
+      </section>
+      <section class="moves-panel" aria-labelledby="moves-heading">
+        <div class="moves-heading"><h2 id="moves-heading">The scorebook</h2><span>{{ game.history().length }} half-moves</span></div>
+        <div class="move-list">
+          @if (movePairs().length) {
+            <table><thead><tr><th scope="col">Move</th><th scope="col">White</th><th scope="col">Black</th></tr></thead>
+              <tbody>@for (pair of movePairs(); track pair.number) { <tr><th scope="row">{{ pair.number }}.</th><td>{{ pair.white }}</td><td>{{ pair.black }}</td></tr> }</tbody>
+            </table>
+          } @else {
+            <p class="empty-moves">Every good game starts<br>with a little possibility.</p>
+            <p class="empty-hint">Your moves will appear here.</p>
+          }
+        </div>
+      </section>
+      <p class="footnote">A quiet challenge, whenever you need one.</p>
+    </aside>
+  </div>
+</main>

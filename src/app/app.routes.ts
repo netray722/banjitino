@@ -16,5 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pickup-five/pickup-five.component').then(({ PickupFiveComponent }) => PickupFiveComponent),
     title: 'Pickup Five · sidequests.'
   },
+  {
+    path: 'chess',
+    loadComponent: () => import('./features/chess/chess.component').then(({ ChessComponent }) => ChessComponent),
+    title: 'Chess · sidequests.'
+  },
   { path: '**', redirectTo: '' }
 ];
